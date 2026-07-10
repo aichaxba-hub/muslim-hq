@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
+import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
@@ -35,6 +36,11 @@ const AuthenticatedWorshipRoute = AuthenticatedWorshipRouteImport.update({
   path: '/worship',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedQuranRoute = AuthenticatedQuranRouteImport.update({
+  id: '/quran',
+  path: '/quran',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedQadaRoute = AuthenticatedQadaRouteImport.update({
   id: '/qada',
   path: '/qada',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/qada': typeof AuthenticatedQadaRoute
+  '/quran': typeof AuthenticatedQuranRoute
   '/worship': typeof AuthenticatedWorshipRoute
 }
 export interface FileRoutesByTo {
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/qada': typeof AuthenticatedQadaRoute
+  '/quran': typeof AuthenticatedQuranRoute
   '/worship': typeof AuthenticatedWorshipRoute
 }
 export interface FileRoutesById {
@@ -67,13 +75,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
+  '/_authenticated/quran': typeof AuthenticatedQuranRoute
   '/_authenticated/worship': typeof AuthenticatedWorshipRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/qada' | '/worship'
+  fullPaths: '/' | '/auth' | '/dashboard' | '/qada' | '/quran' | '/worship'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/qada' | '/worship'
+  to: '/' | '/auth' | '/dashboard' | '/qada' | '/quran' | '/worship'
   id:
     | '__root__'
     | '/'
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/qada'
+    | '/_authenticated/quran'
     | '/_authenticated/worship'
   fileRoutesById: FileRoutesById
 }
@@ -120,6 +130,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorshipRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/quran': {
+      id: '/_authenticated/quran'
+      path: '/quran'
+      fullPath: '/quran'
+      preLoaderRoute: typeof AuthenticatedQuranRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/qada': {
       id: '/_authenticated/qada'
       path: '/qada'
@@ -140,12 +157,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
+  AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
   AuthenticatedWorshipRoute: typeof AuthenticatedWorshipRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
+  AuthenticatedQuranRoute: AuthenticatedQuranRoute,
   AuthenticatedWorshipRoute: AuthenticatedWorshipRoute,
 }
 
