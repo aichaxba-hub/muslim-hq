@@ -1,0 +1,71 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { createDhikr, listDhikr } from "@/lib/data.functions";
+import { todayISO } from "@/lib/hijri";
+import { useState } from "react";
+
+export const Route = createFileRoute("/_authenticated/dhikr")({
+  head: () => ({ meta: [{ title: "Dhikr — Muslim HQ" }] }),
+  component: DhikrPage,
+});
+const CATS = ["SubhanAllah", "Alhamdulillah", "Allahu Akbar", "La ilaha illa Allah", "Astaghfirullah", "Salawat", "Other"];
+
+function DhikrPage() {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listDhikr);
+  const createFn = useServerFn(createDhikr);
+  const { data = [] } = useQuery({ queryKey: ["dhikr"], queryFn: () => listFn({ data: undefined as any }) });
+  const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["dhikr"] }) });
+  const [form, setForm] = useState({ log_date: todayISO(), category: CATS[0], count: 33, notes: "" });
+
+  const totals: Record<string, number> = {};
+  data.forEach((d: any) => { totals[d.category] = (totals[d.category] ?? 0) + (d.count ?? 0); });
+
+  const [taps, setTaps] = useState(0);
+
+  return (
+    <AppShell>
+      <PageHeader eyebrow="Dhikr" title="Remembrance counter" subtitle="Remember Him, and He remembers you." />
+
+      <Card className="mb-6 text-center">
+        <p className="text-xs uppercase tracking-widest text-[color:var(--sage)] mb-2">Live tasbih</p>
+        <p className="text-7xl font-serif mb-4">{taps}</p>
+        <div className="flex justify-center gap-3">
+          <Button variant="gold" onClick={() => setTaps(t => t + 1)}>Tap</Button>
+          <Button variant="ghost" onClick={() => setTaps(0)}>Reset</Button>
+        </div>
+      </Card>
+
+      <Card className="mb-6">
+        <h3 className="font-serif text-2xl mb-4">Log a session</h3>
+        <div className="grid md:grid-cols-4 gap-3">
+          <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+          <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
+            {CATS.map(c => <option key={c}>{c}</option>)}
+          </select>
+          <input type="number" min={1} value={form.count} onChange={e => setForm({ ...form, count: +e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+          <Button onClick={() => create.mutate(form)}>Save</Button>
+        </div>
+      </Card>
+
+      <PageHeader title="Running totals" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        {Object.entries(totals).map(([k, v]) => (
+          <Card key={k}><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">{k}</p><p className="text-2xl font-serif">{v}</p></Card>
+        ))}
+        {Object.keys(totals).length === 0 && <p className="text-muted-foreground text-sm">No sessions yet.</p>}
+      </div>
+
+      <div className="grid gap-2">
+        {data.slice(0, 30).map((r: any) => (
+          <div key={r.id} className="flex justify-between p-3 rounded-2xl ring-1 ring-border text-sm">
+            <span>{r.log_date} · {r.category}</span>
+            <span className="text-muted-foreground">{r.count}</span>
+          </div>
+        ))}
+      </div>
+    </AppShell>
+  );
+}

@@ -9,38 +9,262 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TutorialRouteImport } from './routes/tutorial'
+import { Route as StartRouteImport } from './routes/start'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedZakatRouteImport } from './routes/_authenticated/zakat'
+import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
+import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
+import { Route as AuthenticatedResetRouteImport } from './routes/_authenticated/reset'
+import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenticated/reflections'
+import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
+import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
+import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
+import { Route as AuthenticatedFastingRouteImport } from './routes/_authenticated/fasting'
+import { Route as AuthenticatedDuasRouteImport } from './routes/_authenticated/duas'
+import { Route as AuthenticatedDhikrRouteImport } from './routes/_authenticated/dhikr'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
+const TutorialRoute = TutorialRouteImport.update({
+  id: '/tutorial',
+  path: '/tutorial',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartRoute = StartRouteImport.update({
+  id: '/start',
+  path: '/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedZakatRoute = AuthenticatedZakatRouteImport.update({
+  id: '/zakat',
+  path: '/zakat',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWorshipRoute = AuthenticatedWorshipRouteImport.update({
+  id: '/worship',
+  path: '/worship',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedResetRoute = AuthenticatedResetRouteImport.update({
+  id: '/reset',
+  path: '/reset',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReflectionsRoute =
+  AuthenticatedReflectionsRouteImport.update({
+    id: '/reflections',
+    path: '/reflections',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedQuranRoute = AuthenticatedQuranRouteImport.update({
+  id: '/quran',
+  path: '/quran',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedQadaRoute = AuthenticatedQadaRouteImport.update({
+  id: '/qada',
+  path: '/qada',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFastingRoute = AuthenticatedFastingRouteImport.update({
+  id: '/fasting',
+  path: '/fasting',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDuasRoute = AuthenticatedDuasRouteImport.update({
+  id: '/duas',
+  path: '/duas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDhikrRoute = AuthenticatedDhikrRouteImport.update({
+  id: '/dhikr',
+  path: '/dhikr',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/start': typeof StartRoute
+  '/tutorial': typeof TutorialRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dhikr': typeof AuthenticatedDhikrRoute
+  '/duas': typeof AuthenticatedDuasRoute
+  '/fasting': typeof AuthenticatedFastingRoute
+  '/goals': typeof AuthenticatedGoalsRoute
+  '/qada': typeof AuthenticatedQadaRoute
+  '/quran': typeof AuthenticatedQuranRoute
+  '/reflections': typeof AuthenticatedReflectionsRoute
+  '/reset': typeof AuthenticatedResetRoute
+  '/review': typeof AuthenticatedReviewRoute
+  '/worship': typeof AuthenticatedWorshipRoute
+  '/zakat': typeof AuthenticatedZakatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/start': typeof StartRoute
+  '/tutorial': typeof TutorialRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dhikr': typeof AuthenticatedDhikrRoute
+  '/duas': typeof AuthenticatedDuasRoute
+  '/fasting': typeof AuthenticatedFastingRoute
+  '/goals': typeof AuthenticatedGoalsRoute
+  '/qada': typeof AuthenticatedQadaRoute
+  '/quran': typeof AuthenticatedQuranRoute
+  '/reflections': typeof AuthenticatedReflectionsRoute
+  '/reset': typeof AuthenticatedResetRoute
+  '/review': typeof AuthenticatedReviewRoute
+  '/worship': typeof AuthenticatedWorshipRoute
+  '/zakat': typeof AuthenticatedZakatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/start': typeof StartRoute
+  '/tutorial': typeof TutorialRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/dhikr': typeof AuthenticatedDhikrRoute
+  '/_authenticated/duas': typeof AuthenticatedDuasRoute
+  '/_authenticated/fasting': typeof AuthenticatedFastingRoute
+  '/_authenticated/goals': typeof AuthenticatedGoalsRoute
+  '/_authenticated/qada': typeof AuthenticatedQadaRoute
+  '/_authenticated/quran': typeof AuthenticatedQuranRoute
+  '/_authenticated/reflections': typeof AuthenticatedReflectionsRoute
+  '/_authenticated/reset': typeof AuthenticatedResetRoute
+  '/_authenticated/review': typeof AuthenticatedReviewRoute
+  '/_authenticated/worship': typeof AuthenticatedWorshipRoute
+  '/_authenticated/zakat': typeof AuthenticatedZakatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/start'
+    | '/tutorial'
+    | '/dashboard'
+    | '/dhikr'
+    | '/duas'
+    | '/fasting'
+    | '/goals'
+    | '/qada'
+    | '/quran'
+    | '/reflections'
+    | '/reset'
+    | '/review'
+    | '/worship'
+    | '/zakat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/start'
+    | '/tutorial'
+    | '/dashboard'
+    | '/dhikr'
+    | '/duas'
+    | '/fasting'
+    | '/goals'
+    | '/qada'
+    | '/quran'
+    | '/reflections'
+    | '/reset'
+    | '/review'
+    | '/worship'
+    | '/zakat'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/start'
+    | '/tutorial'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/dhikr'
+    | '/_authenticated/duas'
+    | '/_authenticated/fasting'
+    | '/_authenticated/goals'
+    | '/_authenticated/qada'
+    | '/_authenticated/quran'
+    | '/_authenticated/reflections'
+    | '/_authenticated/reset'
+    | '/_authenticated/review'
+    | '/_authenticated/worship'
+    | '/_authenticated/zakat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  StartRoute: typeof StartRoute
+  TutorialRoute: typeof TutorialRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tutorial': {
+      id: '/tutorial'
+      path: '/tutorial'
+      fullPath: '/tutorial'
+      preLoaderRoute: typeof TutorialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start': {
+      id: '/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof StartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +272,133 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/zakat': {
+      id: '/_authenticated/zakat'
+      path: '/zakat'
+      fullPath: '/zakat'
+      preLoaderRoute: typeof AuthenticatedZakatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/worship': {
+      id: '/_authenticated/worship'
+      path: '/worship'
+      fullPath: '/worship'
+      preLoaderRoute: typeof AuthenticatedWorshipRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/review': {
+      id: '/_authenticated/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AuthenticatedReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reset': {
+      id: '/_authenticated/reset'
+      path: '/reset'
+      fullPath: '/reset'
+      preLoaderRoute: typeof AuthenticatedResetRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reflections': {
+      id: '/_authenticated/reflections'
+      path: '/reflections'
+      fullPath: '/reflections'
+      preLoaderRoute: typeof AuthenticatedReflectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/quran': {
+      id: '/_authenticated/quran'
+      path: '/quran'
+      fullPath: '/quran'
+      preLoaderRoute: typeof AuthenticatedQuranRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/qada': {
+      id: '/_authenticated/qada'
+      path: '/qada'
+      fullPath: '/qada'
+      preLoaderRoute: typeof AuthenticatedQadaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/goals': {
+      id: '/_authenticated/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof AuthenticatedGoalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/fasting': {
+      id: '/_authenticated/fasting'
+      path: '/fasting'
+      fullPath: '/fasting'
+      preLoaderRoute: typeof AuthenticatedFastingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/duas': {
+      id: '/_authenticated/duas'
+      path: '/duas'
+      fullPath: '/duas'
+      preLoaderRoute: typeof AuthenticatedDuasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dhikr': {
+      id: '/_authenticated/dhikr'
+      path: '/dhikr'
+      fullPath: '/dhikr'
+      preLoaderRoute: typeof AuthenticatedDhikrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDhikrRoute: typeof AuthenticatedDhikrRoute
+  AuthenticatedDuasRoute: typeof AuthenticatedDuasRoute
+  AuthenticatedFastingRoute: typeof AuthenticatedFastingRoute
+  AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
+  AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
+  AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
+  AuthenticatedReflectionsRoute: typeof AuthenticatedReflectionsRoute
+  AuthenticatedResetRoute: typeof AuthenticatedResetRoute
+  AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
+  AuthenticatedWorshipRoute: typeof AuthenticatedWorshipRoute
+  AuthenticatedZakatRoute: typeof AuthenticatedZakatRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDhikrRoute: AuthenticatedDhikrRoute,
+  AuthenticatedDuasRoute: AuthenticatedDuasRoute,
+  AuthenticatedFastingRoute: AuthenticatedFastingRoute,
+  AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
+  AuthenticatedQadaRoute: AuthenticatedQadaRoute,
+  AuthenticatedQuranRoute: AuthenticatedQuranRoute,
+  AuthenticatedReflectionsRoute: AuthenticatedReflectionsRoute,
+  AuthenticatedResetRoute: AuthenticatedResetRoute,
+  AuthenticatedReviewRoute: AuthenticatedReviewRoute,
+  AuthenticatedWorshipRoute: AuthenticatedWorshipRoute,
+  AuthenticatedZakatRoute: AuthenticatedZakatRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  StartRoute: StartRoute,
+  TutorialRoute: TutorialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
