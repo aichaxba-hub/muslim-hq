@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedZakatRouteImport } from './routes/_authenticated/zakat'
 import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
+import { Route as AuthenticatedResetRouteImport } from './routes/_authenticated/reset'
 import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenticated/reflections'
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
@@ -51,6 +52,11 @@ const AuthenticatedWorshipRoute = AuthenticatedWorshipRouteImport.update({
 const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedResetRoute = AuthenticatedResetRouteImport.update({
+  id: '/reset',
+  path: '/reset',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReflectionsRoute =
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
+  '/reset': typeof AuthenticatedResetRoute
   '/review': typeof AuthenticatedReviewRoute
   '/worship': typeof AuthenticatedWorshipRoute
   '/zakat': typeof AuthenticatedZakatRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
+  '/reset': typeof AuthenticatedResetRoute
   '/review': typeof AuthenticatedReviewRoute
   '/worship': typeof AuthenticatedWorshipRoute
   '/zakat': typeof AuthenticatedZakatRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
   '/_authenticated/reflections': typeof AuthenticatedReflectionsRoute
+  '/_authenticated/reset': typeof AuthenticatedResetRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/worship': typeof AuthenticatedWorshipRoute
   '/_authenticated/zakat': typeof AuthenticatedZakatRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/qada'
     | '/quran'
     | '/reflections'
+    | '/reset'
     | '/review'
     | '/worship'
     | '/zakat'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/qada'
     | '/quran'
     | '/reflections'
+    | '/reset'
     | '/review'
     | '/worship'
     | '/zakat'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qada'
     | '/_authenticated/quran'
     | '/_authenticated/reflections'
+    | '/_authenticated/reset'
     | '/_authenticated/review'
     | '/_authenticated/worship'
     | '/_authenticated/zakat'
@@ -239,6 +251,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof AuthenticatedReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reset': {
+      id: '/_authenticated/reset'
+      path: '/reset'
+      fullPath: '/reset'
+      preLoaderRoute: typeof AuthenticatedResetRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reflections': {
@@ -309,6 +328,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
   AuthenticatedReflectionsRoute: typeof AuthenticatedReflectionsRoute
+  AuthenticatedResetRoute: typeof AuthenticatedResetRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedWorshipRoute: typeof AuthenticatedWorshipRoute
   AuthenticatedZakatRoute: typeof AuthenticatedZakatRoute
@@ -323,6 +343,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
   AuthenticatedReflectionsRoute: AuthenticatedReflectionsRoute,
+  AuthenticatedResetRoute: AuthenticatedResetRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedWorshipRoute: AuthenticatedWorshipRoute,
   AuthenticatedZakatRoute: AuthenticatedZakatRoute,
