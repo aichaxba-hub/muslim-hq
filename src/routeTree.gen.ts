@@ -16,6 +16,7 @@ import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
 import { Route as AuthenticatedFastingRouteImport } from './routes/_authenticated/fasting'
+import { Route as AuthenticatedDhikrRouteImport } from './routes/_authenticated/dhikr'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
 const AuthRoute = AuthRouteImport.update({
@@ -52,6 +53,11 @@ const AuthenticatedFastingRoute = AuthenticatedFastingRouteImport.update({
   path: '/fasting',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDhikrRoute = AuthenticatedDhikrRouteImport.update({
+  id: '/dhikr',
+  path: '/dhikr',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -62,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dhikr': typeof AuthenticatedDhikrRoute
   '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dhikr': typeof AuthenticatedDhikrRoute
   '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/dhikr': typeof AuthenticatedDhikrRoute
   '/_authenticated/fasting': typeof AuthenticatedFastingRoute
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
@@ -93,6 +102,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/dhikr'
     | '/fasting'
     | '/qada'
     | '/quran'
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/dhikr'
     | '/fasting'
     | '/qada'
     | '/quran'
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/dhikr'
     | '/_authenticated/fasting'
     | '/_authenticated/qada'
     | '/_authenticated/quran'
@@ -175,6 +187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFastingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dhikr': {
+      id: '/_authenticated/dhikr'
+      path: '/dhikr'
+      fullPath: '/dhikr'
+      preLoaderRoute: typeof AuthenticatedDhikrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -187,6 +206,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDhikrRoute: typeof AuthenticatedDhikrRoute
   AuthenticatedFastingRoute: typeof AuthenticatedFastingRoute
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
@@ -195,6 +215,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDhikrRoute: AuthenticatedDhikrRoute,
   AuthenticatedFastingRoute: AuthenticatedFastingRoute,
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
