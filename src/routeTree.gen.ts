@@ -16,6 +16,7 @@ import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenticated/reflections'
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
+import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFastingRouteImport } from './routes/_authenticated/fasting'
 import { Route as AuthenticatedDuasRouteImport } from './routes/_authenticated/duas'
 import { Route as AuthenticatedDhikrRouteImport } from './routes/_authenticated/dhikr'
@@ -56,6 +57,11 @@ const AuthenticatedQadaRoute = AuthenticatedQadaRouteImport.update({
   path: '/qada',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFastingRoute = AuthenticatedFastingRouteImport.update({
   id: '/fasting',
   path: '/fasting',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/dhikr': typeof AuthenticatedDhikrRoute
   '/duas': typeof AuthenticatedDuasRoute
   '/fasting': typeof AuthenticatedFastingRoute
+  '/goals': typeof AuthenticatedGoalsRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/dhikr': typeof AuthenticatedDhikrRoute
   '/duas': typeof AuthenticatedDuasRoute
   '/fasting': typeof AuthenticatedFastingRoute
+  '/goals': typeof AuthenticatedGoalsRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/_authenticated/dhikr': typeof AuthenticatedDhikrRoute
   '/_authenticated/duas': typeof AuthenticatedDuasRoute
   '/_authenticated/fasting': typeof AuthenticatedFastingRoute
+  '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
   '/_authenticated/reflections': typeof AuthenticatedReflectionsRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/dhikr'
     | '/duas'
     | '/fasting'
+    | '/goals'
     | '/qada'
     | '/quran'
     | '/reflections'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/dhikr'
     | '/duas'
     | '/fasting'
+    | '/goals'
     | '/qada'
     | '/quran'
     | '/reflections'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dhikr'
     | '/_authenticated/duas'
     | '/_authenticated/fasting'
+    | '/_authenticated/goals'
     | '/_authenticated/qada'
     | '/_authenticated/quran'
     | '/_authenticated/reflections'
@@ -212,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQadaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/goals': {
+      id: '/_authenticated/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof AuthenticatedGoalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/fasting': {
       id: '/_authenticated/fasting'
       path: '/fasting'
@@ -248,6 +267,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDhikrRoute: typeof AuthenticatedDhikrRoute
   AuthenticatedDuasRoute: typeof AuthenticatedDuasRoute
   AuthenticatedFastingRoute: typeof AuthenticatedFastingRoute
+  AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
   AuthenticatedReflectionsRoute: typeof AuthenticatedReflectionsRoute
@@ -259,6 +279,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDhikrRoute: AuthenticatedDhikrRoute,
   AuthenticatedDuasRoute: AuthenticatedDuasRoute,
   AuthenticatedFastingRoute: AuthenticatedFastingRoute,
+  AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
   AuthenticatedReflectionsRoute: AuthenticatedReflectionsRoute,
