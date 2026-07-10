@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
+import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenticated/reflections'
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
 import { Route as AuthenticatedFastingRouteImport } from './routes/_authenticated/fasting'
@@ -39,6 +40,12 @@ const AuthenticatedWorshipRoute = AuthenticatedWorshipRouteImport.update({
   path: '/worship',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReflectionsRoute =
+  AuthenticatedReflectionsRouteImport.update({
+    id: '/reflections',
+    path: '/reflections',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuranRoute = AuthenticatedQuranRouteImport.update({
   id: '/quran',
   path: '/quran',
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
+  '/reflections': typeof AuthenticatedReflectionsRoute
   '/worship': typeof AuthenticatedWorshipRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
   '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
+  '/reflections': typeof AuthenticatedReflectionsRoute
   '/worship': typeof AuthenticatedWorshipRoute
 }
 export interface FileRoutesById {
@@ -103,6 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/fasting': typeof AuthenticatedFastingRoute
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
+  '/_authenticated/reflections': typeof AuthenticatedReflectionsRoute
   '/_authenticated/worship': typeof AuthenticatedWorshipRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/fasting'
     | '/qada'
     | '/quran'
+    | '/reflections'
     | '/worship'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/fasting'
     | '/qada'
     | '/quran'
+    | '/reflections'
     | '/worship'
   id:
     | '__root__'
@@ -139,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/fasting'
     | '/_authenticated/qada'
     | '/_authenticated/quran'
+    | '/_authenticated/reflections'
     | '/_authenticated/worship'
   fileRoutesById: FileRoutesById
 }
@@ -176,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/worship'
       fullPath: '/worship'
       preLoaderRoute: typeof AuthenticatedWorshipRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reflections': {
+      id: '/_authenticated/reflections'
+      path: '/reflections'
+      fullPath: '/reflections'
+      preLoaderRoute: typeof AuthenticatedReflectionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quran': {
@@ -230,6 +250,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFastingRoute: typeof AuthenticatedFastingRoute
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
+  AuthenticatedReflectionsRoute: typeof AuthenticatedReflectionsRoute
   AuthenticatedWorshipRoute: typeof AuthenticatedWorshipRoute
 }
 
@@ -240,6 +261,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFastingRoute: AuthenticatedFastingRoute,
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
+  AuthenticatedReflectionsRoute: AuthenticatedReflectionsRoute,
   AuthenticatedWorshipRoute: AuthenticatedWorshipRoute,
 }
 
