@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
+import { Route as AuthenticatedFastingRouteImport } from './routes/_authenticated/fasting'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
 const AuthRoute = AuthRouteImport.update({
@@ -46,6 +47,11 @@ const AuthenticatedQadaRoute = AuthenticatedQadaRouteImport.update({
   path: '/qada',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFastingRoute = AuthenticatedFastingRouteImport.update({
+  id: '/fasting',
+  path: '/fasting',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -56,6 +62,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/worship': typeof AuthenticatedWorshipRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/worship': typeof AuthenticatedWorshipRoute
@@ -74,21 +82,37 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/fasting': typeof AuthenticatedFastingRoute
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
   '/_authenticated/worship': typeof AuthenticatedWorshipRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/qada' | '/quran' | '/worship'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/fasting'
+    | '/qada'
+    | '/quran'
+    | '/worship'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/qada' | '/quran' | '/worship'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/fasting'
+    | '/qada'
+    | '/quran'
+    | '/worship'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/fasting'
     | '/_authenticated/qada'
     | '/_authenticated/quran'
     | '/_authenticated/worship'
@@ -144,6 +168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQadaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/fasting': {
+      id: '/_authenticated/fasting'
+      path: '/fasting'
+      fullPath: '/fasting'
+      preLoaderRoute: typeof AuthenticatedFastingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -156,6 +187,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFastingRoute: typeof AuthenticatedFastingRoute
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
   AuthenticatedWorshipRoute: typeof AuthenticatedWorshipRoute
@@ -163,6 +195,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFastingRoute: AuthenticatedFastingRoute,
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
   AuthenticatedWorshipRoute: AuthenticatedWorshipRoute,
