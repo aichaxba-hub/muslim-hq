@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TutorialRouteImport } from './routes/tutorial'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -26,6 +27,11 @@ import { Route as AuthenticatedDuasRouteImport } from './routes/_authenticated/d
 import { Route as AuthenticatedDhikrRouteImport } from './routes/_authenticated/dhikr'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
+const TutorialRoute = TutorialRouteImport.update({
+  id: '/tutorial',
+  path: '/tutorial',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StartRoute = StartRouteImport.update({
   id: '/start',
   path: '/start',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/start': typeof StartRoute
+  '/tutorial': typeof TutorialRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dhikr': typeof AuthenticatedDhikrRoute
   '/duas': typeof AuthenticatedDuasRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/start': typeof StartRoute
+  '/tutorial': typeof TutorialRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dhikr': typeof AuthenticatedDhikrRoute
   '/duas': typeof AuthenticatedDuasRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/start': typeof StartRoute
+  '/tutorial': typeof TutorialRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dhikr': typeof AuthenticatedDhikrRoute
   '/_authenticated/duas': typeof AuthenticatedDuasRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/start'
+    | '/tutorial'
     | '/dashboard'
     | '/dhikr'
     | '/duas'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/start'
+    | '/tutorial'
     | '/dashboard'
     | '/dhikr'
     | '/duas'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/start'
+    | '/tutorial'
     | '/_authenticated/dashboard'
     | '/_authenticated/dhikr'
     | '/_authenticated/duas'
@@ -220,10 +232,18 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   StartRoute: typeof StartRoute
+  TutorialRoute: typeof TutorialRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tutorial': {
+      id: '/tutorial'
+      path: '/tutorial'
+      fullPath: '/tutorial'
+      preLoaderRoute: typeof TutorialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/start': {
       id: '/start'
       path: '/start'
@@ -377,6 +397,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   StartRoute: StartRoute,
+  TutorialRoute: TutorialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
