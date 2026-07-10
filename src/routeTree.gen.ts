@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedZakatRouteImport } from './routes/_authenticated/zakat'
 import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
 import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenticated/reflections'
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
@@ -35,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedZakatRoute = AuthenticatedZakatRouteImport.update({
+  id: '/zakat',
+  path: '/zakat',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWorshipRoute = AuthenticatedWorshipRouteImport.update({
   id: '/worship',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
   '/worship': typeof AuthenticatedWorshipRoute
+  '/zakat': typeof AuthenticatedZakatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
   '/worship': typeof AuthenticatedWorshipRoute
+  '/zakat': typeof AuthenticatedZakatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
   '/_authenticated/reflections': typeof AuthenticatedReflectionsRoute
   '/_authenticated/worship': typeof AuthenticatedWorshipRoute
+  '/_authenticated/zakat': typeof AuthenticatedZakatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/quran'
     | '/reflections'
     | '/worship'
+    | '/zakat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/quran'
     | '/reflections'
     | '/worship'
+    | '/zakat'
   id:
     | '__root__'
     | '/'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quran'
     | '/_authenticated/reflections'
     | '/_authenticated/worship'
+    | '/_authenticated/zakat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -195,6 +207,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/zakat': {
+      id: '/_authenticated/zakat'
+      path: '/zakat'
+      fullPath: '/zakat'
+      preLoaderRoute: typeof AuthenticatedZakatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/worship': {
       id: '/_authenticated/worship'
@@ -272,6 +291,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
   AuthenticatedReflectionsRoute: typeof AuthenticatedReflectionsRoute
   AuthenticatedWorshipRoute: typeof AuthenticatedWorshipRoute
+  AuthenticatedZakatRoute: typeof AuthenticatedZakatRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -284,6 +304,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
   AuthenticatedReflectionsRoute: AuthenticatedReflectionsRoute,
   AuthenticatedWorshipRoute: AuthenticatedWorshipRoute,
+  AuthenticatedZakatRoute: AuthenticatedZakatRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
