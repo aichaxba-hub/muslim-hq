@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedZakatRouteImport } from './routes/_authenticated/zakat'
 import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
+import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenticated/reflections'
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
@@ -45,6 +46,11 @@ const AuthenticatedZakatRoute = AuthenticatedZakatRouteImport.update({
 const AuthenticatedWorshipRoute = AuthenticatedWorshipRouteImport.update({
   id: '/worship',
   path: '/worship',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReflectionsRoute =
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
+  '/review': typeof AuthenticatedReviewRoute
   '/worship': typeof AuthenticatedWorshipRoute
   '/zakat': typeof AuthenticatedZakatRoute
 }
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
+  '/review': typeof AuthenticatedReviewRoute
   '/worship': typeof AuthenticatedWorshipRoute
   '/zakat': typeof AuthenticatedZakatRoute
 }
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
   '/_authenticated/reflections': typeof AuthenticatedReflectionsRoute
+  '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/worship': typeof AuthenticatedWorshipRoute
   '/_authenticated/zakat': typeof AuthenticatedZakatRoute
 }
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/qada'
     | '/quran'
     | '/reflections'
+    | '/review'
     | '/worship'
     | '/zakat'
   fileRoutesByTo: FileRoutesByTo
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/qada'
     | '/quran'
     | '/reflections'
+    | '/review'
     | '/worship'
     | '/zakat'
   id:
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qada'
     | '/_authenticated/quran'
     | '/_authenticated/reflections'
+    | '/_authenticated/review'
     | '/_authenticated/worship'
     | '/_authenticated/zakat'
   fileRoutesById: FileRoutesById
@@ -220,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/worship'
       fullPath: '/worship'
       preLoaderRoute: typeof AuthenticatedWorshipRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/review': {
+      id: '/_authenticated/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AuthenticatedReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reflections': {
@@ -290,6 +309,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
   AuthenticatedReflectionsRoute: typeof AuthenticatedReflectionsRoute
+  AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedWorshipRoute: typeof AuthenticatedWorshipRoute
   AuthenticatedZakatRoute: typeof AuthenticatedZakatRoute
 }
@@ -303,6 +323,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
   AuthenticatedReflectionsRoute: AuthenticatedReflectionsRoute,
+  AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedWorshipRoute: AuthenticatedWorshipRoute,
   AuthenticatedZakatRoute: AuthenticatedZakatRoute,
 }
