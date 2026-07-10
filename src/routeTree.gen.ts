@@ -16,6 +16,7 @@ import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
 import { Route as AuthenticatedFastingRouteImport } from './routes/_authenticated/fasting'
+import { Route as AuthenticatedDuasRouteImport } from './routes/_authenticated/duas'
 import { Route as AuthenticatedDhikrRouteImport } from './routes/_authenticated/dhikr'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
@@ -53,6 +54,11 @@ const AuthenticatedFastingRoute = AuthenticatedFastingRouteImport.update({
   path: '/fasting',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDuasRoute = AuthenticatedDuasRouteImport.update({
+  id: '/duas',
+  path: '/duas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDhikrRoute = AuthenticatedDhikrRouteImport.update({
   id: '/dhikr',
   path: '/dhikr',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dhikr': typeof AuthenticatedDhikrRoute
+  '/duas': typeof AuthenticatedDuasRoute
   '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dhikr': typeof AuthenticatedDhikrRoute
+  '/duas': typeof AuthenticatedDuasRoute
   '/fasting': typeof AuthenticatedFastingRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dhikr': typeof AuthenticatedDhikrRoute
+  '/_authenticated/duas': typeof AuthenticatedDuasRoute
   '/_authenticated/fasting': typeof AuthenticatedFastingRoute
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/dhikr'
+    | '/duas'
     | '/fasting'
     | '/qada'
     | '/quran'
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/dhikr'
+    | '/duas'
     | '/fasting'
     | '/qada'
     | '/quran'
@@ -124,6 +135,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/dhikr'
+    | '/_authenticated/duas'
     | '/_authenticated/fasting'
     | '/_authenticated/qada'
     | '/_authenticated/quran'
@@ -187,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFastingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/duas': {
+      id: '/_authenticated/duas'
+      path: '/duas'
+      fullPath: '/duas'
+      preLoaderRoute: typeof AuthenticatedDuasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dhikr': {
       id: '/_authenticated/dhikr'
       path: '/dhikr'
@@ -207,6 +226,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDhikrRoute: typeof AuthenticatedDhikrRoute
+  AuthenticatedDuasRoute: typeof AuthenticatedDuasRoute
   AuthenticatedFastingRoute: typeof AuthenticatedFastingRoute
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
@@ -216,6 +236,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDhikrRoute: AuthenticatedDhikrRoute,
+  AuthenticatedDuasRoute: AuthenticatedDuasRoute,
   AuthenticatedFastingRoute: AuthenticatedFastingRoute,
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
