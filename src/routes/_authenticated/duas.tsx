@@ -7,6 +7,7 @@ import { DUA_CATEGORIES } from "@/lib/dua-seed";
 import { Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { DuaFinder } from "@/components/DuaFinder";
+import { DuaAudio } from "@/components/DuaAudio";
 
 export const Route = createFileRoute("/_authenticated/duas")({
   head: () => ({ meta: [{ title: "Dua Vault — Muslim HQ" }] }),
@@ -97,6 +98,7 @@ function DuasPage() {
                 <Heart className={`size-5 ${d.favorited ? "fill-[color:var(--gold)] text-[color:var(--gold)]" : "text-muted-foreground"}`} />
               </button>
             </div>
+            <DuaAudio arabic={d.arabic} transliteration={d.transliteration} translation={d.translation} />
             {d.arabic && <p dir="rtl" className="text-2xl font-serif leading-relaxed mb-3">{d.arabic}</p>}
             {d.transliteration && <p className="text-sm italic text-muted-foreground mb-2">{d.transliteration}</p>}
             {d.translation && <p className="text-sm mb-3">"{d.translation}"</p>}
