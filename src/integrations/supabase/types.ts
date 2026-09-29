@@ -284,6 +284,69 @@ export type Database = {
         }
         Relationships: []
       }
+      ramadan_checklist: {
+        Row: {
+          created_at: string | null
+          id: string
+          items: Json
+          log_date: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          items?: Json
+          log_date: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          items?: Json
+          log_date?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ramadan_plans: {
+        Row: {
+          created_at: string | null
+          dua_goal: string | null
+          fasting_goal: string | null
+          id: string
+          intention: string | null
+          quran_goal: string | null
+          salah_goal: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dua_goal?: string | null
+          fasting_goal?: string | null
+          id?: string
+          intention?: string | null
+          quran_goal?: string | null
+          salah_goal?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dua_goal?: string | null
+          fasting_goal?: string | null
+          id?: string
+          intention?: string | null
+          quran_goal?: string | null
+          salah_goal?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       reflections: {
         Row: {
           closest_to_allah: string | null
