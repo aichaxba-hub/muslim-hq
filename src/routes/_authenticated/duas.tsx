@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listDuas, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
 import { DUA_CATEGORIES } from "@/lib/dua-seed";
-import { Heart, Plus } from "lucide-react";
+import { Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/duas")({
@@ -23,11 +23,20 @@ function DuasPage() {
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => { invalidate(); setShowForm(false); setForm(emptyForm); } });
 
   const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const emptyForm = { title: "", arabic: "", transliteration: "", translation: "", source: "", category: "Forgiveness", when_to_recite: "" };
   const [form, setForm] = useState(emptyForm);
 
-  const filtered = data.filter((d: any) => filter === "All" ? true : filter === "Favorites" ? d.favorited : d.category === filter);
+  const q = search.trim().toLowerCase();
+  const filtered = data.filter((d: any) => {
+    const inCategory = filter === "All" ? true : filter === "Favorites" ? d.favorited : d.category === filter;
+    if (!inCategory) return false;
+    if (!q) return true;
+    return [d.title, d.transliteration, d.translation, d.source, d.when_to_recite, d.category]
+      .filter(Boolean)
+      .some((v: string) => v.toLowerCase().includes(q));
+  });
 
   return (
     <AppShell>
