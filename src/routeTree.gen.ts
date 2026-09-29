@@ -21,6 +21,7 @@ import { Route as AuthenticatedResetRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenticated/reflections'
 import { Route as AuthenticatedQuranRouteImport } from './routes/_authenticated/quran'
 import { Route as AuthenticatedQadaRouteImport } from './routes/_authenticated/qada'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFastingRouteImport } from './routes/_authenticated/fasting'
 import { Route as AuthenticatedDuasRouteImport } from './routes/_authenticated/duas'
@@ -87,6 +88,11 @@ const AuthenticatedQadaRoute = AuthenticatedQadaRouteImport.update({
   path: '/qada',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
   id: '/goals',
   path: '/goals',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/duas': typeof AuthenticatedDuasRoute
   '/fasting': typeof AuthenticatedFastingRoute
   '/goals': typeof AuthenticatedGoalsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/duas': typeof AuthenticatedDuasRoute
   '/fasting': typeof AuthenticatedFastingRoute
   '/goals': typeof AuthenticatedGoalsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/qada': typeof AuthenticatedQadaRoute
   '/quran': typeof AuthenticatedQuranRoute
   '/reflections': typeof AuthenticatedReflectionsRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/duas': typeof AuthenticatedDuasRoute
   '/_authenticated/fasting': typeof AuthenticatedFastingRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/qada': typeof AuthenticatedQadaRoute
   '/_authenticated/quran': typeof AuthenticatedQuranRoute
   '/_authenticated/reflections': typeof AuthenticatedReflectionsRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/duas'
     | '/fasting'
     | '/goals'
+    | '/profile'
     | '/qada'
     | '/quran'
     | '/reflections'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/duas'
     | '/fasting'
     | '/goals'
+    | '/profile'
     | '/qada'
     | '/quran'
     | '/reflections'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/_authenticated/duas'
     | '/_authenticated/fasting'
     | '/_authenticated/goals'
+    | '/_authenticated/profile'
     | '/_authenticated/qada'
     | '/_authenticated/quran'
     | '/_authenticated/reflections'
@@ -321,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQadaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/goals': {
       id: '/_authenticated/goals'
       path: '/goals'
@@ -365,6 +384,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDuasRoute: typeof AuthenticatedDuasRoute
   AuthenticatedFastingRoute: typeof AuthenticatedFastingRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedQadaRoute: typeof AuthenticatedQadaRoute
   AuthenticatedQuranRoute: typeof AuthenticatedQuranRoute
   AuthenticatedReflectionsRoute: typeof AuthenticatedReflectionsRoute
@@ -380,6 +400,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDuasRoute: AuthenticatedDuasRoute,
   AuthenticatedFastingRoute: AuthenticatedFastingRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedQadaRoute: AuthenticatedQadaRoute,
   AuthenticatedQuranRoute: AuthenticatedQuranRoute,
   AuthenticatedReflectionsRoute: AuthenticatedReflectionsRoute,
@@ -402,3 +423,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

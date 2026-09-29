@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listDuas, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
 import { DUA_CATEGORIES } from "@/lib/dua-seed";
-import { Heart, Plus } from "lucide-react";
+import { Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/duas")({
@@ -23,11 +23,20 @@ function DuasPage() {
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => { invalidate(); setShowForm(false); setForm(emptyForm); } });
 
   const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const emptyForm = { title: "", arabic: "", transliteration: "", translation: "", source: "", category: "Forgiveness", when_to_recite: "" };
   const [form, setForm] = useState(emptyForm);
 
-  const filtered = data.filter((d: any) => filter === "All" ? true : filter === "Favorites" ? d.favorited : d.category === filter);
+  const q = search.trim().toLowerCase();
+  const filtered = data.filter((d: any) => {
+    const inCategory = filter === "All" ? true : filter === "Favorites" ? d.favorited : d.category === filter;
+    if (!inCategory) return false;
+    if (!q) return true;
+    return [d.title, d.transliteration, d.translation, d.source, d.when_to_recite, d.category]
+      .filter(Boolean)
+      .some((v: string) => v.toLowerCase().includes(q));
+  });
 
   return (
     <AppShell>
@@ -53,11 +62,25 @@ function DuasPage() {
         </Card>
       )}
 
+      <div className="relative mb-4">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by title, translation, source, or occasion…"
+          className="w-full rounded-full bg-card ring-1 ring-border pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--sage)]"
+        />
+      </div>
+
       <div className="flex flex-wrap gap-2 mb-6 text-xs">
         {["All", "Favorites", ...DUA_CATEGORIES].map(c => (
           <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full ring-1 ring-border ${filter === c ? "bg-primary text-primary-foreground" : ""}`}>{c}</button>
         ))}
       </div>
+
+      {filtered.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-12">No duas match your search. Try a different word or category.</p>
+      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         {filtered.map((d: any) => (
