@@ -173,6 +173,7 @@ export type Database = {
           latitude: number | null
           location_label: string | null
           longitude: number | null
+          madhab: string | null
           onboarding_complete: boolean | null
           seeded: boolean | null
           theme: string | null
@@ -186,6 +187,7 @@ export type Database = {
           latitude?: number | null
           location_label?: string | null
           longitude?: number | null
+          madhab?: string | null
           onboarding_complete?: boolean | null
           seeded?: boolean | null
           theme?: string | null
@@ -199,6 +201,7 @@ export type Database = {
           latitude?: number | null
           location_label?: string | null
           longitude?: number | null
+          madhab?: string | null
           onboarding_complete?: boolean | null
           seeded?: boolean | null
           theme?: string | null
