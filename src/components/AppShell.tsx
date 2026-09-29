@@ -17,6 +17,7 @@ const NAV = [
   { to: "/zakat", label: "Zakat" },
   { to: "/review", label: "Review" },
   { to: "/reset", label: "Reset" },
+  { to: "/profile", label: "Profile" },
 ] as const;
 
 function useTheme() {
