@@ -6,6 +6,7 @@ import { listDuas, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
 import { DUA_CATEGORIES } from "@/lib/dua-seed";
 import { Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
+import { DuaFinder } from "@/components/DuaFinder";
 
 export const Route = createFileRoute("/_authenticated/duas")({
   head: () => ({ meta: [{ title: "Dua Vault — Muslim HQ" }] }),
@@ -44,6 +45,8 @@ function DuasPage() {
         <PageHeader eyebrow="Dua Vault" title="Supplications" subtitle="A private library of the heart." />
         <Button onClick={() => setShowForm(v => !v)} variant="gold"><Plus className="inline size-4 -mt-0.5" /> Add dua</Button>
       </div>
+
+      <DuaFinder duas={data} />
 
       {showForm && (
         <Card className="mb-6">

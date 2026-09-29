@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProfile, updateProfile } from "@/lib/data.functions";
-import { computeTimes, formatTime, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
+import { CALC_METHODS, MADHABS, computeTimes, formatTime, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { toast } from "sonner";
 import { LocateFixed } from "lucide-react";
 
@@ -25,12 +25,16 @@ function ProfilePage() {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [locating, setLocating] = useState(false);
+  const [method, setMethod] = useState("MoonsightingCommittee");
+  const [madhab, setMadhab] = useState("shafi");
 
   useEffect(() => {
     if (!profile.data) return;
     setName(profile.data.display_name ?? "");
     setLabel(profile.data.location_label ?? "");
     setLat(profile.data.latitude != null ? String(profile.data.latitude) : "");
+    setMethod(profile.data.calc_method ?? "MoonsightingCommittee");
+    setMadhab((profile.data as any).madhab ?? "shafi");
     setLng(profile.data.longitude != null ? String(profile.data.longitude) : "");
   }, [profile.data]);
 
@@ -49,8 +53,8 @@ function ProfilePage() {
 
   const previewTimes = useMemo(() => {
     if (!validCoords) return null;
-    return computeTimes({ latitude: latNum, longitude: lngNum });
-  }, [latNum, lngNum, validCoords]);
+    return computeTimes({ latitude: latNum, longitude: lngNum, method, madhab });
+  }, [latNum, lngNum, validCoords, method, madhab]);
 
   function useMyLocation() {
     if (!navigator.geolocation) {
@@ -75,7 +79,7 @@ function ProfilePage() {
   }
 
   function handleSave() {
-    const payload: Record<string, unknown> = { display_name: name.trim() || null };
+    const payload: Record<string, unknown> = { display_name: name.trim() || null, calc_method: method, madhab };
     if (validCoords) {
       payload.latitude = latNum;
       payload.longitude = lngNum;
@@ -145,6 +149,25 @@ function ProfilePage() {
           </Button>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <h2 className="font-serif text-xl mb-1">Calculation settings</h2>
+        <p className="text-xs text-muted-foreground mb-4">Choose what your local masjid follows so your times match.</p>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1.5">Calculation method</label>
+            <select value={method} onChange={(e) => setMethod(e.target.value)} className="w-full rounded-xl bg-background ring-1 ring-border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--sage)]">
+              {CALC_METHODS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1.5">Madhab (Asr time)</label>
+            <select value={madhab} onChange={(e) => setMadhab(e.target.value)} className="w-full rounded-xl bg-background ring-1 ring-border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--sage)]">
+              {MADHABS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>
+          </div>
+        </div>
+      </Card>
 
       {previewTimes && (
         <Card className="mt-6">

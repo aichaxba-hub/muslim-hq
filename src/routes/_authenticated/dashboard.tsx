@@ -48,10 +48,10 @@ function Dashboard() {
   }, [profile.data, updateProfileFn, qc]);
 
   const coords = profile.data?.latitude
-    ? { latitude: profile.data.latitude, longitude: profile.data.longitude!, label: profile.data.location_label ?? "" }
-    : DEFAULT_COORDS;
+    ? { latitude: profile.data.latitude, longitude: profile.data.longitude!, label: profile.data.location_label ?? "", method: profile.data.calc_method, madhab: (profile.data as any).madhab }
+    : { ...DEFAULT_COORDS, method: profile.data?.calc_method, madhab: (profile.data as any)?.madhab };
 
-  const times = useMemo(() => computeTimes(coords), [coords.latitude, coords.longitude]);
+  const times = useMemo(() => computeTimes(coords), [coords.latitude, coords.longitude, coords.method, coords.madhab]);
   const [now, setNow] = useState(new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
