@@ -3,9 +3,11 @@ import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getWorshipLog, listWorshipLogs, upsertWorshipLog } from "@/lib/data.functions";
+import { FAST_TYPES } from "@/lib/fasting";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
+
 
 export const Route = createFileRoute("/_authenticated/worship")({
   head: () => ({ meta: [{ title: "Worship Log — Muslim HQ" }] }),
@@ -20,7 +22,7 @@ const STATUSES = [
 ];
 
 const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel", "Other"];
-const FAST_TYPES = ["Ramadan", "Sunnah", "Qada", "Other"];
+
 
 function WorshipHub() {
   const [date, setDate] = useState(todayISO());
