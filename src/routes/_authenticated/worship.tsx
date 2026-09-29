@@ -20,7 +20,7 @@ const STATUSES = [
 ];
 
 const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel", "Other"];
-const FAST_TYPES = ["Ramadan", "Sunnah", "Qada", "Other"];
+
 
 function WorshipHub() {
   const [date, setDate] = useState(todayISO());
