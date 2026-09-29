@@ -62,11 +62,25 @@ function DuasPage() {
         </Card>
       )}
 
+      <div className="relative mb-4">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by title, translation, source, or occasion…"
+          className="w-full rounded-full bg-card ring-1 ring-border pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--sage)]"
+        />
+      </div>
+
       <div className="flex flex-wrap gap-2 mb-6 text-xs">
         {["All", "Favorites", ...DUA_CATEGORIES].map(c => (
           <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full ring-1 ring-border ${filter === c ? "bg-primary text-primary-foreground" : ""}`}>{c}</button>
         ))}
       </div>
+
+      {filtered.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-12">No duas match your search. Try a different word or category.</p>
+      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         {filtered.map((d: any) => (
