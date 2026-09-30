@@ -27,7 +27,7 @@ function DuasPage() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: "", arabic: "", transliteration: "", translation: "", source: "", category: "Forgiveness", when_to_recite: "" };
+  const emptyForm = { title: "", arabic: "", transliteration: "", translation: "", source: "", category: "My Duas", when_to_recite: "" };
   const [form, setForm] = useState(emptyForm);
 
   const q = search.trim().toLowerCase();
@@ -54,7 +54,7 @@ function DuasPage() {
           <div className="grid md:grid-cols-2 gap-3">
             <input placeholder="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
             <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
-              {DUA_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              {["My Duas", ...DUA_CATEGORIES].map(c => <option key={c}>{c}</option>)}
             </select>
             <textarea placeholder="Arabic" value={form.arabic} onChange={e => setForm({ ...form, arabic: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border md:col-span-2" dir="rtl" rows={2} />
             <input placeholder="Transliteration" value={form.transliteration} onChange={e => setForm({ ...form, transliteration: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border md:col-span-2" />
@@ -77,7 +77,7 @@ function DuasPage() {
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6 text-xs">
-        {["All", "Favorites", ...DUA_CATEGORIES].map(c => (
+        {["All", "Favorites", "My Duas", ...DUA_CATEGORIES].map(c => (
           <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full ring-1 ring-border ${filter === c ? "bg-primary text-primary-foreground" : ""}`}>{c}</button>
         ))}
       </div>
