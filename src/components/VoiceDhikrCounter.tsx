@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, LoaderCircle, Mic, MicOff, RotateCcw, Save, WandSparkles } from "lucide-react";
 import { Button, Card } from "@/components/AppShell";
+import { findDhikrMatches } from "@/lib/dhikr-voice";
 
 type SpeechRecognitionResultLike = {
   isFinal: boolean;
@@ -32,60 +33,6 @@ declare global {
     SpeechRecognition?: SpeechRecognitionConstructor;
     webkitSpeechRecognition?: SpeechRecognitionConstructor;
   }
-}
-
-const MATCHERS = [
-  {
-    category: "SubhanAllah",
-    patterns: [/سبحان الله/g, /\bsubhan\s*(?:allah|allahumma)\b/g],
-  },
-  {
-    category: "Alhamdulillah",
-    patterns: [/الحمد لله/g, /\bal\s*hamdu\s*lillah\b/g, /\balhamdulillah\b/g],
-  },
-  {
-    category: "Allahu Akbar",
-    patterns: [/الله اكبر/g, /\ballahu?\s*akbar\b/g],
-  },
-  {
-    category: "La ilaha illa Allah",
-    patterns: [/لا اله الا الله/g, /\bla\s*ilaha\s*ill?a\s*allah\b/g],
-  },
-  {
-    category: "Astaghfirullah",
-    patterns: [/استغفر الله/g, /\bastaghfir\s*ullah\b/g, /\bastagfirullah\b/g],
-  },
-  {
-    category: "Salawat",
-    patterns: [/اللهم صل(?:ي)? على محمد/g, /\ballahumma\s*salli\s*(?:ala|al[aā])\s*muhammad\b/g],
-  },
-] as const;
-
-function normalizeTranscript(value: string) {
-  return value
-    .toLocaleLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f\u064B-\u065F\u0670]/g, "")
-    .replace(/[أإآٱ]/g, "ا")
-    .replace(/ة/g, "ه")
-    .replace(/ى/g, "ي")
-    .replace(/[^\p{L}\p{N}\s]/gu, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function findMatches(transcript: string) {
-  const normalized = normalizeTranscript(transcript);
-  const matches: string[] = [];
-
-  for (const matcher of MATCHERS) {
-    for (const pattern of matcher.patterns) {
-      const occurrences = normalized.match(pattern)?.length ?? 0;
-      for (let index = 0; index < occurrences; index += 1) matches.push(matcher.category);
-    }
-  }
-
-  return matches;
 }
 
 export function VoiceDhikrCounter({
@@ -155,13 +102,13 @@ export function VoiceDhikrCounter({
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const result = event.results[index];
         const transcript = result?.[0]?.transcript?.trim() ?? "";
-        const matches = findMatches(transcript);
+        const matches = findDhikrMatches(transcript);
         const alreadyCounted = countedByResultRef.current.get(index) ?? 0;
         const newMatches = Math.max(0, matches.length - alreadyCounted);
         if (newMatches > 0) {
           countedByResultRef.current.set(index, alreadyCounted + newMatches);
           setCount(current => current + newMatches);
-          setDetected(matches[matches.length - 1]);
+          setDetected(matches[matches.length - 1]?.category);
           setSaved(false);
         }
         setHeard(transcript);
@@ -247,6 +194,7 @@ export function VoiceDhikrCounter({
             <p className="truncate" dir="auto">{heard || "—"}</p>
           </div>
           {detected && <p className="text-sm mt-2">Detected: <span className="font-medium text-[color:var(--sage)]">{detected}</span></p>}
+          {heard && !detected && <p className="text-sm mt-2 text-muted-foreground">Waiting for a complete dhikr phrase…</p>}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { createDhikr, listDhikr } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
 import { VoiceDhikrCounter } from "@/components/VoiceDhikrCounter";
+import { VOICE_DHIKR_CATEGORIES } from "@/lib/dhikr-voice";
 
 export const Route = createFileRoute("/_authenticated/dhikr")({
   head: () => ({
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/dhikr")({
   }),
   component: DhikrPage,
 });
-const CATS = ["SubhanAllah", "Alhamdulillah", "Allahu Akbar", "La ilaha illa Allah", "Astaghfirullah", "Salawat", "Other"];
+const CATS = [...VOICE_DHIKR_CATEGORIES, "Other"];
 
 function DhikrPage() {
   const qc = useQueryClient();
