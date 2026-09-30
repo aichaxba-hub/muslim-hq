@@ -35,6 +35,12 @@ function QadaPage() {
 
   const filtered = data.filter((q: any) => filter === "all" ? true : filter === "pending" ? !q.completed : q.completed);
 
+  const pending = data.filter((q: any) => !q.completed);
+  const pendingByPrayer = Object.fromEntries(
+    PRAYERS.map(p => [PRAYER_LABEL[p], pending.filter((q: any) => q.prayer === PRAYER_LABEL[p]).length]),
+  ) as Record<string, number>;
+  const completedCount = data.length - pending.length;
+
   return (
     <AppShell>
       <PageHeader eyebrow="Qada Salah" title="Make-up prayers" subtitle="Track missed prayers gently. Every one you make up is a return." />
@@ -54,6 +60,23 @@ function QadaPage() {
           <Button onClick={() => create.mutate({ prayer, missed_date: missed })}>Add qada entry</Button>
         </div>
       </Card>
+
+      <div className="grid gap-3 md:grid-cols-6 mb-6">
+        <div className="rounded-2xl ring-1 ring-border p-4 md:col-span-2">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Outstanding</p>
+          <p className="text-2xl font-semibold mt-1">{pending.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">{completedCount} completed all-time</p>
+        </div>
+        {PRAYERS.map(p => {
+          const label = PRAYER_LABEL[p];
+          return (
+            <div key={p} className="rounded-2xl ring-1 ring-border p-4">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+              <p className="text-2xl font-semibold mt-1">{pendingByPrayer[label]}</p>
+            </div>
+          );
+        })}
+      </div>
 
       <div className="flex gap-2 mb-4 text-sm">
         {(["pending", "completed", "all"] as const).map(f => (
