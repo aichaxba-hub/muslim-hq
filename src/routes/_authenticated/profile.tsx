@@ -35,6 +35,19 @@ function ProfilePage() {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [locating, setLocating] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const navigate = useNavigate();
+  const deleteFn = useServerFn(deleteAccount);
+
+  const del = useMutation({
+    mutationFn: () => deleteFn({ data: undefined as any }),
+    onSuccess: async () => {
+      await supabase.auth.signOut();
+      toast.success("Your account and data have been deleted");
+      navigate({ to: "/" });
+    },
+    onError: () => toast.error("Could not delete your account — please try again"),
+  });
   const [method, setMethod] = useState("MoonsightingCommittee");
   const [madhab, setMadhab] = useState("shafi");
 
