@@ -29,9 +29,18 @@ function ZakatPage() {
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zListFn({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["sadaqah"], queryFn: () => sListFn({ data: undefined as any }) });
   const zCreate = useMutation({ mutationFn: (p: any) => zCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); toast.success("Zakat entry saved"); }, onError: () => toast.error("Could not save the Zakat entry") });
-  const sCreate = useMutation({ mutationFn: (p: any) => sCreateFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["sadaqah"] }) });
+  const emptySadaqah = { log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false };
+  const sCreate = useMutation({
+    mutationFn: (p: any) => sCreateFn({ data: p }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sadaqah"] });
+      setS({ ...emptySadaqah, log_date: todayISO() });
+      toast.success("Sadaqah logged");
+    },
+    onError: () => toast.error("Could not log sadaqah"),
+  });
 
-  const [s, setS] = useState({ log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false });
+  const [s, setS] = useState(emptySadaqah);
 
   const totalSadaqah = (sadaqah.data ?? []).reduce((a: number, r: any) => a + (+r.amount || 0), 0);
 
@@ -61,6 +70,14 @@ function ZakatPage() {
             <input placeholder="Cause" value={s.cause} onChange={e => setS({ ...s, cause: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={s.ramadan} onChange={e => setS({ ...s, ramadan: e.target.checked })} /> Ramadan giving</label>
             <Button onClick={() => sCreate.mutate(s)}>Log sadaqah</Button>
+          </div>
+          <div className="mt-5 space-y-2">
+            {(sadaqah.data ?? []).map((r: any) => (
+              <div key={r.id} className="flex justify-between p-3 rounded-xl ring-1 ring-border text-sm">
+                <span>{r.log_date}{r.cause ? ` · ${r.cause}` : ""}{r.ramadan ? " · Ramadan" : ""}</span>
+                <span className="text-[color:var(--gold)]">{(+r.amount || 0).toLocaleString()}</span>
+              </div>
+            ))}
           </div>
         </Card>
 

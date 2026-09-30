@@ -27,8 +27,6 @@ const CURRENCIES = [
 const NISAB_OPTIONS = {
   jamhoor_silver: { label: "Majority · Silver (595g)", metal: "silver", grams: 595 },
   jamhoor_gold: { label: "Majority · Gold (85g)", metal: "gold", grams: 85 },
-  hanafi_silver: { label: "Hanafi · Silver (612.36g)", metal: "silver", grams: 612.36 },
-  hanafi_gold: { label: "Hanafi · Gold (87.48g)", metal: "gold", grams: 87.48 },
 } as const;
 
 type NisabKey = keyof typeof NISAB_OPTIONS;
