@@ -10,7 +10,6 @@ import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { CalendarDays } from "lucide-react";
-import { QiblaFinder } from "@/components/QiblaFinder";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { OnboardingDialog } from "@/components/OnboardingDialog";
 import { toast } from "sonner";
@@ -18,9 +17,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [
     { title: "Dashboard — Muslim HQ" },
-    { name: "description", content: "Today's prayer times, Qibla direction, streaks, and Zakat reminders in one calm view." },
+    { name: "description", content: "Today's prayer times, your salah streak, and Zakat & Hawl reminders in one calm view." },
     { property: "og:title", content: "Dashboard — Muslim HQ" },
-    { property: "og:description", content: "Today's prayer times, Qibla direction, streaks, and Zakat reminders." },
+    { property: "og:description", content: "Today's prayer times, salah streaks, and Zakat reminders." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
@@ -93,8 +92,6 @@ function Dashboard() {
           <div className="mt-2 flex md:justify-end"><InstallAppButton /></div>
         </div>
       </header>
-
-      <QiblaFinder latitude={coords.latitude} longitude={coords.longitude} hasLocation={!!profile.data?.latitude} />
 
       <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
         <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
