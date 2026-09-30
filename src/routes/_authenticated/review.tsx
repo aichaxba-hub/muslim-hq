@@ -187,8 +187,8 @@ function ReviewPage() {
           {PRAYERS.map(p => (
             <div key={p} className="rounded-2xl ring-1 ring-border p-3">
               <p className="text-sm font-medium mb-2">{PRAYER_LABEL[p]}</p>
-              <p className="text-xs text-muted-foreground">👥 Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
-              <p className="text-xs text-muted-foreground">🕌 Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users size={12} /> Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Landmark size={12} /> Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
             </div>
           ))}
         </div>
