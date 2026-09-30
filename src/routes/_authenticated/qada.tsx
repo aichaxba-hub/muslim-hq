@@ -61,6 +61,23 @@ function QadaPage() {
         </div>
       </Card>
 
+      <div className="grid gap-3 md:grid-cols-6 mb-6">
+        <div className="rounded-2xl ring-1 ring-border p-4 md:col-span-2">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Outstanding</p>
+          <p className="text-2xl font-semibold mt-1">{pending.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">{completedCount} completed all-time</p>
+        </div>
+        {PRAYERS.map(p => {
+          const label = PRAYER_LABEL[p];
+          return (
+            <div key={p} className="rounded-2xl ring-1 ring-border p-4">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+              <p className="text-2xl font-semibold mt-1">{pendingByPrayer[label]}</p>
+            </div>
+          );
+        })}
+      </div>
+
       <div className="flex gap-2 mb-4 text-sm">
         {(["pending", "completed", "all"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} className={`px-4 py-1.5 rounded-full ring-1 ring-border ${filter === f ? "bg-primary text-primary-foreground" : ""}`}>{f}</button>
