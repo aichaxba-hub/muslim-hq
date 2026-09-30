@@ -3,7 +3,7 @@ import { AppShell, Button, Card, PageHeader } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getProfile, updateProfile, deleteAccount } from "@/lib/data.functions";
+import { getProfile, updateProfile, deleteAccount, resetAllData } from "@/lib/data.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { CALC_METHODS, MADHABS, computeTimes, formatTime, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
@@ -36,8 +36,20 @@ function ProfilePage() {
   const [lng, setLng] = useState("");
   const [locating, setLocating] = useState(false);
   const [confirmText, setConfirmText] = useState("");
+  const [resetText, setResetText] = useState("");
   const navigate = useNavigate();
   const deleteFn = useServerFn(deleteAccount);
+  const resetFn = useServerFn(resetAllData);
+
+  const reset = useMutation({
+    mutationFn: () => resetFn({ data: undefined as any }),
+    onSuccess: () => {
+      qc.clear();
+      setResetText("");
+      toast.success("All your data has been cleared — a fresh start");
+    },
+    onError: () => toast.error("Could not reset your data — please try again"),
+  });
 
   const del = useMutation({
     mutationFn: () => deleteFn({ data: undefined as any }),
