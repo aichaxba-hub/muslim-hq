@@ -51,12 +51,12 @@ describe("dhikr voice phrase matching", () => {
 import { findStableDhikrMatches as stable } from "./dhikr-voice";
 describe("interim hold for long tasbih", () => {
   it("holds trailing SubhanAllah while interim", () => {
-    assert.equal(stable("subhanallah", false).length, 0);
+    assert.equal(stable("subhan allah", false).length, 0);
     assert.equal(stable("سبحان الله", false).length, 0);
     assert.equal(stable("subhanallahi wa bihamdihi", false).length, 0);
   });
   it("counts once final or when followed by other speech", () => {
-    assert.equal(stable("subhanallah", true).length, 1);
+    assert.equal(stable("subhan allah", true).length, 1);
     assert.equal(stable("subhanallah alhamdulillah", false).length, 2);
     assert.match(stable("subhanallahi wa bihamdihi subhanallahil azeem", false)[0].category, /bihamdihi/);
   });
