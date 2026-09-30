@@ -73,9 +73,8 @@ export function QiblaFinder({ latitude, longitude, hasLocation }: { latitude: nu
               state === "active" ? (heading == null ? "Move your phone in a figure-eight to calibrate." : aligned ? "You are facing the Qibla." : "Turn until the arrow points straight up.") :
               state === "denied" ? "Motion access was declined. Use the degree reading with any compass." :
               state === "unsupported" ? "This device has no compass sensor. Use the degree reading." :
-              "Hold your phone flat and start the live compass."}
+              "Tap anywhere on this card to enable the live compass."}
           </p>
-          {state !== "active" && <Button className="mt-3" onClick={start}>Start live compass</Button>}
         </div>
       </div>
     </Card>
