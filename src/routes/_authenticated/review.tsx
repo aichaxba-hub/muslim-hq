@@ -172,6 +172,67 @@ function ReviewPage() {
           </ResponsiveContainer>
         </div>
       </Card>
+
+      {mode === "monthly" && (
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+          <Card>
+            <h3 className="font-serif text-xl mb-3">Prayer completion (%)</h3>
+            <div className="h-56">
+              <ResponsiveContainer>
+                <LineChart data={monthlyData} connectNulls>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="label" fontSize={11} />
+                  <YAxis domain={[0, 100]} fontSize={11} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="salahPct" stroke="var(--sage-deep)" name="Completion %" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+          <Card>
+            <h3 className="font-serif text-xl mb-3">Quran pages</h3>
+            <div className="h-56">
+              <ResponsiveContainer>
+                <LineChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="label" fontSize={11} />
+                  <YAxis allowDecimals={false} fontSize={11} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="pages" stroke="var(--gold)" name="Pages" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+          <Card>
+            <h3 className="font-serif text-xl mb-3">Fasting days</h3>
+            <div className="h-56">
+              <ResponsiveContainer>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="label" fontSize={11} />
+                  <YAxis allowDecimals={false} domain={[0, 1]} tickFormatter={(v: number) => (v === 1 ? "Yes" : "No")} fontSize={11} />
+                  <Tooltip formatter={(v: number) => (v === 1 ? "Fasted" : "No fast")} />
+                  <Bar dataKey="fasted" fill="var(--sage-deep)" name="Fasted" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+          <Card>
+            <h3 className="font-serif text-xl mb-3">Dua &amp; dhikr usage</h3>
+            <div className="h-56">
+              <ResponsiveContainer>
+                <LineChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="label" fontSize={11} />
+                  <YAxis fontSize={11} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="dhikr" stroke="var(--gold)" name="Dhikr count" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
+      )}
     </AppShell>
   );
 }
