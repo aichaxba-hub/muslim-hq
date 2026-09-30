@@ -71,6 +71,14 @@ function ZakatPage() {
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={s.ramadan} onChange={e => setS({ ...s, ramadan: e.target.checked })} /> Ramadan giving</label>
             <Button onClick={() => sCreate.mutate(s)}>Log sadaqah</Button>
           </div>
+          <div className="mt-5 space-y-2">
+            {(sadaqah.data ?? []).map((r: any) => (
+              <div key={r.id} className="flex justify-between p-3 rounded-xl ring-1 ring-border text-sm">
+                <span>{r.log_date}{r.cause ? ` · ${r.cause}` : ""}{r.ramadan ? " · Ramadan" : ""}</span>
+                <span className="text-[color:var(--gold)]">{(+r.amount || 0).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
         </Card>
 
         <Card>
