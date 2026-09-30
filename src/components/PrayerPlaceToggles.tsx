@@ -1,3 +1,5 @@
+import { Landmark, Users } from "lucide-react";
+
 type Props = {
   congregation: boolean;
   masjid: boolean;
@@ -16,7 +18,7 @@ function Pill({
 }: {
   active: boolean;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   onClick: () => void;
   compact?: boolean;
@@ -27,7 +29,7 @@ function Pill({
       title={title}
       aria-pressed={active}
       onClick={onClick}
-      className={`inline-flex items-center gap-1 rounded-full ring-1 transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-full ring-1 transition-colors ${
         compact ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs"
       } ${
         active
@@ -35,7 +37,7 @@ function Pill({
           : "bg-transparent text-muted-foreground ring-border hover:ring-[color:var(--sage)]"
       }`}
     >
-      <span aria-hidden="true">{icon}</span>
+      {icon}
       <span>{label}</span>
     </button>
   );
@@ -49,12 +51,13 @@ export function PrayerPlaceToggles({
   onToggleMasjid,
   compact,
 }: Props) {
+  const size = compact ? 11 : 13;
   return (
     <div className="flex items-center gap-1.5">
       <Pill
         active={congregation}
         label="Jama'ah"
-        icon="👥"
+        icon={<Users size={size} />}
         title="Prayed in congregation"
         onClick={() => onToggleCongregation(!congregation)}
         compact={compact}
@@ -62,7 +65,7 @@ export function PrayerPlaceToggles({
       <Pill
         active={masjid}
         label="Masjid"
-        icon="🕌"
+        icon={<Landmark size={size} />}
         title="Prayed at the masjid"
         onClick={() => onToggleMasjid(!masjid)}
         compact={compact}
