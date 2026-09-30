@@ -35,6 +35,12 @@ function QadaPage() {
 
   const filtered = data.filter((q: any) => filter === "all" ? true : filter === "pending" ? !q.completed : q.completed);
 
+  const pending = data.filter((q: any) => !q.completed);
+  const pendingByPrayer = Object.fromEntries(
+    PRAYERS.map(p => [PRAYER_LABEL[p], pending.filter((q: any) => q.prayer === PRAYER_LABEL[p]).length]),
+  ) as Record<string, number>;
+  const completedCount = data.length - pending.length;
+
   return (
     <AppShell>
       <PageHeader eyebrow="Qada Salah" title="Make-up prayers" subtitle="Track missed prayers gently. Every one you make up is a return." />
