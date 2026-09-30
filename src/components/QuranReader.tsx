@@ -357,6 +357,12 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
           >
             Read The Clear Quran translation <ExternalLink className="ml-2 size-4" />
           </a>
+          {onSessionComplete && chapter && (
+            <button type="button" onClick={() => { stopAudio(); onSessionComplete({ surahNumber: chapter.id, surahName: chapter.name_simple, fromAyah: 1, toAyah: chapter.verses_count, versesCount: chapter.verses_count, minutes: 0, completedAt: new Date().toISOString(), mode: "read" }); }}
+              className="inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium ring-1 ring-border hover:bg-muted">
+              Mark {chapter.name_simple} as read
+            </button>
+          )}
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
           Arabic text, word timings, and Saheeh International English translation provided by Quran.com. The Clear Quran® opens on its official reader and is credited to Dr. Mustafa Khattab.
