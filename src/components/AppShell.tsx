@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
-  { to: "/worship", label: "Worship" },
+  { to: "/worship", label: "Salah" },
   { to: "/qada", label: "Qada" },
   { to: "/quran", label: "Quran" },
   { to: "/fasting", label: "Fasting" },

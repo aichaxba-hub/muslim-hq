@@ -93,7 +93,7 @@ function Dashboard() {
               <p className="text-lg text-[color:var(--sage)] mt-2 font-medium">in {countdown} · {formatTime(upcoming.at)}</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link to="/worship" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-full text-sm font-medium">Log worship</Link>
+              <Link to="/worship" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-full text-sm font-medium">Log salah</Link>
               <Link to="/duas" className="ring-1 ring-border px-5 py-2.5 rounded-full text-sm font-medium">Read a dua</Link>
             </div>
           </div>
@@ -200,7 +200,7 @@ function Dashboard() {
       {/* Quick links */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { to: "/worship", label: "Worship Log", sub: "Track your day" },
+          { to: "/worship", label: "Salah Log", sub: "Track your prayers" },
           { to: "/quran", label: "Quran", sub: "Read & reflect" },
           { to: "/fasting", label: "Fasting", sub: "Sawm journal" },
           { to: "/dhikr", label: "Dhikr", sub: "Remembrance" },

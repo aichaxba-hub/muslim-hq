@@ -6,3 +6,4 @@
 - [x] AI dua finder in Dua Vault
 - [x] Dua audio player
 - [x] Ramadan plan page + daily checklist
+- [x] Focus Worship tab into a Salah-only daily log

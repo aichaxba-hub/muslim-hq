@@ -7,7 +7,7 @@ export const Route = createFileRoute("/tutorial")({
 
 const sections = [
   { t: "How to log a day", d: "Open the dashboard. Under Today's Salah, use the dropdown next to each prayer: On time, Late, Qada, or Excused. Screenshot/video goes here." },
-  { t: "How to track salah in depth", d: "Visit Worship. Log sunnah, nafl, congregation, and jummah. Add fasting and Quran details for the same day." },
+  { t: "How to track salah in depth", d: "Visit Salah. Log each prayer, sunnah, nafl, congregation, masjid attendance, and Jummah." },
   { t: "How to use the dua vault", d: "The vault comes seeded. Filter by category, tap the heart to favorite, or add your own duas." },
   { t: "How to check progress", d: "The Annual Review shows completion percentages, streaks, and monthly trend charts." },
   { t: "How to reset", d: "When it's been a hard week, open Reset & Realign. Four gentle prompts. Then start fresh." },
