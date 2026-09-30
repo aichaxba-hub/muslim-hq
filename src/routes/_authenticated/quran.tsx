@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createQuranLog, createQuranStudyGoal, deleteQuranStudyGoal, listQuranLogs, listQuranStudyGoals, setQuranStudyGoalComplete, updateQuranStudyProgress } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
-import { QuranReader, type QuranStudySelection } from "@/components/QuranReader";
+import { QuranReader, type QuranSessionMilestone, type QuranStudySelection } from "@/components/QuranReader";
 import { BookOpenCheck, Check, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +41,15 @@ function QuranPage() {
     return ((await response.json()) as { chapters?: Chapter[] }).chapters ?? [];
   }, staleTime: 1000 * 60 * 60 * 24 });
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["quran"] }) });
+  const autoLog = useMutation({
+    mutationFn: (m: QuranSessionMilestone) => createFn({ data: {
+      log_date: todayISO(), surah: m.surahName, minutes: m.minutes, auto_logged: true, completed_at: m.completedAt,
+      verses_completed: m.fromAyah === m.toAyah ? `${m.surahNumber}:${m.fromAyah}` : `${m.surahNumber}:${m.fromAyah}–${m.toAyah}`,
+      reflection: m.mode === "read" ? "Marked as read" : `Listened to ${m.versesCount} ayat`,
+    } }),
+    onSuccess: (_r, m) => { qc.invalidateQueries({ queryKey: ["quran"] }); toast.success(`Logged ${m.surahName} ${m.fromAyah}–${m.toAyah}`); },
+    onError: () => toast.error("Could not save this Quran session"),
+  });
   const refreshGoals = () => qc.invalidateQueries({ queryKey: ["quran-study-goals"] });
   const addGoal = useMutation({ mutationFn: (p: any) => createGoalFn({ data: p }), onSuccess: () => { refreshGoals(); setShowGoalForm(false); toast.success("Study goal added"); }, onError: () => toast.error("Could not add the study goal") });
   const updateProgress = useMutation({ mutationFn: (p: { id: string; ayah: number }) => progressFn({ data: p }), onSuccess: refreshGoals });
@@ -132,7 +141,7 @@ function QuranPage() {
         </div>
       </Card>
 
-      <QuranReader studySelection={readerSelection} resumeRequest={resumeRequest} onVerseCompleted={(id, ayah) => updateProgress.mutate({ id, ayah })} />
+      <QuranReader studySelection={readerSelection} resumeRequest={resumeRequest} onVerseCompleted={(id, ayah) => updateProgress.mutate({ id, ayah })} onSessionComplete={m => autoLog.mutate(m)} />
 
       <div className="grid grid-cols-3 gap-4 mb-8">
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>
@@ -159,7 +168,7 @@ function QuranPage() {
           <div key={r.id} className="p-4 rounded-2xl ring-1 ring-border">
             <div className="flex justify-between items-baseline">
               <p className="font-medium">{r.surah || "Session"} <span className="text-muted-foreground text-sm">· {r.log_date}</span></p>
-              <p className="text-xs text-muted-foreground">{r.pages}pp · {r.minutes}m {r.tafsir && "· tafsir"}</p>
+              <p className="text-xs text-muted-foreground">{r.verses_completed ? `Ayat ${r.verses_completed} · ` : ""}{r.pages}pp · {r.minutes}m {r.tafsir && "· tafsir"}{r.completed_at ? ` · ${new Date(r.completed_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</p>
             </div>
             {r.reflection && <p className="text-sm text-muted-foreground mt-2 italic">"{r.reflection}"</p>}
           </div>
