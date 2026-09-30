@@ -3,7 +3,7 @@ import { AppShell, Card } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listZakat, listZakatPayments, updateProfile, upsertWorshipLog } from "@/lib/data.functions";
+import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
 import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
 import { computeTimes, DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
@@ -30,7 +30,6 @@ function Dashboard() {
   const qc = useQueryClient();
   const seedFn = useServerFn(ensureSeeded);
   const profileFn = useServerFn(getProfile);
-  const updateProfileFn = useServerFn(updateProfile);
   const todayFn = useServerFn(getWorshipLog);
   const upsertFn = useServerFn(upsertWorshipLog);
   const historyFn = useServerFn(listWorshipLogs);
