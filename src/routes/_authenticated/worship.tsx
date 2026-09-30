@@ -28,6 +28,13 @@ const STATUSES = [
   { v: "excused", l: "Excused" },
 ];
 
+const NAFL_PRAYERS = [
+  { v: "duha", l: "Duha" },
+  { v: "tahajjud", l: "Tahajjud" },
+  { v: "witr", l: "Witr" },
+  { v: "istikhara", l: "Istikhara" },
+];
+
 const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel", "Other"];
 
 
