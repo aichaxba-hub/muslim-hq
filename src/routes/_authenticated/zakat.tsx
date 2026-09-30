@@ -29,9 +29,18 @@ function ZakatPage() {
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zListFn({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["sadaqah"], queryFn: () => sListFn({ data: undefined as any }) });
   const zCreate = useMutation({ mutationFn: (p: any) => zCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); toast.success("Zakat entry saved"); }, onError: () => toast.error("Could not save the Zakat entry") });
-  const sCreate = useMutation({ mutationFn: (p: any) => sCreateFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["sadaqah"] }) });
+  const emptySadaqah = { log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false };
+  const sCreate = useMutation({
+    mutationFn: (p: any) => sCreateFn({ data: p }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sadaqah"] });
+      setS({ ...emptySadaqah, log_date: todayISO() });
+      toast.success("Sadaqah logged");
+    },
+    onError: () => toast.error("Could not log sadaqah"),
+  });
 
-  const [s, setS] = useState({ log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false });
+  const [s, setS] = useState(emptySadaqah);
 
   const totalSadaqah = (sadaqah.data ?? []).reduce((a: number, r: any) => a + (+r.amount || 0), 0);
 
