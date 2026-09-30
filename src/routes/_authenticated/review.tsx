@@ -33,17 +33,29 @@ function ReviewPage() {
   const reflections = useQuery({ queryKey: ["review", "r"], queryFn: () => rl({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["review", "s"], queryFn: () => sl({ data: undefined as any }) });
 
-  const [mode, setMode] = useState<"annual" | "monthly">("annual");
+  const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [year, setYear] = useState(() => new Date().getFullYear().toString());
+
+  const years = useMemo(() => {
+    const set = new Set<string>([new Date().getFullYear().toString()]);
+    (worship.data ?? []).forEach((l: any) => l.log_date && set.add(l.log_date.slice(0, 4)));
+    return Array.from(set).sort((a, b) => b.localeCompare(a));
+  }, [worship.data]);
 
   const stats = useMemo(() => {
-    const monthlyMode = mode === "monthly";
-    const w = (worship.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const q = (quran.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const f = (fasting.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const d = (dhikr.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const r = (reflections.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.entry_date, month));
-    const s = (sadaqah.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
+    const inRange = (date: string | null | undefined) => {
+      if (!date) return false;
+      if (mode === "monthly") return inMonth(date, month);
+      if (mode === "annual") return date.slice(0, 4) === year;
+      return true;
+    };
+    const w = (worship.data ?? []).filter((l: any) => inRange(l.log_date));
+    const q = (quran.data ?? []).filter((l: any) => inRange(l.log_date));
+    const f = (fasting.data ?? []).filter((l: any) => inRange(l.log_date));
+    const d = (dhikr.data ?? []).filter((l: any) => inRange(l.log_date));
+    const r = (reflections.data ?? []).filter((l: any) => inRange(l.entry_date));
+    const s = (sadaqah.data ?? []).filter((l: any) => inRange(l.log_date));
 
     const eligible = w.filter((l: any) => !l.excused);
     const totalSlots = eligible.length * 5;
