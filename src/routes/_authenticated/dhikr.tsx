@@ -56,6 +56,14 @@ function DhikrPage() {
             category: category && CATS.includes(category) ? category : current.category,
           }));
         }}
+        onSaveSession={async (count, category) => {
+          await create.mutateAsync({
+            log_date: todayISO(),
+            category,
+            count,
+            notes: "Voice-counted session",
+          });
+        }}
       />
 
       <Card className="mb-6">

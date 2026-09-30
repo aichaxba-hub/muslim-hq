@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mic, MicOff, RotateCcw, WandSparkles } from "lucide-react";
+import { Check, LoaderCircle, Mic, MicOff, RotateCcw, Save, WandSparkles } from "lucide-react";
 import { Button, Card } from "@/components/AppShell";
 
 type SpeechRecognitionResultLike = {
@@ -90,8 +90,10 @@ function findMatches(transcript: string) {
 
 export function VoiceDhikrCounter({
   onUseCount,
+  onSaveSession,
 }: {
   onUseCount: (count: number, category?: string) => void;
+  onSaveSession: (count: number, category: string) => Promise<void>;
 }) {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const keepListeningRef = useRef(false);
@@ -102,6 +104,8 @@ export function VoiceDhikrCounter({
   const [detected, setDetected] = useState<string>();
   const [heard, setHeard] = useState("");
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     setSupported(Boolean(window.SpeechRecognition || window.webkitSpeechRecognition));
@@ -117,7 +121,7 @@ export function VoiceDhikrCounter({
     setListening(false);
   }
 
-  function startListening() {
+  async function startListening() {
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Recognition) {
       setSupported(false);
@@ -125,6 +129,22 @@ export function VoiceDhikrCounter({
     }
 
     setError("");
+    setSaved(false);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("This browser cannot access your microphone. Try Chrome, Edge, or Safari.");
+      return;
+    }
+
+    try {
+      const permissionStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true },
+      });
+      permissionStream.getTracks().forEach(track => track.stop());
+    } catch {
+      setError("Microphone access is blocked. Allow it in your browser settings, then try again.");
+      return;
+    }
+
     keepListeningRef.current = true;
     countedByResultRef.current.clear();
     const recognition = new Recognition();
@@ -142,6 +162,7 @@ export function VoiceDhikrCounter({
           countedByResultRef.current.set(index, alreadyCounted + newMatches);
           setCount(current => current + newMatches);
           setDetected(matches[matches.length - 1]);
+          setSaved(false);
         }
         setHeard(transcript);
       }
@@ -186,6 +207,21 @@ export function VoiceDhikrCounter({
     setDetected(undefined);
     setHeard("");
     setError("");
+    setSaved(false);
+  }
+
+  async function saveSession() {
+    if (count === 0 || !detected) return;
+    setSaving(true);
+    setError("");
+    try {
+      await onSaveSession(count, detected);
+      setSaved(true);
+    } catch {
+      setError("Your session could not be saved. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -207,7 +243,7 @@ export function VoiceDhikrCounter({
         </div>
         <div className="min-w-0">
           <div className="min-h-14 rounded-2xl bg-muted/60 px-4 py-3">
-            <p className="text-xs text-muted-foreground mb-1">{listening ? "Listening now" : "Last heard"}</p>
+            <p className="text-xs text-muted-foreground mb-1">{listening ? "Microphone active · counting live" : "Last heard"}</p>
             <p className="truncate" dir="auto">{heard || "—"}</p>
           </div>
           {detected && <p className="text-sm mt-2">Detected: <span className="font-medium text-[color:var(--sage)]">{detected}</span></p>}
@@ -225,6 +261,10 @@ export function VoiceDhikrCounter({
         </Button>
         <Button type="button" variant="ghost" disabled={count === 0} onClick={() => onUseCount(count, detected)}>
           <WandSparkles className="size-4 inline mr-2" />Use count
+        </Button>
+        <Button type="button" variant="ghost" disabled={count === 0 || !detected || saving || saved} onClick={saveSession}>
+          {saving ? <LoaderCircle className="size-4 inline mr-2 animate-spin" /> : saved ? <Check className="size-4 inline mr-2" /> : <Save className="size-4 inline mr-2" />}
+          {saving ? "Saving" : saved ? "Saved" : "Save session"}
         </Button>
         <Button type="button" variant="ghost" disabled={count === 0 && !heard} onClick={reset} aria-label="Reset voice counter">
           <RotateCcw className="size-4 inline mr-2" />Reset
