@@ -7,6 +7,7 @@ import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, updateProfile
 import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
 import { computeTimes, DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
+import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Muslim HQ" }] }),
