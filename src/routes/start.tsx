@@ -27,7 +27,7 @@ function StartHere() {
         </Section>
 
         <Section title="Where to start">
-          <p>Only the Daily Worship Log. That's it. Add more when it feels natural.</p>
+          <p>Only the Daily Salah Log. That's it. Add more when it feels natural.</p>
         </Section>
 
         <Section title="What NOT to do">
