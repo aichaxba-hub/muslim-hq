@@ -98,8 +98,8 @@ export function PageHeader({ eyebrow, title, subtitle }: { eyebrow?: string; tit
   );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-3xl bg-card ring-1 ring-border p-6 ${className}`}>{children}</div>;
+export function Card({ children, className = "", ...rest }: { children: ReactNode; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={`rounded-3xl bg-card ring-1 ring-border p-6 ${className}`} {...rest}>{children}</div>;
 }
 
 export function Button({ children, variant = "primary", ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "ghost" | "gold" }) {
