@@ -7,7 +7,14 @@ import { todayISO, weekStartISO } from "@/lib/hijri";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/reflections")({
-  head: () => ({ meta: [{ title: "Reflection — Muslim HQ" }] }),
+head: () => ({ meta: [
+    { title: "Reflection & Journaling — Muslim HQ" },
+    { name: "description", content: "A private space to journal, reflect on your day, and grow with intention." },
+    { property: "og:title", content: "Reflection & Journaling — Muslim HQ" },
+    { property: "og:description", content: "A private space to journal, reflect on your day, and grow with intention." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ReflectionsPage,
 });
 const MOODS = ["at peace", "struggling", "grateful", "anxious", "hopeful"];

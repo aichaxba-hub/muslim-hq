@@ -8,7 +8,14 @@ import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/fasting")({
-  head: () => ({ meta: [{ title: "Fasting — Muslim HQ" }] }),
+head: () => ({ meta: [
+    { title: "Fasting Tracker — Muslim HQ" },
+    { name: "description", content: "Log Ramadan, Shawwal, Arafah, Monday and Thursday sunnah fasts, and qada makeups privately." },
+    { property: "og:title", content: "Fasting Tracker — Muslim HQ" },
+    { property: "og:description", content: "Log Ramadan, Shawwal, Arafah, sunnah and makeup fasts privately." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: FastingPage,
 });
 

@@ -3,7 +3,14 @@ import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/reset")({
-  head: () => ({ meta: [{ title: "Reset & Realign — Muslim HQ" }] }),
+head: () => ({ meta: [
+    { title: "Reset & Realign — Muslim HQ" },
+    { name: "description", content: "A gentle guided reset to pause, reflect, and realign your worship rhythms." },
+    { property: "og:title", content: "Reset & Realign — Muslim HQ" },
+    { property: "og:description", content: "A gentle guided reset to pause, reflect, and realign your worship rhythms." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ResetPage,
 });
 

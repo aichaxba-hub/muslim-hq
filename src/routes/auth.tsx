@@ -5,7 +5,14 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Muslim HQ" }] }),
+head: () => ({ meta: [
+    { title: "Sign in — Muslim HQ" },
+    { name: "description", content: "Sign in to Muslim HQ — your calm, private Islamic life dashboard." },
+    { property: "og:title", content: "Sign in — Muslim HQ" },
+    { property: "og:description", content: "Sign in to Muslim HQ — your calm, private Islamic life dashboard." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AuthPage,
 });
 
