@@ -57,7 +57,7 @@ describe("interim hold for long tasbih", () => {
   });
   it("counts once final or when followed by other speech", () => {
     assert.equal(stable("subhan allah", true).length, 1);
-    assert.equal(stable("subhanallah alhamdulillah", false).length, 2);
+    assert.equal(stable("subhan allah alhamdulillah", false).length, 2);
     assert.match(stable("subhanallahi wa bihamdihi subhanallahil azeem", false)[0].category, /bihamdihi/);
   });
 });
