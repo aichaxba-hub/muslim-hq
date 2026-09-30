@@ -33,17 +33,29 @@ function ReviewPage() {
   const reflections = useQuery({ queryKey: ["review", "r"], queryFn: () => rl({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["review", "s"], queryFn: () => sl({ data: undefined as any }) });
 
-  const [mode, setMode] = useState<"annual" | "monthly">("annual");
+  const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [year, setYear] = useState(() => new Date().getFullYear().toString());
+
+  const years = useMemo(() => {
+    const set = new Set<string>([new Date().getFullYear().toString()]);
+    (worship.data ?? []).forEach((l: any) => l.log_date && set.add(l.log_date.slice(0, 4)));
+    return Array.from(set).sort((a, b) => b.localeCompare(a));
+  }, [worship.data]);
 
   const stats = useMemo(() => {
-    const monthlyMode = mode === "monthly";
-    const w = (worship.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const q = (quran.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const f = (fasting.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const d = (dhikr.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
-    const r = (reflections.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.entry_date, month));
-    const s = (sadaqah.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
+    const inRange = (date: string | null | undefined) => {
+      if (!date) return false;
+      if (mode === "monthly") return inMonth(date, month);
+      if (mode === "annual") return date.slice(0, 4) === year;
+      return true;
+    };
+    const w = (worship.data ?? []).filter((l: any) => inRange(l.log_date));
+    const q = (quran.data ?? []).filter((l: any) => inRange(l.log_date));
+    const f = (fasting.data ?? []).filter((l: any) => inRange(l.log_date));
+    const d = (dhikr.data ?? []).filter((l: any) => inRange(l.log_date));
+    const r = (reflections.data ?? []).filter((l: any) => inRange(l.entry_date));
+    const s = (sadaqah.data ?? []).filter((l: any) => inRange(l.log_date));
 
     const eligible = w.filter((l: any) => !l.excused);
     const totalSlots = eligible.length * 5;
@@ -67,12 +79,22 @@ function ReviewPage() {
       sadaqahTotal: s.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
       reflectionsCount: r.length,
     };
-  }, [mode, month, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
+  }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
   const chart = useMemo(() => {
-    if (mode === "annual") {
+    if (mode === "lifetime") {
       const map: Record<string, { label: string; pages: number; salah: number }> = {};
       (worship.data ?? []).forEach((l: any) => {
+        const y = l.log_date.slice(0, 4);
+        map[y] ??= { label: y, pages: 0, salah: 0 };
+        map[y].pages += l.quran_pages ?? 0;
+        map[y].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
+      });
+      return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
+    }
+    if (mode === "annual") {
+      const map: Record<string, { label: string; pages: number; salah: number }> = {};
+      (worship.data ?? []).filter((l: any) => l.log_date.slice(0, 4) === year).forEach((l: any) => {
         const m = l.log_date.slice(0, 7);
         map[m] ??= { label: m, pages: 0, salah: 0 };
         map[m].pages += l.quran_pages ?? 0;
@@ -88,7 +110,7 @@ function ReviewPage() {
       map[day].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
     });
     return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
-  }, [mode, month, worship.data]);
+  }, [mode, month, year, worship.data]);
 
   return (
     <AppShell>
@@ -96,7 +118,7 @@ function ReviewPage() {
 
       <div className="flex flex-wrap items-center gap-3 mb-8">
         <div className="flex rounded-full border border-[color:var(--sand)] overflow-hidden">
-          {(["annual", "monthly"] as const).map(m => (
+          {(["lifetime", "annual", "monthly"] as const).map(m => (
             <button
               key={m}
               onClick={() => setMode(m)}
@@ -106,6 +128,17 @@ function ReviewPage() {
             </button>
           ))}
         </div>
+        {mode === "annual" && (
+          <select
+            value={year}
+            onChange={e => setYear(e.target.value)}
+            className="rounded-full border border-[color:var(--sand)] bg-transparent px-4 py-2 text-sm"
+          >
+            {years.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        )}
         {mode === "monthly" && (
           <input
             type="month"
@@ -116,7 +149,7 @@ function ReviewPage() {
         )}
       </div>
 
-      <h3 className="font-serif text-2xl mb-4">{mode === "annual" ? "This year" : monthLabel(month)}</h3>
+      <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : monthLabel(month)}</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
         <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
@@ -131,7 +164,7 @@ function ReviewPage() {
       </div>
 
       <Card className="mb-8">
-        <h3 className="font-serif text-2xl mb-4">{mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
+        <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "Yearly trends" : mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
         <div className="h-72">
           <ResponsiveContainer>
             <LineChart data={chart}>
