@@ -95,9 +95,9 @@ export function VoiceDhikrCounter({
 }) {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const keepListeningRef = useRef(false);
+  const countedByResultRef = useRef(new Map<number, number>());
   const [supported, setSupported] = useState(true);
   const [listening, setListening] = useState(false);
-  const [language, setLanguage] = useState<"ar-SA" | "en-US">("ar-SA");
   const [count, setCount] = useState(0);
   const [detected, setDetected] = useState<string>();
   const [heard, setHeard] = useState("");
@@ -126,27 +126,25 @@ export function VoiceDhikrCounter({
 
     setError("");
     keepListeningRef.current = true;
+    countedByResultRef.current.clear();
     const recognition = new Recognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = language;
+    recognition.lang = "ar-SA";
     recognition.onresult = event => {
-      let preview = "";
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const result = event.results[index];
         const transcript = result?.[0]?.transcript?.trim() ?? "";
-        if (!result?.isFinal) {
-          preview = transcript;
-          continue;
-        }
         const matches = findMatches(transcript);
-        if (matches.length > 0) {
-          setCount(current => current + matches.length);
+        const alreadyCounted = countedByResultRef.current.get(index) ?? 0;
+        const newMatches = Math.max(0, matches.length - alreadyCounted);
+        if (newMatches > 0) {
+          countedByResultRef.current.set(index, alreadyCounted + newMatches);
+          setCount(current => current + newMatches);
           setDetected(matches[matches.length - 1]);
         }
         setHeard(transcript);
       }
-      if (preview) setHeard(preview);
     };
     recognition.onerror = event => {
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
@@ -182,6 +180,7 @@ export function VoiceDhikrCounter({
   }
 
   function reset() {
+    countedByResultRef.current.clear();
     setCount(0);
     setDetected(undefined);
     setHeard("");
@@ -190,27 +189,13 @@ export function VoiceDhikrCounter({
 
   return (
     <Card className="mb-6">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+      <div>
         <div>
           <p className="text-xs uppercase tracking-widest text-[color:var(--sage)] mb-2">Voice counter</p>
           <h2 className="font-serif text-2xl">Count as you recite</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-xl">
             Your voice stays in your browser. Speak one phrase at a time for the clearest count.
           </p>
-        </div>
-        <div className="flex rounded-full ring-1 ring-border p-1 self-start" aria-label="Recognition language">
-          {([['ar-SA', 'Arabic'], ['en-US', 'English']] as const).map(([value, label]) => (
-            <Button
-              key={value}
-              type="button"
-              variant={language === value ? "primary" : "ghost"}
-              className="py-1.5 px-4 ring-0"
-              disabled={listening}
-              onClick={() => setLanguage(value)}
-            >
-              {label}
-            </Button>
-          ))}
         </div>
       </div>
 
@@ -222,7 +207,7 @@ export function VoiceDhikrCounter({
         <div className="min-w-0">
           <div className="min-h-14 rounded-2xl bg-muted/60 px-4 py-3">
             <p className="text-xs text-muted-foreground mb-1">{listening ? "Listening now" : "Last heard"}</p>
-            <p className="truncate" dir={language === "ar-SA" ? "rtl" : "ltr"}>{heard || "—"}</p>
+            <p className="truncate" dir="auto">{heard || "—"}</p>
           </div>
           {detected && <p className="text-sm mt-2">Detected: <span className="font-medium text-[color:var(--sage)]">{detected}</span></p>}
         </div>
