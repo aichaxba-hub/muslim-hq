@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getWorshipLog, listWorshipLogs, upsertWorshipLog } from "@/lib/data.functions";
 import { FAST_TYPES } from "@/lib/fasting";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
+import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
 
@@ -56,16 +57,26 @@ function WorshipHub() {
           <h3 className="font-serif text-2xl mb-4">The Five</h3>
           <div className="space-y-2">
             {PRAYERS.map(p => (
-              <div key={p} className="flex items-center justify-between p-3 rounded-2xl ring-1 ring-border">
-                <span className="font-medium text-sm">{PRAYER_LABEL[p]}</span>
-                <select
-                  value={(l as any)[`${p}_status`] ?? ""}
-                  onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
-                  className="text-sm bg-transparent focus:outline-none"
-                >
-                  <option value="">— not logged —</option>
-                  {STATUSES.map(s => <option key={s.v} value={s.v}>{s.l}</option>)}
-                </select>
+              <div key={p} className="p-3 rounded-2xl ring-1 ring-border">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-sm">{PRAYER_LABEL[p]}</span>
+                  <select
+                    value={(l as any)[`${p}_status`] ?? ""}
+                    onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
+                    className="text-sm bg-transparent focus:outline-none"
+                  >
+                    <option value="">— not logged —</option>
+                    {STATUSES.map(s => <option key={s.v} value={s.v}>{s.l}</option>)}
+                  </select>
+                </div>
+                <div className="mt-2">
+                  <PrayerPlaceToggles
+                    congregation={!!(l as any)[`${p}_congregation`]}
+                    masjid={!!(l as any)[`${p}_masjid`]}
+                    onToggleCongregation={v => upsert.mutate({ [`${p}_congregation`]: v })}
+                    onToggleMasjid={v => upsert.mutate({ [`${p}_masjid`]: v })}
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -96,7 +107,6 @@ function WorshipHub() {
           <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Optional Prayers</h4>
           <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).sunnah} onChange={e => upsert.mutate({ sunnah: e.target.checked })} /> Sunnah completed</label>
           <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).nafl} onChange={e => upsert.mutate({ nafl: e.target.checked })} /> Nafl completed</label>
-          <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).congregation} onChange={e => upsert.mutate({ congregation: e.target.checked })} /> Prayed in congregation</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={!!(l as any).jummah} onChange={e => upsert.mutate({ jummah: e.target.checked })} /> Jummah attended</label>
         </Card>
         <Card>

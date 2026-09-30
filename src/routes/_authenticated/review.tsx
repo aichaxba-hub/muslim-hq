@@ -3,7 +3,8 @@ import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
-import { PRAYERS } from "@/lib/prayer-times";
+import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
+import { Landmark, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
@@ -67,6 +68,16 @@ function ReviewPage() {
       if (st === "qada") qada++;
     }));
     const jummah = w.filter((l: any) => l.jummah).length;
+
+    // Congregation / masjid tallies — the two are tracked independently.
+    let jamaah = 0, masjid = 0;
+    const perPrayer: Record<string, { jamaah: number; masjid: number }> = {};
+    w.forEach((l: any) => PRAYERS.forEach(p => {
+      perPrayer[p] ??= { jamaah: 0, masjid: 0 };
+      if (l[`${p}_congregation`]) { jamaah++; perPrayer[p].jamaah++; }
+      if (l[`${p}_masjid`]) { masjid++; perPrayer[p].masjid++; }
+    }));
+
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
       onTimePct: totalSlots ? Math.round((onTime / totalSlots) * 100) : 0,
@@ -78,6 +89,11 @@ function ReviewPage() {
       jummahRate: eligible.length ? Math.round((jummah / eligible.length) * 100) : 0,
       sadaqahTotal: s.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
       reflectionsCount: r.length,
+      jamaahCount: jamaah,
+      jamaahPct: done ? Math.round((jamaah / done) * 100) : 0,
+      masjidCount: masjid,
+      masjidPct: done ? Math.round((masjid / done) * 100) : 0,
+      perPrayer,
     };
   }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
@@ -161,7 +177,23 @@ function ReviewPage() {
         <Stat label="Dhikr total" value={stats.dhikrTotal} />
         <Stat label="Sadaqah" value={stats.sadaqahTotal.toLocaleString()} />
         <Stat label="Reflections" value={stats.reflectionsCount} />
+        <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
+        <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
       </div>
+
+      <Card className="mb-8">
+        <h3 className="font-serif text-2xl mb-1">Jama'ah & Masjid by prayer</h3>
+        <p className="text-xs text-muted-foreground mb-4">Counted separately — a prayer can be one, both, or neither.</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {PRAYERS.map(p => (
+            <div key={p} className="rounded-2xl ring-1 ring-border p-3">
+              <p className="text-sm font-medium mb-2">{PRAYER_LABEL[p]}</p>
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users size={12} /> Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Landmark size={12} /> Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <Card className="mb-8">
         <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "Yearly trends" : mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
