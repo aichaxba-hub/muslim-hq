@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Compass } from "lucide-react";
-import { Card, Button } from "@/components/AppShell";
+import { Card } from "@/components/AppShell";
 
 const KAABA = { lat: 21.4225, lng: 39.8262 };
 
