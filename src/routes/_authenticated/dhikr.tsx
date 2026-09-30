@@ -49,6 +49,18 @@ function DhikrPage() {
         </div>
       </Card>
 
+      <Card className="mb-6">
+        <h3 className="font-serif text-2xl mb-4">Log a session</h3>
+        <div className="grid md:grid-cols-4 gap-3">
+          <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+          <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
+            {CATS.map(c => <option key={c}>{c}</option>)}
+          </select>
+          <input type="number" min={1} value={form.count} onChange={e => setForm({ ...form, count: +e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+          <Button onClick={() => create.mutate(form)}>Save</Button>
+        </div>
+      </Card>
+
       <VoiceDhikrCounter
         onUseCount={(count, category) => {
           setForm(current => ({
@@ -66,18 +78,6 @@ function DhikrPage() {
           });
         }}
       />
-
-      <Card className="mb-6">
-        <h3 className="font-serif text-2xl mb-4">Log a session</h3>
-        <div className="grid md:grid-cols-4 gap-3">
-          <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
-            {CATS.map(c => <option key={c}>{c}</option>)}
-          </select>
-          <input type="number" min={1} value={form.count} onChange={e => setForm({ ...form, count: +e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <Button onClick={() => create.mutate(form)}>Save</Button>
-        </div>
-      </Card>
 
       <PageHeader title="Running totals" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
