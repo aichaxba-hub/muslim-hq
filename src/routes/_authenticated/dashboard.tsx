@@ -3,11 +3,13 @@ import { AppShell, Card } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, updateProfile, upsertWorshipLog } from "@/lib/data.functions";
+import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listZakat, listZakatPayments, updateProfile, upsertWorshipLog } from "@/lib/data.functions";
+import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
 import { computeTimes, DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
+import { CalendarDays } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Muslim HQ" }] }),
@@ -31,6 +33,14 @@ function Dashboard() {
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
   const log = useQuery({ queryKey: ["worship", today], queryFn: () => todayFn({ data: { date: today } }) });
   const history = useQuery({ queryKey: ["worship-history"], queryFn: () => historyFn({ data: { limit: 60 } }) });
+  const zakatFn = useServerFn(listZakat);
+  const paymentsFn = useServerFn(listZakatPayments);
+  const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
+  const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
+
+  const anniversary = profile.data?.zakat_anniversary;
+  const hawl = anniversary ? hawlProgress(anniversary) : null;
+  const reminder = anniversary ? hawlReminder(anniversary) : null;
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: today, ...patch } as any }),
@@ -196,6 +206,16 @@ function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Zakat */}
+      <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
+        <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
+          <h2 className="font-serif text-2xl">Zakat</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{reminder ? <strong className="font-medium text-foreground" role="status">{reminder.message}</strong> : hawl ? `${hawl.daysRemaining} days until your next Zakat anniversary` : "Set your Zakat anniversary to see when it is approaching."}</p>
+          {hawl && <p className="mt-1 text-xs text-muted-foreground">Estimated anniversary: {hawl.due.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} · Local moon sighting may differ.</p>}
+          <Link to="/zakat" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4">{hawl ? "Review Zakat" : "Set anniversary"}</Link>
+        </div></div>
+      </section>
 
       {/* Quick links */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
