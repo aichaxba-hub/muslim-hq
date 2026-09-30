@@ -3,7 +3,6 @@ import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getWorshipLog, listWorshipLogs, upsertWorshipLog } from "@/lib/data.functions";
-import { FAST_TYPES } from "@/lib/fasting";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { todayISO } from "@/lib/hijri";
@@ -11,7 +10,14 @@ import { useState } from "react";
 
 
 export const Route = createFileRoute("/_authenticated/worship")({
-  head: () => ({ meta: [{ title: "Worship Log — Muslim HQ" }] }),
+  head: () => ({ meta: [
+    { title: "Salah Log — Muslim HQ" },
+    { name: "description", content: "Privately track each daily salah, prayer status, congregation, and masjid attendance." },
+    { property: "og:title", content: "Salah Log — Muslim HQ" },
+    { property: "og:description", content: "A calm, private daily salah tracker." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: WorshipHub,
 });
 
@@ -44,7 +50,7 @@ function WorshipHub() {
 
   return (
     <AppShell>
-      <PageHeader eyebrow="Worship Hub" title="Daily Worship Log" subtitle="Track what softens the heart. Excused days protect your streak — not break it." />
+      <PageHeader eyebrow="Salah" title="Daily Salah Log" subtitle="One prayer at a time. Excused days protect your streak — not break it." />
 
       <div className="flex items-center gap-3 mb-6">
         <input type="date" value={date} onChange={e => setDate(e.target.value)}
@@ -102,39 +108,14 @@ function WorshipHub() {
         </Card>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-6">
+      <div className="mb-6">
         <Card>
           <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Optional Prayers</h4>
           <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).sunnah} onChange={e => upsert.mutate({ sunnah: e.target.checked })} /> Sunnah completed</label>
           <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).nafl} onChange={e => upsert.mutate({ nafl: e.target.checked })} /> Nafl completed</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={!!(l as any).jummah} onChange={e => upsert.mutate({ jummah: e.target.checked })} /> Jummah attended</label>
         </Card>
-        <Card>
-          <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Fasting</h4>
-          <label className="flex items-center gap-2 mb-3"><input type="checkbox" checked={!!(l as any).fasted} onChange={e => upsert.mutate({ fasted: e.target.checked })} /> Fasted today</label>
-          {(l as any).fasted && (
-            <select value={(l as any).fast_type ?? ""} onChange={e => upsert.mutate({ fast_type: e.target.value || null })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border text-sm">
-              <option value="">Type...</option>
-              {FAST_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          )}
-        </Card>
-        <Card>
-          <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Quran & Dhikr</h4>
-          <div className="space-y-2 text-sm">
-            <label className="flex items-center justify-between gap-2">Pages<input type="number" min={0} defaultValue={(l as any).quran_pages ?? 0} onBlur={e => upsert.mutate({ quran_pages: +e.target.value })} className="w-20 px-2 py-1 rounded-lg bg-background ring-1 ring-border" /></label>
-            <label className="flex items-center justify-between gap-2">Minutes<input type="number" min={0} defaultValue={(l as any).quran_minutes ?? 0} onBlur={e => upsert.mutate({ quran_minutes: +e.target.value })} className="w-20 px-2 py-1 rounded-lg bg-background ring-1 ring-border" /></label>
-            <label className="flex items-center gap-2"><input type="checkbox" checked={!!(l as any).tafsir} onChange={e => upsert.mutate({ tafsir: e.target.checked })} /> Tafsir studied</label>
-            <label className="flex items-center justify-between gap-2">Dhikr count<input type="number" min={0} defaultValue={(l as any).dhikr_count ?? 0} onBlur={e => upsert.mutate({ dhikr_count: +e.target.value })} className="w-20 px-2 py-1 rounded-lg bg-background ring-1 ring-border" /></label>
-          </div>
-        </Card>
       </div>
-
-      <Card className="mb-6">
-        <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Intention & Notes</h4>
-        <input defaultValue={(l as any).intention ?? ""} onBlur={e => upsert.mutate({ intention: e.target.value })} placeholder="Today's intention..." className="w-full mb-3 px-4 py-2.5 rounded-xl bg-background ring-1 ring-border" />
-        <textarea defaultValue={(l as any).notes ?? ""} onBlur={e => upsert.mutate({ notes: e.target.value })} placeholder="Notes..." rows={3} className="w-full px-4 py-2.5 rounded-xl bg-background ring-1 ring-border" />
-      </Card>
 
       <PageHeader eyebrow="History" title="Recent days" />
       <div className="grid gap-2">
