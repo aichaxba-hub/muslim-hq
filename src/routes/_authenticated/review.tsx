@@ -179,12 +179,12 @@ function ReviewPage() {
             <h3 className="font-serif text-xl mb-3">Prayer completion (%)</h3>
             <div className="h-56">
               <ResponsiveContainer>
-                <LineChart data={monthlyData} connectNulls>
+                <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                   <XAxis dataKey="label" fontSize={11} />
                   <YAxis domain={[0, 100]} fontSize={11} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="salahPct" stroke="var(--sage-deep)" name="Completion %" dot={false} />
+                  <Line type="monotone" dataKey="salahPct" stroke="var(--sage-deep)" name="Completion %" dot={false} connectNulls />
                 </LineChart>
               </ResponsiveContainer>
             </div>
