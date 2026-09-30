@@ -4,13 +4,20 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
 import { PRAYERS } from "@/lib/prayer-times";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/review")({
-  head: () => ({ meta: [{ title: "Annual Review — Muslim HQ" }] }),
+  head: () => ({ meta: [{ title: "Review — Muslim HQ" }] }),
   component: ReviewPage,
 });
+
+const inMonth = (date: string | null | undefined, month: string) => !!date && date.slice(0, 7) === month;
+
+function monthLabel(ym: string) {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+}
 
 function ReviewPage() {
   const wl = useServerFn(listWorshipLogs);
@@ -26,47 +33,90 @@ function ReviewPage() {
   const reflections = useQuery({ queryKey: ["review", "r"], queryFn: () => rl({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["review", "s"], queryFn: () => sl({ data: undefined as any }) });
 
+  const [mode, setMode] = useState<"annual" | "monthly">("annual");
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+
   const stats = useMemo(() => {
-    const w = worship.data ?? [];
+    const monthlyMode = mode === "monthly";
+    const w = (worship.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
+    const q = (quran.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
+    const f = (fasting.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
+    const d = (dhikr.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
+    const r = (reflections.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.entry_date, month));
+    const s = (sadaqah.data ?? []).filter((l: any) => !monthlyMode || inMonth(l.log_date, month));
+
     const eligible = w.filter((l: any) => !l.excused);
     const totalSlots = eligible.length * 5;
     let done = 0, onTime = 0, qada = 0;
     eligible.forEach((l: any) => PRAYERS.forEach(p => {
-      const s = l[`${p}_status`];
-      if (s && s !== "qada") done++;
-      if (s === "on_time") onTime++;
-      if (s === "qada") qada++;
+      const st = l[`${p}_status`];
+      if (st && st !== "qada") done++;
+      if (st === "on_time") onTime++;
+      if (st === "qada") qada++;
     }));
     const jummah = w.filter((l: any) => l.jummah).length;
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
       onTimePct: totalSlots ? Math.round((onTime / totalSlots) * 100) : 0,
       qada,
-      quranPages: (quran.data ?? []).reduce((a: number, r: any) => a + (r.pages ?? 0), 0) + w.reduce((a: number, r: any) => a + (r.quran_pages ?? 0), 0),
-      quranJuz: (quran.data ?? []).reduce((a: number, r: any) => a + (Number(r.juz) || 0), 0),
-      dhikrTotal: (dhikr.data ?? []).reduce((a: number, r: any) => a + (r.count ?? 0), 0) + w.reduce((a: number, r: any) => a + (r.dhikr_count ?? 0), 0),
-      fastsCompleted: (fasting.data ?? []).filter((f: any) => f.completed).length,
+      quranPages: q.reduce((a: number, x: any) => a + (x.pages ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_pages ?? 0), 0),
+      quranJuz: q.reduce((a: number, x: any) => a + (Number(x.juz) || 0), 0),
+      dhikrTotal: d.reduce((a: number, x: any) => a + (x.count ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.dhikr_count ?? 0), 0),
+      fastsCompleted: f.filter((x: any) => x.completed).length,
       jummahRate: eligible.length ? Math.round((jummah / eligible.length) * 100) : 0,
-      sadaqahTotal: (sadaqah.data ?? []).reduce((a: number, r: any) => a + (+r.amount || 0), 0),
-      reflectionsCount: (reflections.data ?? []).length,
+      sadaqahTotal: s.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
+      reflectionsCount: r.length,
     };
-  }, [worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
+  }, [mode, month, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
-  const monthly = useMemo(() => {
-    const map: Record<string, { month: string; pages: number; salah: number }> = {};
-    (worship.data ?? []).forEach((l: any) => {
-      const m = l.log_date.slice(0, 7);
-      map[m] ??= { month: m, pages: 0, salah: 0 };
-      map[m].pages += l.quran_pages ?? 0;
-      map[m].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
+  const chart = useMemo(() => {
+    if (mode === "annual") {
+      const map: Record<string, { label: string; pages: number; salah: number }> = {};
+      (worship.data ?? []).forEach((l: any) => {
+        const m = l.log_date.slice(0, 7);
+        map[m] ??= { label: m, pages: 0, salah: 0 };
+        map[m].pages += l.quran_pages ?? 0;
+        map[m].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
+      });
+      return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
+    }
+    const map: Record<string, { label: string; pages: number; salah: number }> = {};
+    (worship.data ?? []).filter((l: any) => inMonth(l.log_date, month)).forEach((l: any) => {
+      const day = l.log_date.slice(8, 10);
+      map[day] ??= { label: day, pages: 0, salah: 0 };
+      map[day].pages += l.quran_pages ?? 0;
+      map[day].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
     });
-    return Object.values(map).sort((a, b) => a.month.localeCompare(b.month));
-  }, [worship.data]);
+    return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
+  }, [mode, month, worship.data]);
 
   return (
     <AppShell>
-      <PageHeader eyebrow="Annual Review" title="A quiet audit of the year" subtitle="Numbers do not measure sincerity — but they show up." />
+      <PageHeader eyebrow="Review" title="A quiet audit" subtitle="Numbers do not measure sincerity — but they show up." />
 
+      <div className="flex flex-wrap items-center gap-3 mb-8">
+        <div className="flex rounded-full border border-[color:var(--sand)] overflow-hidden">
+          {(["annual", "monthly"] as const).map(m => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`px-5 py-2 text-sm capitalize transition-colors ${mode === m ? "bg-[color:var(--sage-deep)] text-[color:var(--sand-soft)]" : "hover:bg-[color:var(--sand-soft)]"}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+        {mode === "monthly" && (
+          <input
+            type="month"
+            value={month}
+            onChange={e => e.target.value && setMonth(e.target.value)}
+            className="rounded-full border border-[color:var(--sand)] bg-transparent px-4 py-2 text-sm"
+          />
+        )}
+      </div>
+
+      <h3 className="font-serif text-2xl mb-4">{mode === "annual" ? "This year" : monthLabel(month)}</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
         <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
@@ -81,12 +131,12 @@ function ReviewPage() {
       </div>
 
       <Card className="mb-8">
-        <h3 className="font-serif text-2xl mb-4">Monthly trends</h3>
+        <h3 className="font-serif text-2xl mb-4">{mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
         <div className="h-72">
           <ResponsiveContainer>
-            <LineChart data={monthly}>
+            <LineChart data={chart}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis dataKey="month" />
+              <XAxis dataKey="label" />
               <YAxis />
               <Tooltip />
               <Line type="monotone" dataKey="salah" stroke="var(--sage-deep)" name="Salah" />
