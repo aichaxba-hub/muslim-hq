@@ -13,4 +13,5 @@
 - [x] Restrict live voice counting to tested common dhikr phrases and pronunciation variants
 - [x] Add an in-app Arabic Quran reader with official access to The Clear Quran translation
 - [x] Add verse-by-verse and continuous surah audio playback to the Quran reader
+- [x] Add an English Quran translation and live word-by-word recitation highlighting
 - [x] Add an Answered Duas section with manual entry

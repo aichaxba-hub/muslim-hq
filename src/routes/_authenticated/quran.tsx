@@ -10,9 +10,9 @@ import { QuranReader } from "@/components/QuranReader";
 export const Route = createFileRoute("/_authenticated/quran")({
   head: () => ({ meta: [
     { title: "Read & Track the Quran — Muslim HQ" },
-    { name: "description", content: "Read the Quran in Arabic, access The Clear Quran translation, and privately track your reading and reflections." },
+    { name: "description", content: "Read the Quran in Arabic with an English translation, synchronized recitation, and private reading reflections." },
     { property: "og:title", content: "Read & Track the Quran — Muslim HQ" },
-    { property: "og:description", content: "Read the Quran in Arabic, access The Clear Quran translation, and privately track your reading and reflections." },
+    { property: "og:description", content: "Read the Quran in Arabic with an English translation, synchronized recitation, and private reading reflections." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
