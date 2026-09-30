@@ -8,7 +8,14 @@ import { PRAYER_LABEL, PRAYERS } from "@/lib/prayer-times";
 import { todayISO } from "@/lib/hijri";
 
 export const Route = createFileRoute("/_authenticated/qada")({
-  head: () => ({ meta: [{ title: "Qada — Muslim HQ" }] }),
+head: () => ({ meta: [
+    { title: "Qada Salah Tracker — Muslim HQ" },
+    { name: "description", content: "Gently track and complete missed prayers, one makeup at a time." },
+    { property: "og:title", content: "Qada Salah Tracker — Muslim HQ" },
+    { property: "og:description", content: "Gently track and complete missed prayers, one makeup at a time." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: QadaPage,
 });
 

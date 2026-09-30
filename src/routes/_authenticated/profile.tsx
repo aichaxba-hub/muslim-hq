@@ -10,7 +10,14 @@ import { LocateFixed } from "lucide-react";
 import { ReminderSettingsCard } from "@/components/ReminderSettingsCard";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — Muslim HQ" }] }),
+head: () => ({ meta: [
+    { title: "Profile & Prayer Settings — Muslim HQ" },
+    { name: "description", content: "Set your location, prayer calculation method and madhab for accurate prayer times." },
+    { property: "og:title", content: "Profile & Prayer Settings — Muslim HQ" },
+    { property: "og:description", content: "Set your location, prayer calculation method and madhab for accurate prayer times." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ProfilePage,
 });
 

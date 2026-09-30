@@ -6,7 +6,14 @@ import { listGoals, upsertGoal } from "@/lib/data.functions";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/goals")({
-  head: () => ({ meta: [{ title: "Goals — Muslim HQ" }] }),
+head: () => ({ meta: [
+    { title: "Goals — Muslim HQ" },
+    { name: "description", content: "Set gentle spiritual goals and track your progress at your own pace." },
+    { property: "og:title", content: "Goals — Muslim HQ" },
+    { property: "og:description", content: "Set gentle spiritual goals and track your progress at your own pace." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: GoalsPage,
 });
 const CATS = ["Deen", "Dunya", "Habit", "Memorization", "Learning", "Character/Tazkiyah", "Jannah/Akhirah"];
