@@ -7,6 +7,7 @@ import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
+import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/_authenticated/worship")({
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/worship")({
 const STATUSES = [
   { v: "on_time", l: "On time" },
   { v: "late", l: "Late" },
+  { v: "missed", l: "Missed" },
   { v: "qada", l: "Qada" },
   { v: "excused", l: "Excused" },
 ];
@@ -50,7 +52,11 @@ function WorshipHub() {
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: date, ...patch } as any }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["worship", date] }),
+    onSuccess: (row: any) => {
+      qc.invalidateQueries({ queryKey: ["worship", date] });
+      qc.invalidateQueries({ queryKey: ["qada"] });
+      if (row?.qadaAdded) toast(`${row.qadaAdded} added to your Qada list`, { description: "Make it up when you can. Allah is Most Merciful." });
+    },
   });
 
   const l = log.data ?? {};
