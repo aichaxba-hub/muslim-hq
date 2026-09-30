@@ -16,6 +16,8 @@ const STEPS = [
 
 const CURRENCIES = [
   ["USD", "$", "US Dollar"], ["EUR", "€", "Euro"], ["GBP", "£", "British Pound"],
+  ["CHF", "CHF", "Swiss Franc"], ["JPY", "¥", "Japanese Yen"], ["CNY", "¥", "Chinese Yuan"],
+  ["SGD", "S$", "Singapore Dollar"],
   ["CAD", "C$", "Canadian Dollar"], ["AUD", "A$", "Australian Dollar"], ["AED", "د.إ", "UAE Dirham"],
   ["SAR", "﷼", "Saudi Riyal"], ["MYR", "RM", "Malaysian Ringgit"], ["IDR", "Rp", "Indonesian Rupiah"],
   ["PKR", "₨", "Pakistani Rupee"], ["TRY", "₺", "Turkish Lira"], ["BDT", "৳", "Bangladeshi Taka"],
@@ -54,6 +56,10 @@ type CalculatorState = {
   crypto: number;
   collectibles: number;
   businessAssets: number;
+  businessCash: number;
+  businessInventory: number;
+  businessReceivables: number;
+  businessLiabilities: number;
   goodDebt: number;
   otherAssets: number;
   dueDebts: number;
@@ -82,6 +88,10 @@ const initialState: CalculatorState = {
   crypto: 0,
   collectibles: 0,
   businessAssets: 0,
+  businessCash: 0,
+  businessInventory: 0,
+  businessReceivables: 0,
+  businessLiabilities: 0,
   goodDebt: 0,
   otherAssets: 0,
   dueDebts: 0,
@@ -147,6 +157,7 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
   const [step, setStep] = useState(0);
   const [calc, setCalc] = useState<CalculatorState>(initialState);
   const [restored, setRestored] = useState(false);
+  const [showBusiness, setShowBusiness] = useState(false);
 
   useEffect(() => {
     try {
@@ -198,6 +209,13 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
     setCalc({ ...initialState, hawlDate: new Date().toISOString().slice(0, 10) });
     setStep(0);
     window.localStorage.removeItem(STORAGE_KEY);
+    setShowBusiness(false);
+  }
+
+  function importBusinessAssets() {
+    const total = Math.max(0, calc.businessCash + calc.businessInventory + calc.businessReceivables - calc.businessLiabilities);
+    setCalc(current => ({ ...current, businessAssets: total }));
+    setShowBusiness(false);
   }
 
   function money(value: number) {
@@ -258,7 +276,28 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
           )}
 
           {step === 5 && (
-            <section className="space-y-5" aria-labelledby="zakat-step-title"><div><h3 id="zakat-step-title" className="font-serif text-2xl">Other assets</h3><p className="mt-1 text-sm text-muted-foreground">Include assets held for investment and money owed to you that you reasonably expect to collect.</p></div><div className="grid gap-4 sm:grid-cols-2"><AmountInput label="Cryptocurrency" value={calc.crypto} symbol={symbol} onChange={value => setAmount("crypto", value)} /><AmountInput label="Investment art & collectibles" value={calc.collectibles} symbol={symbol} onChange={value => setAmount("collectibles", value)} /><AmountInput label="Business assets" value={calc.businessAssets} symbol={symbol} onChange={value => setAmount("businessAssets", value)} /><AmountInput label="Money owed to you" hint="Collectible debt" value={calc.goodDebt} symbol={symbol} onChange={value => setAmount("goodDebt", value)} /><AmountInput label="Other zakatable assets" value={calc.otherAssets} symbol={symbol} onChange={value => setAmount("otherAssets", value)} /></div></section>
+            <section className="space-y-5" aria-labelledby="zakat-step-title">
+              <div><h3 id="zakat-step-title" className="font-serif text-2xl">Other assets</h3><p className="mt-1 text-sm text-muted-foreground">Include assets held for investment and money owed to you that you reasonably expect to collect.</p></div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <AmountInput label="Cryptocurrency" value={calc.crypto} symbol={symbol} onChange={value => setAmount("crypto", value)} />
+                <AmountInput label="Investment art & collectibles" value={calc.collectibles} symbol={symbol} onChange={value => setAmount("collectibles", value)} />
+                <div className="rounded-xl border border-border p-4 sm:col-span-2">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div><p className="text-sm font-medium">Business assets</p><p className="text-xs text-muted-foreground">Imported zakatable business value: {money(calc.businessAssets)}</p></div>
+                    <Button type="button" variant="ghost" onClick={() => setShowBusiness(value => !value)}>{showBusiness ? "Close business calculator" : "Calculate business Zakat"}</Button>
+                  </div>
+                  {showBusiness && <div className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-2">
+                    <AmountInput label="Business cash" value={calc.businessCash} symbol={symbol} onChange={value => setAmount("businessCash", value)} />
+                    <AmountInput label="Zakatable inventory" value={calc.businessInventory} symbol={symbol} onChange={value => setAmount("businessInventory", value)} />
+                    <AmountInput label="Collectible receivables" value={calc.businessReceivables} symbol={symbol} onChange={value => setAmount("businessReceivables", value)} />
+                    <AmountInput label="Current business liabilities" value={calc.businessLiabilities} symbol={symbol} onChange={value => setAmount("businessLiabilities", value)} />
+                    <div className="flex flex-col gap-3 rounded-lg bg-muted p-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between"><p className="text-sm">Net business assets <strong className="ml-2">{money(Math.max(0, calc.businessCash + calc.businessInventory + calc.businessReceivables - calc.businessLiabilities))}</strong></p><Button type="button" onClick={importBusinessAssets}>Import result</Button></div>
+                  </div>}
+                </div>
+                <AmountInput label="Money owed to you" hint="Collectible debt" value={calc.goodDebt} symbol={symbol} onChange={value => setAmount("goodDebt", value)} />
+                <AmountInput label="Other zakatable assets" value={calc.otherAssets} symbol={symbol} onChange={value => setAmount("otherAssets", value)} />
+              </div>
+            </section>
           )}
 
           {step === 6 && (
