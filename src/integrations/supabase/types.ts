@@ -320,6 +320,51 @@ export type Database = {
         }
         Relationships: []
       }
+      quran_study_goals: {
+        Row: {
+          completed: boolean
+          created_at: string
+          end_ayah: number
+          goal_date: string
+          id: string
+          last_completed_ayah: number
+          note: string | null
+          start_ayah: number
+          surah_name: string
+          surah_number: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          end_ayah: number
+          goal_date?: string
+          id?: string
+          last_completed_ayah?: number
+          note?: string | null
+          start_ayah?: number
+          surah_name: string
+          surah_number: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          end_ayah?: number
+          goal_date?: string
+          id?: string
+          last_completed_ayah?: number
+          note?: string | null
+          start_ayah?: number
+          surah_name?: string
+          surah_number?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ramadan_checklist: {
         Row: {
           created_at: string | null

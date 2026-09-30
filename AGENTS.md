@@ -13,4 +13,5 @@
 - Dhikr phrase recognition lives in a pure client-safe matcher module so phrase variants can be tested without microphone or UI dependencies.
 - Quran Arabic text, Saheeh International English translation, and word timing data are read client-side from Quran.com's public API; The Clear Quran links to its official protected reader to respect licensing.
 - Quran recitation audio streams client-side from Quran.com's verse audio API using Mishary Rashid Alafasy, with no audio stored by the app.
+- Quran study goals are private user-owned records; progress advances only when a planned ayah's audio finishes or the user marks the goal complete.
 - Answered duas are stored separately from the Dua Vault as private, user-owned gratitude journal entries.

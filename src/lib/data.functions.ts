@@ -161,6 +161,73 @@ export const createQuranLog = createServerFn({ method: "POST" })
     return row;
   });
 
+export const listQuranStudyGoals = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("quran_study_goals")
+      .select("*").eq("user_id", context.userId)
+      .order("completed", { ascending: true }).order("goal_date", { ascending: true }).order("created_at", { ascending: true });
+    if (error) throw error;
+    return data ?? [];
+  });
+
+export const createQuranStudyGoal = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { goal_date: string; surah_number: number; surah_name: string; start_ayah: number; end_ayah: number; note?: string }) =>
+    z.object({
+      goal_date: z.string().date(),
+      surah_number: z.number().int().min(1).max(114),
+      surah_name: z.string().trim().min(1).max(100),
+      start_ayah: z.number().int().positive(),
+      end_ayah: z.number().int().positive(),
+      note: z.string().trim().max(500).optional(),
+    }).refine(value => value.end_ayah >= value.start_ayah, { message: "The ending ayah must come after the starting ayah." }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase.from("quran_study_goals")
+      .insert({ ...data, last_completed_ayah: 0, completed: false, user_id: context.userId }).select().single();
+    if (error) throw error;
+    return row;
+  });
+
+export const updateQuranStudyProgress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; ayah: number }) => z.object({ id: z.string().uuid(), ayah: z.number().int().positive() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: goal, error: readError } = await context.supabase.from("quran_study_goals")
+      .select("start_ayah,end_ayah,last_completed_ayah").eq("id", data.id).eq("user_id", context.userId).single();
+    if (readError) throw readError;
+    if (data.ayah < goal.start_ayah || data.ayah > goal.end_ayah) return goal;
+    const progress = Math.max(goal.last_completed_ayah, data.ayah);
+    const { data: row, error } = await context.supabase.from("quran_study_goals")
+      .update({ last_completed_ayah: progress, completed: progress >= goal.end_ayah })
+      .eq("id", data.id).eq("user_id", context.userId).select().single();
+    if (error) throw error;
+    return row;
+  });
+
+export const setQuranStudyGoalComplete = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; completed: boolean }) => z.object({ id: z.string().uuid(), completed: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: goal, error: readError } = await context.supabase.from("quran_study_goals")
+      .select("start_ayah,end_ayah").eq("id", data.id).eq("user_id", context.userId).single();
+    if (readError) throw readError;
+    const { data: row, error } = await context.supabase.from("quran_study_goals")
+      .update({ completed: data.completed, last_completed_ayah: data.completed ? goal.end_ayah : 0 })
+      .eq("id", data.id).eq("user_id", context.userId).select().single();
+    if (error) throw error;
+    return row;
+  });
+
+export const deleteQuranStudyGoal = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("quran_study_goals").delete().eq("id", data.id).eq("user_id", context.userId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
 // ---------- Fasting ----------
 export const listFasting = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
