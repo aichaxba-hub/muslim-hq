@@ -53,7 +53,7 @@ export function QiblaFinder({ latitude, longitude, hasLocation }: { latitude: nu
   const aligned = heading != null && Math.abs(((rotation % 360) + 540) % 360 - 180) < 5;
 
   return (
-    <Card className="mb-8">
+    <Card className="mb-8" onClick={state === "idle" ? start : undefined} role={state === "idle" ? "button" : undefined}>
       <div className="flex flex-col sm:flex-row items-center gap-6">
         <div className="relative size-40 shrink-0 rounded-full ring-1 ring-border bg-muted" aria-label={`Qibla is ${Math.round(bearing)} degrees from north`} role="img">
           {["N", "E", "S", "W"].map((d, i) => (
