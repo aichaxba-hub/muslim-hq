@@ -7,6 +7,7 @@ import { getProfile, updateProfile } from "@/lib/data.functions";
 import { CALC_METHODS, MADHABS, computeTimes, formatTime, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { toast } from "sonner";
 import { LocateFixed } from "lucide-react";
+import { ReminderSettingsCard } from "@/components/ReminderSettingsCard";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Muslim HQ" }] }),
@@ -117,6 +118,7 @@ function ProfilePage() {
         title="Your details"
         subtitle="Your name personalizes the app, and your location makes prayer times accurate for where you are."
       />
+      <ReminderSettingsCard />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card>

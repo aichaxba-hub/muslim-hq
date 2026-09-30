@@ -35,6 +35,8 @@ type Verse = {
   };
 };
 
+export type QuranSessionMilestone = { surahNumber: number; surahName: string; fromAyah: number; toAyah: number; versesCount: number; minutes: number; completedAt: string; mode: "listened" | "read" };
+
 export type QuranStudySelection = {
   id: string;
   surahNumber: number;
@@ -83,11 +85,20 @@ function cleanTranslation(text: string) {
     .replace(/&gt;/g, ">");
 }
 
-export function QuranReader({ studySelection, resumeRequest = 0, onVerseCompleted }: {
+export function QuranReader({ studySelection, resumeRequest = 0, onVerseCompleted, onSessionComplete }: {
   studySelection?: QuranStudySelection | null;
   resumeRequest?: number;
   onVerseCompleted?: (goalId: string, ayah: number) => void;
+  onSessionComplete?: (session: QuranSessionMilestone) => void;
 }) {
+  const sessionRef = useRef<{ chapterId: number; surahName: string; verses: number[]; startedAt: number } | null>(null);
+  function flushSession() {
+    const session = sessionRef.current;
+    sessionRef.current = null;
+    if (!session || session.verses.length === 0) return;
+    const sorted = [...new Set(session.verses)].sort((a, b) => a - b);
+    onSessionComplete?.({ surahNumber: session.chapterId, surahName: session.surahName, fromAyah: sorted[0], toAyah: sorted[sorted.length - 1], versesCount: sorted.length, minutes: Math.max(1, Math.round((Date.now() - session.startedAt) / 60000)), completedAt: new Date().toISOString(), mode: "listened" });
+  }
   const [chapterId, setChapterId] = useState(studySelection?.surahNumber ?? 1);
   const chapters = useQuery({ queryKey: ["quran-reader", "chapters"], queryFn: fetchChapters, staleTime: 1000 * 60 * 60 * 24 });
   const verses = useQuery({ queryKey: ["quran-reader", "verses", chapterId], queryFn: () => fetchVerses(chapterId), staleTime: 1000 * 60 * 60 * 24 });
@@ -138,6 +149,7 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
   }
 
   function stopAudio() {
+    flushSession();
     audioRef.current?.pause();
     if (audioRef.current) audioRef.current.currentTime = 0;
     stopProgressLoop();
@@ -174,6 +186,8 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
     player.onpause = () => { setIsPlaying(false); stopProgressLoop(); };
     player.onerror = () => stopAudio();
     player.onended = () => {
+      if (!sessionRef.current || sessionRef.current.chapterId !== chapterId) sessionRef.current = { chapterId, surahName: chapter?.name_simple ?? `Surah ${chapterId}`, verses: [], startedAt: Date.now() - player.duration * 1000 };
+      sessionRef.current.verses.push(verse.verse_number);
       if (studySelection?.surahNumber === chapterId && verse.verse_number >= studySelection.startAyah && verse.verse_number <= studySelection.endAyah) {
         onVerseCompleted?.(studySelection.id, verse.verse_number);
       }
@@ -343,6 +357,12 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
           >
             Read The Clear Quran translation <ExternalLink className="ml-2 size-4" />
           </a>
+          {onSessionComplete && chapter && (
+            <button type="button" onClick={() => { stopAudio(); onSessionComplete({ surahNumber: chapter.id, surahName: chapter.name_simple, fromAyah: 1, toAyah: chapter.verses_count, versesCount: chapter.verses_count, minutes: 0, completedAt: new Date().toISOString(), mode: "read" }); }}
+              className="inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium ring-1 ring-border hover:bg-muted">
+              Mark {chapter.name_simple} as read
+            </button>
+          )}
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
           Arabic text, word timings, and Saheeh International English translation provided by Quran.com. The Clear Quran® opens on its official reader and is credited to Dr. Mustafa Khattab.

@@ -9,6 +9,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "sonner";
+import { registerAppServiceWorker } from "@/lib/pwa";
 
 function NotFoundComponent() {
   return (
@@ -47,6 +48,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#5f7a61" },
       { title: "Muslim HQ — The Ultimate Islamic System" },
       { name: "description", content: "A calm, all-in-one Islamic life dashboard. Track prayers, Quran, fasting, dhikr, duas, goals and reflection. Your deen, your pace." },
       { property: "og:title", content: "Muslim HQ — The Ultimate Islamic System" },
@@ -59,7 +61,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Noto+Naskh+Arabic:wght@400;500&display=swap" },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -84,6 +88,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   useEffect(() => {
+    void registerAppServiceWorker();
     // Apply saved theme
     if (typeof window !== "undefined") {
       const t = localStorage.getItem("mhq-theme");

@@ -48,20 +48,26 @@ function ZakatPage() {
   const anniversarySave = useMutation({ mutationFn: (value: string) => profileUpdateFn({ data: { zakat_anniversary: value } }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Zakat anniversary saved"); }, onError: () => toast.error("Could not save anniversary") });
   const paymentCreate = useMutation({ mutationFn: (p: { zakat_entry_id: string; amount: number; paid_on: string; note?: string }) => paymentCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); qc.invalidateQueries({ queryKey: ["zakat-payments"] }); setPaymentEntry(null); setPaymentAmount(""); setPaymentNote(""); toast.success("Payment recorded"); }, onError: (error) => toast.error(error instanceof Error ? error.message : "Could not record payment") });
   const zCreate = useMutation({ mutationFn: (p: any) => zCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); toast.success("Zakat entry saved"); }, onError: () => toast.error("Could not save the Zakat entry") });
-  const emptySadaqah = { log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false };
+  const emptySadaqah = { log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false, kind: "sadaqah" as "sadaqah" | "zakat", zakat_entry_id: "" };
   const sCreate = useMutation({
-    mutationFn: (p: any) => sCreateFn({ data: p }),
-    onSuccess: () => {
+    mutationFn: (p: typeof emptySadaqah) => sCreateFn({ data: { ...p, zakat_entry_id: p.kind === "zakat" ? p.zakat_entry_id : undefined } }),
+    onSuccess: (_row, p) => {
       qc.invalidateQueries({ queryKey: ["sadaqah"] });
+      if (p.kind === "zakat") { qc.invalidateQueries({ queryKey: ["zakat"] }); qc.invalidateQueries({ queryKey: ["zakat-payments"] }); }
       setS({ ...emptySadaqah, log_date: todayISO() });
-      toast.success("Sadaqah logged");
+      toast.success(p.kind === "zakat" ? "Zakat payment logged" : "Sadaqah logged");
     },
-    onError: () => toast.error("Could not log sadaqah"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not log this gift"),
   });
 
   const [s, setS] = useState(emptySadaqah);
 
-  const totalSadaqah = (sadaqah.data ?? []).reduce((a: number, r: any) => a + (+r.amount || 0), 0);
+  const givingTotals = (sadaqah.data ?? []).reduce((a, r: any) => {
+    const amt = +r.amount || 0;
+    if (r.kind === "zakat") a.zakat += amt; else a.sadaqah += amt;
+    if (String(r.log_date).startsWith(String(new Date().getFullYear()))) a.year += amt;
+    return a;
+  }, { sadaqah: 0, zakat: 0, year: 0 });
 
   return (
     <AppShell>
@@ -89,20 +95,35 @@ function ZakatPage() {
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <Card>
-          <h3 className="font-serif text-2xl mb-4">Sadaqah log</h3>
-          <p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Total given</p>
-           <p className="text-4xl font-serif mb-4">${totalSadaqah.toLocaleString()}</p>
+          <h3 className="font-serif text-2xl mb-4">Giving log</h3>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Sadaqah</p><p className="text-2xl font-serif">${givingTotals.sadaqah.toLocaleString()}</p></div>
+            <div><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Zakat</p><p className="text-2xl font-serif">${givingTotals.zakat.toLocaleString()}</p></div>
+            <div><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">{new Date().getFullYear()} total</p><p className="text-2xl font-serif">${givingTotals.year.toLocaleString()}</p></div>
+          </div>
           <div className="space-y-2">
+            <div role="radiogroup" aria-label="Type of giving" className="grid grid-cols-2 gap-1 rounded-full p-1 ring-1 ring-border">
+              {(["sadaqah", "zakat"] as const).map(k => (
+                <button key={k} type="button" role="radio" aria-checked={s.kind === k} onClick={() => setS({ ...s, kind: k })}
+                  className={`rounded-full py-1.5 text-sm ${s.kind === k ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{k === "zakat" ? "Zakat payment" : "Sadaqah"}</button>
+              ))}
+            </div>
+            {s.kind === "zakat" && (
+              <select aria-label="Zakat entry" value={s.zakat_entry_id} onChange={e => setS({ ...s, zakat_entry_id: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border">
+                <option value="">Choose a Zakat entry…</option>
+                {(zakat.data ?? []).filter((z: any) => !z.paid).map((z: any) => <option key={z.id} value={z.id}>{z.year} · {z.asset_type} · {Number(z.zakat_due ?? 0).toFixed(2)} due</option>)}
+              </select>
+            )}
             <input type="date" value={s.log_date} onChange={e => setS({ ...s, log_date: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
             <input type="number" placeholder="Amount" value={s.amount} onChange={e => setS({ ...s, amount: +e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <input placeholder="Cause" value={s.cause} onChange={e => setS({ ...s, cause: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+            <input placeholder={s.kind === "zakat" ? "Recipient (optional)" : "Cause"} value={s.cause} onChange={e => setS({ ...s, cause: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={s.ramadan} onChange={e => setS({ ...s, ramadan: e.target.checked })} /> Ramadan giving</label>
-            <Button onClick={() => sCreate.mutate(s)}>Log sadaqah</Button>
+            <Button disabled={sCreate.isPending || s.amount <= 0 || (s.kind === "zakat" && !s.zakat_entry_id)} onClick={() => sCreate.mutate(s)}>{s.kind === "zakat" ? "Log Zakat payment" : "Log sadaqah"}</Button>
           </div>
           <div className="mt-5 space-y-2">
             {(sadaqah.data ?? []).map((r: any) => (
               <div key={r.id} className="flex justify-between p-3 rounded-xl ring-1 ring-border text-sm">
-                <span>{r.log_date}{r.cause ? ` · ${r.cause}` : ""}{r.ramadan ? " · Ramadan" : ""}</span>
+                <span>{r.log_date} · {r.kind === "zakat" ? "Zakat" : "Sadaqah"}{r.cause ? ` · ${r.cause}` : ""}{r.ramadan ? " · Ramadan" : ""}</span>
                  <span className="text-[color:var(--gold)]">${(+r.amount || 0).toLocaleString()}</span>
               </div>
             ))}

@@ -25,3 +25,11 @@
 - [x] Save a Zakat anniversary and show Hawl progress
 - [x] Record Zakat payments and mark fully paid entries
 - [x] Show an in-app reminder in Zakat and Review within 30 days of the Hawl anniversary; show Review payment totals
+- [x] Missed salah auto-adds to Qada (with toast); completing in Qada resolves it
+- [x] Auto-log Quran sessions from the reader (listened ayat or "mark as read")
+- [x] Zakat vs Sadaqah toggle in the giving log with consolidated totals
+- [x] Adhan/Iqamah, evening check-in, and 30/7-day Hawl reminders (while app is open)
+- [x] Qibla compass on the Dashboard
+- [x] New-user setup: location, calculation method, madhab, Hawl date
+- [x] Installable app with offline prayer times + dhikr counter (/offline)
+- [ ] True background push (app closed) — needs a push delivery service

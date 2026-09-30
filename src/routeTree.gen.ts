@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TutorialRouteImport } from './routes/tutorial'
 import { Route as StartRouteImport } from './routes/start'
+import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -37,6 +38,11 @@ const TutorialRoute = TutorialRouteImport.update({
 const StartRoute = StartRouteImport.update({
   id: '/start',
   path: '/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfflineRoute = OfflineRouteImport.update({
+  id: '/offline',
+  path: '/offline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -128,6 +134,7 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/offline': typeof OfflineRoute
   '/start': typeof StartRoute
   '/tutorial': typeof TutorialRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/offline': typeof OfflineRoute
   '/start': typeof StartRoute
   '/tutorial': typeof TutorialRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/offline': typeof OfflineRoute
   '/start': typeof StartRoute
   '/tutorial': typeof TutorialRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/offline'
     | '/start'
     | '/tutorial'
     | '/dashboard'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/offline'
     | '/start'
     | '/tutorial'
     | '/dashboard'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/offline'
     | '/start'
     | '/tutorial'
     | '/_authenticated/dashboard'
@@ -255,6 +267,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  OfflineRoute: typeof OfflineRoute
   StartRoute: typeof StartRoute
   TutorialRoute: typeof TutorialRoute
 }
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/start'
       fullPath: '/start'
       preLoaderRoute: typeof StartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offline': {
+      id: '/offline'
+      path: '/offline'
+      fullPath: '/offline'
+      preLoaderRoute: typeof OfflineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -438,6 +458,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  OfflineRoute: OfflineRoute,
   StartRoute: StartRoute,
   TutorialRoute: TutorialRoute,
 }

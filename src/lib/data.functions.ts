@@ -111,7 +111,20 @@ export const upsertWorshipLog = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase
       .from("worship_logs").upsert(payload, { onConflict: "user_id,log_date" }).select().single();
     if (error) throw error;
-    return row;
+    // Keep Qada in sync: "missed" adds a pending make-up prayer; changing away removes an unfinished auto entry.
+    const labels: Record<string, string> = { fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha" };
+    let qadaAdded: string | null = null;
+    for (const p of Object.keys(labels)) {
+      const key = `${p}_status`;
+      if (!(key in data)) continue;
+      if (data[key] === "missed") {
+        const { error: qErr } = await context.supabase.from("qada_prayers").insert({ user_id: context.userId, prayer: labels[p], missed_date: data.log_date, auto_logged: true, notes: "Added from Salah log" });
+        if (!qErr) qadaAdded = labels[p];
+      } else {
+        await context.supabase.from("qada_prayers").delete().eq("user_id", context.userId).eq("prayer", labels[p]).eq("missed_date", data.log_date).eq("auto_logged", true).eq("completed", false);
+      }
+    }
+    return { ...row, qadaAdded };
   });
 
 // ---------- Qada ----------
@@ -153,7 +166,7 @@ export const listQuranLogs = createServerFn({ method: "GET" })
 
 export const createQuranLog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { log_date: string; surah?: string; juz?: number; pages?: number; minutes?: number; tafsir?: boolean; reflection?: string }) => d)
+  .inputValidator((d: { log_date: string; surah?: string; juz?: number; pages?: number; minutes?: number; tafsir?: boolean; reflection?: string; verses_completed?: string; completed_at?: string; auto_logged?: boolean }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("quran_logs")
       .insert({ ...data, user_id: context.userId }).select().single();
@@ -419,10 +432,29 @@ export const listSadaqah = createServerFn({ method: "GET" })
 
 export const createSadaqah = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { log_date: string; amount: number; cause?: string; notes?: string; ramadan?: boolean }) => d)
+  .inputValidator((d: { log_date: string; amount: number; cause?: string; notes?: string; ramadan?: boolean; kind?: "sadaqah" | "zakat"; zakat_entry_id?: string }) => z.object({
+    log_date: z.string(), amount: z.number().positive(), cause: z.string().max(200).optional(), notes: z.string().max(1000).optional(),
+    ramadan: z.boolean().optional(), kind: z.enum(["sadaqah", "zakat"]).optional(), zakat_entry_id: z.string().uuid().optional(),
+  }).parse(d))
   .handler(async ({ data, context }) => {
+    const { zakat_entry_id, ...rest } = data;
+    let zakat_payment_id: string | null = null;
+    if (rest.kind === "zakat") {
+      if (!zakat_entry_id) throw new Error("Choose which Zakat entry this payment is for");
+      const { data: entry } = await context.supabase.from("zakat_entries").select("id, zakat_due").eq("id", zakat_entry_id).eq("user_id", context.userId).maybeSingle();
+      if (!entry) throw new Error("Zakat entry not found");
+      const { data: prior } = await context.supabase.from("zakat_payments").select("amount").eq("zakat_entry_id", entry.id).eq("user_id", context.userId);
+      const already = (prior ?? []).reduce((s, p) => s + Number(p.amount), 0);
+      const { data: payment, error: pErr } = await context.supabase.from("zakat_payments")
+        .insert({ user_id: context.userId, zakat_entry_id: entry.id, amount: rest.amount, paid_on: rest.log_date, note: rest.cause ?? null }).select().single();
+      if (pErr) throw pErr;
+      zakat_payment_id = payment.id;
+      if (already + rest.amount >= Number(entry.zakat_due ?? 0) - 0.001) {
+        await context.supabase.from("zakat_entries").update({ paid: true, date_paid: rest.log_date }).eq("id", entry.id).eq("user_id", context.userId);
+      }
+    }
     const { data: row, error } = await context.supabase.from("sadaqah_logs")
-      .insert({ ...data, user_id: context.userId }).select().single();
+      .insert({ ...rest, kind: rest.kind ?? "sadaqah", zakat_payment_id, user_id: context.userId }).select().single();
     if (error) throw error;
     return row;
   });

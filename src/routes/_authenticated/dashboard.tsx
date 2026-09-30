@@ -3,16 +3,26 @@ import { AppShell, Card } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listZakat, listZakatPayments, updateProfile, upsertWorshipLog } from "@/lib/data.functions";
+import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
 import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
 import { computeTimes, DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { CalendarDays } from "lucide-react";
+import { QiblaFinder } from "@/components/QiblaFinder";
+import { OnboardingDialog } from "@/components/OnboardingDialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Muslim HQ" }] }),
+  head: () => ({ meta: [
+    { title: "Dashboard — Muslim HQ" },
+    { name: "description", content: "Today's prayer times, Qibla direction, streaks, and Zakat reminders in one calm view." },
+    { property: "og:title", content: "Dashboard — Muslim HQ" },
+    { property: "og:description", content: "Today's prayer times, Qibla direction, streaks, and Zakat reminders." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Dashboard,
 });
 
@@ -20,7 +30,6 @@ function Dashboard() {
   const qc = useQueryClient();
   const seedFn = useServerFn(ensureSeeded);
   const profileFn = useServerFn(getProfile);
-  const updateProfileFn = useServerFn(updateProfile);
   const todayFn = useServerFn(getWorshipLog);
   const upsertFn = useServerFn(upsertWorshipLog);
   const historyFn = useServerFn(listWorshipLogs);
@@ -44,19 +53,9 @@ function Dashboard() {
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: today, ...patch } as any }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["worship", today] }); qc.invalidateQueries({ queryKey: ["worship-history"] }); },
+    onSuccess: (row: any) => { qc.invalidateQueries({ queryKey: ["worship", today] }); qc.invalidateQueries({ queryKey: ["worship-history"] }); qc.invalidateQueries({ queryKey: ["qada"] }); if (row?.qadaAdded) toast(`${row.qadaAdded} added to your Qada list`); },
   });
 
-  // Ask for location once
-  useEffect(() => {
-    if (!profile.data) return;
-    if (profile.data.latitude || !navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => updateProfileFn({ data: { latitude: pos.coords.latitude, longitude: pos.coords.longitude, location_label: "Your location" } })
-        .then(() => qc.invalidateQueries({ queryKey: ["profile"] })),
-      () => {}
-    );
-  }, [profile.data, updateProfileFn, qc]);
 
   const coords = profile.data?.latitude
     ? { latitude: profile.data.latitude, longitude: profile.data.longitude!, label: profile.data.location_label ?? "", method: profile.data.calc_method, madhab: (profile.data as any).madhab }
@@ -80,6 +79,7 @@ function Dashboard() {
 
   return (
     <AppShell>
+      {profile.data && !profile.data.onboarding_complete && <OnboardingDialog initial={profile.data as any} />}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-[color:var(--sage)] font-medium">Assalamu alaikum</p>
@@ -91,6 +91,8 @@ function Dashboard() {
           <p className="text-xs text-muted-foreground mt-1 font-mono">{now.toLocaleTimeString()}</p>
         </div>
       </header>
+
+      <QiblaFinder latitude={coords.latitude} longitude={coords.longitude} hasLocation={!!profile.data?.latitude} />
 
       <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
         <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
@@ -132,7 +134,7 @@ function Dashboard() {
                 <div key={p} className={`p-3 rounded-2xl ring-1 ring-border ${status ? "bg-[color:var(--sand-soft)]" : ""}`}>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      <span className={`size-2 rounded-full ${status === "on_time" ? "bg-[color:var(--sage)]" : status === "late" ? "bg-[color:var(--gold)]" : status === "qada" ? "bg-destructive" : "bg-muted"}`} />
+                      <span className={`size-2 rounded-full ${status === "on_time" ? "bg-[color:var(--sage)]" : status === "late" ? "bg-[color:var(--gold)]" : status === "qada" || status === "missed" ? "bg-destructive" : "bg-muted"}`} />
                       <span className="text-sm font-medium">{PRAYER_LABEL[p]}</span>
                       <span className="text-xs text-muted-foreground">{time}</span>
                     </div>
@@ -144,6 +146,7 @@ function Dashboard() {
                       <option value="">— log —</option>
                       <option value="on_time">On time</option>
                       <option value="late">Late</option>
+                      <option value="missed">Missed</option>
                       <option value="qada">Qada</option>
                       <option value="excused">Excused</option>
                     </select>
@@ -242,7 +245,7 @@ function computeStreaks(logs: any[]) {
   const sorted = [...logs].sort((a, b) => (a.log_date < b.log_date ? 1 : -1));
   const dayComplete = (l: any) => l.excused || PRAYERS.every(p => {
     const s = l[`${p}_status`];
-    return s && s !== "qada";
+    return s && s !== "qada" && s !== "missed";
   });
   const dayQuran = (l: any) => (l.quran_pages ?? 0) > 0 || (l.quran_minutes ?? 0) > 0;
   const dayDhikr = (l: any) => (l.dhikr_count ?? 0) > 0;
