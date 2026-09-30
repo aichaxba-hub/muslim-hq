@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Dhikr speech recognition runs entirely through the browser Web Speech API so microphone audio and transcripts are never stored or sent to the app backend.
