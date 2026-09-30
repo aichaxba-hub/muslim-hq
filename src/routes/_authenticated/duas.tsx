@@ -2,15 +2,23 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listDuas, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
+import { createAnsweredDua, listAnsweredDuas, listDuas, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
 import { DUA_CATEGORIES } from "@/lib/dua-seed";
-import { Heart, Plus, Search } from "lucide-react";
+import { CalendarCheck, Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { DuaFinder } from "@/components/DuaFinder";
 import { DuaAudio } from "@/components/DuaAudio";
+import { todayISO } from "@/lib/hijri";
 
 export const Route = createFileRoute("/_authenticated/duas")({
-  head: () => ({ meta: [{ title: "Dua Vault — Muslim HQ" }] }),
+  head: () => ({ meta: [
+    { title: "Dua Vault & Answered Duas — Muslim HQ" },
+    { name: "description", content: "Save, find, listen to, and privately reflect on duas and answered prayers." },
+    { property: "og:title", content: "Dua Vault & Answered Duas — Muslim HQ" },
+    { property: "og:description", content: "Save, find, listen to, and privately reflect on duas and answered prayers." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: DuasPage,
 });
 
@@ -19,16 +27,29 @@ function DuasPage() {
   const listFn = useServerFn(listDuas);
   const favFn = useServerFn(toggleDuaFavorite);
   const upsertFn = useServerFn(upsertDua);
+  const listAnsweredFn = useServerFn(listAnsweredDuas);
+  const createAnsweredFn = useServerFn(createAnsweredDua);
   const { data = [] } = useQuery({ queryKey: ["duas"], queryFn: () => listFn({ data: undefined as any }) });
+  const { data: answeredDuas = [] } = useQuery({ queryKey: ["answered-duas"], queryFn: () => listAnsweredFn({ data: undefined as any }) });
   const invalidate = () => qc.invalidateQueries({ queryKey: ["duas"] });
   const fav = useMutation({ mutationFn: (p: any) => favFn({ data: p }), onSuccess: invalidate });
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => { invalidate(); setShowForm(false); setForm(emptyForm); } });
+  const createAnswered = useMutation({
+    mutationFn: (p: any) => createAnsweredFn({ data: p }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["answered-duas"] });
+      setAnsweredForm({ title: "", category: "My Duas", dua_text: "", answered_date: todayISO(), reflection: "" });
+      setShowAnsweredForm(false);
+    },
+  });
 
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const emptyForm = { title: "", arabic: "", transliteration: "", translation: "", source: "", category: "My Duas", when_to_recite: "" };
   const [form, setForm] = useState(emptyForm);
+  const [showAnsweredForm, setShowAnsweredForm] = useState(false);
+  const [answeredForm, setAnsweredForm] = useState({ title: "", category: "My Duas", dua_text: "", answered_date: todayISO(), reflection: "" });
 
   const q = search.trim().toLowerCase();
   const filtered = data.filter((d: any) => {
@@ -65,6 +86,75 @@ function DuasPage() {
           <div className="mt-4"><Button onClick={() => upsert.mutate(form)}>Save dua</Button></div>
         </Card>
       )}
+
+      <section aria-labelledby="answered-duas-title" className="mb-8 border-y border-border py-7">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">
+              <CalendarCheck className="size-4" /> Gratitude journal
+            </p>
+            <h2 id="answered-duas-title" className="font-serif text-3xl">Answered Duas</h2>
+            <p className="mt-1 text-sm text-muted-foreground">A private record of the duas Allah answered in your life.</p>
+          </div>
+          <Button variant="ghost" onClick={() => setShowAnsweredForm(value => !value)}>
+            <Plus className="mr-1.5 inline size-4" /> Add answered dua
+          </Button>
+        </div>
+
+        {showAnsweredForm && (
+          <Card className="mb-5">
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+                Title
+                <input required placeholder="What did you make dua for?" value={answeredForm.title} onChange={event => setAnsweredForm({ ...answeredForm, title: event.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
+              </label>
+              <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+                Category
+                <select value={answeredForm.category} onChange={event => setAnsweredForm({ ...answeredForm, category: event.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border">
+                  {["My Duas", ...DUA_CATEGORIES].map(category => <option key={category}>{category}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+                Date answered
+                <input type="date" value={answeredForm.answered_date} onChange={event => setAnsweredForm({ ...answeredForm, answered_date: event.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
+              </label>
+              <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
+                Your dua
+                <textarea rows={3} placeholder="Write the dua or request you were making…" value={answeredForm.dua_text} onChange={event => setAnsweredForm({ ...answeredForm, dua_text: event.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
+              </label>
+              <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
+                Reflection
+                <textarea rows={3} placeholder="How was it answered, and what are you grateful for?" value={answeredForm.reflection} onChange={event => setAnsweredForm({ ...answeredForm, reflection: event.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
+              </label>
+            </div>
+            <div className="mt-4">
+              <Button disabled={!answeredForm.title.trim() || createAnswered.isPending} onClick={() => createAnswered.mutate(answeredForm)}>
+                {createAnswered.isPending ? "Saving…" : "Save answered dua"}
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {answeredDuas.length === 0 ? (
+          <p className="py-5 text-sm text-muted-foreground">Your answered duas will appear here.</p>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {answeredDuas.map((dua: any) => (
+              <Card key={dua.id}>
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-[color:var(--gold)]">{dua.category}</p>
+                    <h3 className="font-serif text-2xl">{dua.title}</h3>
+                  </div>
+                  <time className="shrink-0 text-xs text-muted-foreground">{new Date(`${dua.answered_date}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</time>
+                </div>
+                {dua.dua_text && <p className="mb-3 text-sm leading-relaxed">{dua.dua_text}</p>}
+                {dua.reflection && <p className="border-t border-border pt-3 text-sm italic text-muted-foreground">{dua.reflection}</p>}
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
 
       <div className="relative mb-4">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />

@@ -115,4 +115,5 @@
     -webkit-font-smoothing: antialiased;
   }
   .font-serif { font-family: var(--font-serif); }
+  .font-quran { font-family: "Noto Naskh Arabic", serif; }
 }

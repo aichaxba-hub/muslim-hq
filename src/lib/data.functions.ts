@@ -228,6 +228,33 @@ export const toggleDuaFavorite = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const listAnsweredDuas = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("answered_duas").select("*").eq("user_id", context.userId)
+      .order("answered_date", { ascending: false }).order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  });
+
+export const createAnsweredDua = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { title: string; category: string; dua_text?: string; answered_date: string; reflection?: string }) =>
+    z.object({
+      title: z.string().trim().min(1).max(160),
+      category: z.string().trim().min(1).max(80),
+      dua_text: z.string().max(4000).optional(),
+      answered_date: z.string().date(),
+      reflection: z.string().max(4000).optional(),
+    }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase.from("answered_duas")
+      .insert({ ...data, user_id: context.userId }).select().single();
+    if (error) throw error;
+    return row;
+  });
+
 // ---------- Reflections ----------
 export const listReflections = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

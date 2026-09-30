@@ -203,7 +203,7 @@ export function QuranReader() {
                   </div>
                   <span>Juz {verse.juz_number} · Page {verse.page_number}</span>
                 </div>
-                <p lang="ar" dir="rtl" translate="no" className="text-right text-3xl leading-[2.25] md:text-4xl">
+                <p lang="ar" dir="rtl" translate="no" className="font-quran text-right text-3xl leading-[2.25] md:text-4xl">
                   {verse.text_uthmani}
                 </p>
               </article>
