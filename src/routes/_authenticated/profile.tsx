@@ -63,10 +63,29 @@ function ProfilePage() {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude.toFixed(5));
-        setLng(pos.coords.longitude.toFixed(5));
-        if (!label.trim()) setLabel("My location");
+      async (pos) => {
+        const la = pos.coords.latitude;
+        const lo = pos.coords.longitude;
+        setLat(la.toFixed(5));
+        setLng(lo.toFixed(5));
+        try {
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la}&longitude=${lo}&localityLanguage=en`
+          );
+          if (res.ok) {
+            const geo = await res.json();
+            const place =
+              [geo.city || geo.locality, geo.principalSubdivision, geo.countryName]
+                .filter(Boolean)
+                .filter((v: string, i: number, arr: string[]) => arr.indexOf(v) === i)
+                .join(", ") || geo.formattedAddress;
+            if (place) setLabel(place);
+          } else if (!label.trim()) {
+            setLabel("My location");
+          }
+        } catch {
+          if (!label.trim()) setLabel("My location");
+        }
         setLocating(false);
         toast.success("Location found — save to apply it");
       },
