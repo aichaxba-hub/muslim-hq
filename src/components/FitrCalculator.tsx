@@ -1,0 +1,33 @@
+import { useMemo, useState } from "react";
+import { Button } from "@/components/AppShell";
+
+const foods = ["Wheat flour", "Rice", "Maize flour", "Barley", "Black beans"];
+
+export function FitrCalculator() {
+  const [step, setStep] = useState(0);
+  const [location, setLocation] = useState("");
+  const [household, setHousehold] = useState(1);
+  const [method, setMethod] = useState<"food" | "income">("income");
+  const [income, setIncome] = useState<"low" | "medium" | "high">("medium");
+  const [selectedFood, setSelectedFood] = useState(foods[0]);
+  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [weight, setWeight] = useState(3);
+  const priced = useMemo(() => foods.filter(food => (prices[food] ?? 0) > 0).sort((a,b) => (prices[b] ?? 0) - (prices[a] ?? 0)), [prices]);
+  const chosen = method === "food" ? selectedFood : income === "high" ? priced[0] : income === "low" ? priced[priced.length - 1] : priced[1] ?? priced[0];
+  const total = (prices[chosen] ?? 0) * weight * household;
+  const fields = "h-11 w-full rounded-lg bg-background px-3 ring-1 ring-border";
+  return <section className="mb-8 border-t border-border pt-8" aria-label="Zakat al-Fitr calculator">
+    <div className="mb-5"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Ramadan giving</p><h2 className="font-serif text-3xl">Zakat al-Fitr calculator</h2><p className="mt-2 text-sm text-muted-foreground">Estimate one saa of staple food per person, using local food prices you enter.</p></div>
+    <div className="mb-5 flex flex-wrap gap-2">{["Location", "Household", "Selection method", "Review"].map((label, index) => <Button key={label} variant="ghost" className={step === index ? "bg-muted" : ""} onClick={() => setStep(index)} aria-current={step === index ? "step" : undefined}>{index + 1}. {label}</Button>)}</div>
+    <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="space-y-4">
+        {step === 0 && <><h3 className="font-serif text-2xl">Your location</h3><label className="grid gap-2 text-sm">City or region<input className={fields} value={location} onChange={e => setLocation(e.target.value)} placeholder="Your city or region" /></label><p className="text-xs text-muted-foreground">Use retail prices from shops in your area; prices are not fetched automatically.</p></>}
+        {step === 1 && <><h3 className="font-serif text-2xl">Your household</h3><label className="grid gap-2 text-sm">People you are giving for<input className={fields} type="number" min="1" step="1" value={household} onChange={e => setHousehold(Math.max(1, Math.floor(Number(e.target.value) || 1)))} /></label><label className="grid gap-2 text-sm">Kilograms per person (one saa estimate)<input className={fields} type="number" min="0.1" step="0.1" value={weight} onChange={e => setWeight(Math.max(0.1, Number(e.target.value) || 0.1))} /></label></>}
+        {step === 2 && <><h3 className="font-serif text-2xl">Choose a food</h3><div className="flex gap-2"><Button variant={method === "food" ? "primary" : "ghost"} onClick={() => setMethod("food")}>Choose food</Button><Button variant={method === "income" ? "primary" : "ghost"} onClick={() => setMethod("income")}>Income-based</Button></div>{method === "food" ? <label className="grid gap-2 text-sm">Staple food<select className={fields} value={selectedFood} onChange={e => setSelectedFood(e.target.value)}>{foods.map(food => <option key={food}>{food}</option>)}</select></label> : <label className="grid gap-2 text-sm">Income level<select className={fields} value={income} onChange={e => setIncome(e.target.value as typeof income)}><option value="low">Lower</option><option value="medium">Middle</option><option value="high">Higher</option></select></label>}<p className="text-xs text-muted-foreground">Income-based picks the lowest, second-highest or highest priced food among the prices you provide.</p></>}
+        {step === 3 && <><h3 className="font-serif text-2xl">Local food prices</h3><p className="text-sm text-muted-foreground">Enter the retail price per kilogram in your local currency. Only entered prices are used.</p><div className="grid gap-3 sm:grid-cols-2">{foods.map(food => <label key={food} className="grid gap-1.5 text-sm">{food} / kg<input className={fields} type="number" min="0" step="0.01" placeholder="Price per kg" value={prices[food] || ""} onChange={e => setPrices(current => ({ ...current, [food]: Math.max(0, Number(e.target.value) || 0) }))} /></label>)}</div></>}
+        <div className="flex justify-between border-t border-border pt-4"><Button variant="ghost" disabled={step === 0} onClick={() => setStep(s => s - 1)}>Previous</Button><Button disabled={step === 3} onClick={() => setStep(s => s + 1)}>Next</Button></div>
+      </div>
+      <aside className="border-t border-border pt-5 text-sm md:border-l md:border-t-0 md:pl-6 md:pt-0"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Running summary</p><dl className="mt-3 space-y-2">{[["Location", location || "—"], ["Household", `${household} ${household === 1 ? "person" : "people"}`], ["Food", chosen || "—"], ["Saa weight", `${weight} kg per person`], ["Price per kg", prices[chosen] ? Number(prices[chosen]).toFixed(2) : "—"]].map(([label,value]) => <div key={label} className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right">{value}</dd></div>)}</dl><div className="mt-5 border-t border-border pt-4"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Estimated amount</p><strong className="font-serif text-3xl">{total > 0 ? total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : "—"}</strong><p className="text-xs text-muted-foreground">In the same currency as your entered food prices</p></div><p className="mt-4 text-xs text-muted-foreground">Food prices, saa weights and cash equivalents differ locally. Confirm the amount and giving method with a trusted local organization.</p></aside>
+    </div>
+  </section>;
+}

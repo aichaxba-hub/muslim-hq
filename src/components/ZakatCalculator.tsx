@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Coins, RotateCcw, Save } from "lucide-react";
 import { Button, Card } from "@/components/AppShell";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getMetalPrices } from "@/lib/metal-prices.functions";
 
 const STORAGE_KEY = "mhq-zakat-calculator";
 
@@ -156,6 +159,8 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
   const [calc, setCalc] = useState<CalculatorState>(initialState);
   const [restored, setRestored] = useState(false);
   const [showBusiness, setShowBusiness] = useState(false);
+  const metalFn = useServerFn(getMetalPrices);
+  const metalPrices = useQuery({ queryKey: ["metal-prices", calc.currency], queryFn: () => metalFn({ data: { currency: calc.currency } }), staleTime: 15 * 60 * 1000, retry: false });
 
   useEffect(() => {
     try {
@@ -172,6 +177,11 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
     if (restored) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(calc));
   }, [calc, restored]);
 
+  useEffect(() => {
+    if (!restored || !metalPrices.data || !("gold" in metalPrices.data) || !("silver" in metalPrices.data)) return;
+    setCalc(current => ({ ...current, goldPrice: metalPrices.data.gold ?? current.goldPrice, silverPrice: metalPrices.data.silver ?? current.silverPrice }));
+  }, [restored, metalPrices.data]);
+
   const symbol = CURRENCIES.find(item => item[0] === calc.currency)?.[1] ?? calc.currency;
   const result = useMemo<ZakatCalculation>(() => {
     const metals = calc.goldGrams * calc.goldPrice + calc.silverGrams * calc.silverPrice;
@@ -184,7 +194,7 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
     const grossAssets = metals + cash + investments + retirement + other;
     const deductions = calc.dueDebts + calc.currentExpenses;
     const netZakatable = Math.max(0, grossAssets - deductions);
-    const nisabChoice = NISAB_OPTIONS[calc.nisabStandard];
+    const nisabChoice = NISAB_OPTIONS[calc.nisabStandard] ?? NISAB_OPTIONS.jamhoor_silver;
     const nisab = nisabChoice.grams * (nisabChoice.metal === "gold" ? calc.goldPrice : calc.silverPrice);
     const zakatDue = nisab > 0 && netZakatable >= nisab ? netZakatable * 0.025 : 0;
     return { currency: calc.currency, grossAssets, deductions, netZakatable, nisab, zakatDue };
@@ -247,13 +257,14 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
 
           {step === 0 && (
             <section className="space-y-5" aria-labelledby="zakat-step-title">
-              <div><h3 id="zakat-step-title" className="font-serif text-2xl">Choose your nisab</h3><p className="mt-1 text-sm text-muted-foreground">Nisab is the minimum zakatable wealth threshold. Enter current local metal prices for an accurate estimate.</p></div>
+               <div><h3 id="zakat-step-title" className="font-serif text-2xl">Choose your nisab</h3><p className="mt-1 text-sm text-muted-foreground">Nisab is the minimum zakatable wealth threshold. Metal prices refresh from GoldAPI when available and remain editable.</p></div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1.5 text-sm font-medium">Currency<select value={calc.currency} onChange={event => setCalc({ ...calc, currency: event.target.value })} className="h-11 rounded-lg bg-background px-3 ring-1 ring-border">{CURRENCIES.map(item => <option key={item[0]} value={item[0]}>{item[1]} {item[2]} ({item[0]})</option>)}</select></label>
-                <label className="grid gap-1.5 text-sm font-medium">Hawl date<input type="date" value={calc.hawlDate} onChange={event => setCalc({ ...calc, hawlDate: event.target.value })} className="h-11 rounded-lg bg-background px-3 ring-1 ring-border" /></label>
+                 <label className="grid gap-1.5 text-sm font-medium">Valuation date<input type="date" value={calc.hawlDate} onChange={event => setCalc({ ...calc, hawlDate: event.target.value })} className="h-11 rounded-lg bg-background px-3 ring-1 ring-border" /></label>
               </div>
               <fieldset className="grid gap-2"><legend className="mb-2 text-sm font-medium">Nisab standard</legend>{Object.entries(NISAB_OPTIONS).map(([key, option]) => <label key={key} className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm ${calc.nisabStandard === key ? "border-primary bg-muted" : "border-border"}`}><input type="radio" name="nisab" value={key} checked={calc.nisabStandard === key} onChange={() => setCalc({ ...calc, nisabStandard: key as NisabKey })} />{option.label}</label>)}</fieldset>
-              <div className="grid gap-4 sm:grid-cols-2"><AmountInput label="Gold price per gram" value={calc.goldPrice} symbol={symbol} onChange={value => setAmount("goldPrice", value)} /><AmountInput label="Silver price per gram" value={calc.silverPrice} symbol={symbol} onChange={value => setAmount("silverPrice", value)} /></div>
+               <div className="grid gap-4 sm:grid-cols-2"><AmountInput label="Gold price per gram" value={calc.goldPrice} symbol={symbol} onChange={value => setAmount("goldPrice", value)} /><AmountInput label="Silver price per gram" value={calc.silverPrice} symbol={symbol} onChange={value => setAmount("silverPrice", value)} /></div>
+               <p className="text-xs text-muted-foreground" role="status">{metalPrices.isLoading ? "Loading current metal prices…" : metalPrices.data && "gold" in metalPrices.data ? `GoldAPI spot prices · ${new Date((metalPrices.data.timestamp ?? 0) * 1000).toLocaleString()} · ${calc.currency}/gram` : `Live prices unavailable${metalPrices.data && "error" in metalPrices.data ? ` (${metalPrices.data.error})` : ""}. Enter prices manually to continue.`}</p>
             </section>
           )}
 

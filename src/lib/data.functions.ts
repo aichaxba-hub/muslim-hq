@@ -13,7 +13,7 @@ export const getProfile = createServerFn({ method: "GET" })
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { display_name?: string; latitude?: number; longitude?: number; location_label?: string; theme?: string; onboarding_complete?: boolean; calc_method?: string; madhab?: string }) => d)
+  .inputValidator((d: { display_name?: string; latitude?: number; longitude?: number; location_label?: string; theme?: string; onboarding_complete?: boolean; calc_method?: string; madhab?: string; zakat_anniversary?: string | null }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("profiles").update(data).eq("id", context.userId).select().single();
@@ -379,6 +379,35 @@ export const createZakat = createServerFn({ method: "POST" })
       .insert({ ...data, user_id: context.userId }).select().single();
     if (error) throw error;
     return row;
+  });
+
+export const listZakatPayments = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("zakat_payments").select("*").eq("user_id", context.userId).order("paid_on", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  });
+
+export const recordZakatPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { zakat_entry_id: string; amount: number; paid_on: string; note?: string }) => z.object({
+    zakat_entry_id: z.string().uuid(), amount: z.number().positive().finite(), paid_on: z.string().date(), note: z.string().max(500).optional(),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: entry, error: entryError } = await context.supabase.from("zakat_entries").select("id,zakat_due").eq("id", data.zakat_entry_id).eq("user_id", context.userId).single();
+    if (entryError) throw entryError;
+    const { data: previous, error: listError } = await context.supabase.from("zakat_payments").select("amount").eq("zakat_entry_id", entry.id).eq("user_id", context.userId);
+    if (listError) throw listError;
+    const already = (previous ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+    if (already + data.amount > Number(entry.zakat_due ?? 0) + 0.001) throw new Error("Payment exceeds the amount due.");
+    const { data: payment, error } = await context.supabase.from("zakat_payments").insert({ ...data, user_id: context.userId }).select().single();
+    if (error) throw error;
+    if (already + data.amount >= Number(entry.zakat_due ?? 0) - 0.001) {
+      const { error: updateError } = await context.supabase.from("zakat_entries").update({ paid: true, date_paid: data.paid_on }).eq("id", entry.id).eq("user_id", context.userId);
+      if (updateError) throw updateError;
+    }
+    return payment;
   });
 
 export const listSadaqah = createServerFn({ method: "GET" })
