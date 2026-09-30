@@ -30,3 +30,27 @@ export function weekStartISO(date = new Date()) {
   d.setDate(d.getDate() - diff);
   return d.toISOString().slice(0, 10);
 }
+
+function isoOf(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function hijriParts(d: Date) {
+  const parts = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", { day: "numeric", month: "numeric", year: "numeric" }).formatToParts(d);
+  const get = (t: string) => parseInt(parts.find((p) => p.type === t)?.value ?? "0", 10);
+  return { month: get("month"), year: get("year") };
+}
+
+/** Ramadan (Umm al-Qura) start/end in the given Gregorian year. */
+export function ramadanRange(gregYear = new Date().getFullYear()) {
+  let start: Date | null = null, end: Date | null = null, hYear = 0;
+  for (let d = new Date(gregYear, 0, 1, 12); d.getFullYear() === gregYear; d.setDate(d.getDate() + 1)) {
+    const h = hijriParts(d);
+    if (h.month === 9) {
+      if (!start) { start = new Date(d); hYear = h.year; }
+      end = new Date(d);
+    } else if (start) break;
+  }
+  if (!start || !end) return null;
+  return { start: isoOf(start), end: isoOf(end), hijriYear: hYear, days: Math.round((end.getTime() - start.getTime()) / 86400000) + 1 };
+}

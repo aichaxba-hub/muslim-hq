@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getRamadanPlan, listRamadanChecklist, saveRamadanChecklist, saveRamadanPlan } from "@/lib/ramadan.functions";
-import { todayISO } from "@/lib/hijri";
+import { ramadanRange, todayISO } from "@/lib/hijri";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 
@@ -57,7 +57,14 @@ function RamadanPage() {
     onError: () => toast.error("Could not save — please try again"),
   });
 
-  const [date, setDate] = useState(todayISO());
+  const range = ramadanRange();
+  const today = todayISO();
+  const clamp = (d: string) => !range ? d : d < range.start ? range.start : d > range.end ? range.end : d;
+  const [date, setDate] = useState(clamp(today));
+  const dayNum = range ? Math.round((new Date(date).getTime() - new Date(range.start).getTime()) / 86400000) + 1 : null;
+  const phase = !range ? "" : today < range.start ? "upcoming" : today > range.end ? "past" : "now";
+  const fmt = (iso: string) => new Date(iso + "T12:00").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+  const inRange = (days.data ?? []).filter((d) => !range || (d.log_date >= range.start && d.log_date <= range.end));
   const current = days.data?.find((d) => d.log_date === date)?.items ?? {};
   const saveDay = useMutation({
     mutationFn: (items: Record<string, boolean>) => saveDayFn({ data: { log_date: date, items } }),
@@ -70,6 +77,19 @@ function RamadanPage() {
   return (
     <AppShell>
       <PageHeader eyebrow="Ramadan" title="Your Ramadan plan" subtitle="Small, sincere, consistent. One day at a time." />
+
+      {range && (
+        <Card className="mb-6">
+          <p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Ramadan {range.hijriYear} AH</p>
+          <p className="font-serif text-2xl">{fmt(range.start)} – {fmt(range.end)}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {phase === "upcoming" && `Begins in ${Math.ceil((new Date(range.start).getTime() - new Date(today).getTime()) / 86400000)} days — time to prepare gently.`}
+            {phase === "now" && "Ramadan Mubarak — you are in the blessed month."}
+            {phase === "past" && "This year's Ramadan has passed. May Allah accept it from you."}
+            {" "}Dates are estimated (Umm al-Qura) and may differ by a day with local moon sighting.
+          </p>
+        </Card>
+      )}
 
       <Card className="mb-6">
         <h2 className="font-serif text-xl mb-4">Goals for this Ramadan</h2>
@@ -92,9 +112,9 @@ function RamadanPage() {
         <div className="flex flex-wrap justify-between items-end gap-3 mb-4">
           <div>
             <h2 className="font-serif text-xl">Daily checklist</h2>
-            <p className="text-xs text-muted-foreground">{done} of {CHECKLIST.length} done — every tick counts.</p>
+            <p className="text-xs text-muted-foreground">{dayNum ? `Day ${dayNum} of ${range!.days} · ` : ""}{done} of {CHECKLIST.length} done — every tick counts.</p>
           </div>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-xl bg-background ring-1 ring-border px-3 py-2 text-sm" />
+          <input type="date" value={date} min={range?.start} max={range?.end} onChange={(e) => setDate(clamp(e.target.value))} className="rounded-xl bg-background ring-1 ring-border px-3 py-2 text-sm" />
         </div>
         <div className="h-1.5 rounded-full bg-muted mb-5 overflow-hidden">
           <div className="h-full bg-[color:var(--sage)] transition-all" style={{ width: `${(done / CHECKLIST.length) * 100}%` }} />
@@ -113,11 +133,11 @@ function RamadanPage() {
         </div>
       </Card>
 
-      {!!days.data?.length && (
+      {!!inRange.length && (
         <Card>
           <h2 className="font-serif text-xl mb-3">Recent days</h2>
           <ul className="text-sm divide-y divide-border">
-            {days.data.slice(0, 30).map((d) => {
+            {inRange.slice(0, 30).map((d) => {
               const n = CHECKLIST.filter((c) => d.items?.[c.id]).length;
               return (
                 <li key={d.log_date} className="py-2 flex justify-between">
