@@ -24,6 +24,21 @@ describe("dhikr voice phrase matching", () => {
     ]);
   });
 
+  it("recognizes Subhanallahi wa bihamdihi, subhanallahil azeem variants", () => {
+    const phrase = "Subhanallahi wa bihamdihi, subhanallahil azeem";
+    assert.deepEqual(categories("سبحان الله وبحمده سبحان الله العظيم"), [phrase]);
+    assert.deepEqual(categories("Subhanallahi wa bihamdihi subhanallahil azeem"), [phrase]);
+    assert.deepEqual(categories("Subhana Allahi wa bi hamdihi subhana Allahil adheem"), [phrase]);
+    assert.deepEqual(categories("Astaghfirullah Subhanallahi wa bihamdihi subhanallahil azeem"), [
+      "Astaghfirullah",
+      phrase,
+    ]);
+  });
+
+  it("counts SubhanAllah alone without matching the longer tasbih phrase", () => {
+    assert.deepEqual(categories("subhan allah"), ["SubhanAllah"]);
+  });
+
   it("rejects partial phrases and unrelated speech", () => {
     assert.deepEqual(categories("سبحان random words الحمد weather today الله"), []);
     assert.deepEqual(categories("allah is mentioned but this is not a complete dhikr phrase"), []);
