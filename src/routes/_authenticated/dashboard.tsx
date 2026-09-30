@@ -31,8 +31,16 @@ function Dashboard() {
   useEffect(() => { seedFn({ data: {} as any }).catch(() => {}); }, [seedFn]);
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
+  const zakatFn = useServerFn(listZakat);
+  const paymentsFn = useServerFn(listZakatPayments);
+  const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
+  const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
   const log = useQuery({ queryKey: ["worship", today], queryFn: () => todayFn({ data: { date: today } }) });
   const history = useQuery({ queryKey: ["worship-history"], queryFn: () => historyFn({ data: { limit: 60 } }) });
+
+  const anniversary = profile.data?.zakat_anniversary;
+  const hawl = anniversary ? hawlProgress(anniversary) : null;
+  const reminder = anniversary ? hawlReminder(anniversary) : null;
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: today, ...patch } as any }),
@@ -83,6 +91,15 @@ function Dashboard() {
           <p className="text-xs text-muted-foreground mt-1 font-mono">{now.toLocaleTimeString()}</p>
         </div>
       </header>
+
+      <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
+        <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
+          <h2 className="font-serif text-2xl">Zakat & Hawl</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{reminder ? <strong className="font-medium text-foreground" role="status">{reminder.message}</strong> : hawl ? `${hawl.daysRemaining} days until your next Zakat anniversary` : "Set your Zakat anniversary to see when it is approaching."}</p>
+          {hawl && <p className="mt-1 text-xs text-muted-foreground">Estimated anniversary: {hawl.due.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} · Local moon sighting may differ.</p>}
+          <Link to="/zakat" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4">{hawl ? "Review Zakat" : "Set anniversary"}</Link>
+        </div></div>
+      </section>
 
       {/* Hero row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
