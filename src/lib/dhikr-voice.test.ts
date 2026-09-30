@@ -48,3 +48,16 @@ describe("dhikr voice phrase matching", () => {
     assert.equal(normalizeDhikrTranscript("إِلَّا اللّٰهُ—قُوَّةٌ"), "الا الله قوه");
   });
 });
+import { findStableDhikrMatches as stable } from "./dhikr-voice";
+describe("interim hold for long tasbih", () => {
+  it("holds trailing SubhanAllah while interim", () => {
+    expect(stable("subhanallah", false)).toHaveLength(0);
+    expect(stable("سبحان الله", false)).toHaveLength(0);
+    expect(stable("subhanallahi wa bihamdihi", false)).toHaveLength(0);
+  });
+  it("counts once final or when followed by other speech", () => {
+    expect(stable("subhanallah", true)).toHaveLength(1);
+    expect(stable("subhanallah alhamdulillah", false)).toHaveLength(2);
+    expect(stable("subhanallahi wa bihamdihi subhanallahil azeem", false)[0].category).toMatch(/bihamdihi/);
+  });
+});

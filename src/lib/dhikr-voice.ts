@@ -123,3 +123,30 @@ export function findDhikrMatches(transcript: string): DhikrMatch[] {
     .sort((a, b) => a.start - b.start || b.end - a.end)
     .filter((match, index, all) => !all.slice(0, index).some(previous => match.start < previous.end && match.end > previous.start));
 }
+// Continuations that turn a short "SubhanAllah" into the longer tasbih.
+const LONG_TASBIH_TAILS = [
+  "وبحمده سبحان الله العظيم",
+  "wa bihamdihi subhanallahil azeem",
+  "wa bi hamdihi subhana allahil azeem",
+  "i wa bihamdihi subhanallahil azeem",
+];
+
+function couldBecomeLongTasbih(rest: string) {
+  const tail = rest.trim();
+  if (!tail) return true;
+  return LONG_TASBIH_TAILS.some(full => full.startsWith(tail) || tail.startsWith(full.split(" ")[0]));
+}
+
+/**
+ * Like findDhikrMatches, but while a result is still interim it holds back a
+ * trailing "SubhanAllah" that may still grow into
+ * "Subhanallahi wa bihamdihi, subhanallahil azeem".
+ */
+export function findStableDhikrMatches(transcript: string, isFinal: boolean): DhikrMatch[] {
+  const matches = findDhikrMatches(transcript);
+  if (isFinal || matches.length === 0) return matches;
+  const last = matches[matches.length - 1];
+  if (last.category !== "SubhanAllah") return matches;
+  const rest = normalizeDhikrTranscript(transcript).slice(last.end);
+  return couldBecomeLongTasbih(rest) ? matches.slice(0, -1) : matches;
+}
