@@ -166,7 +166,7 @@ export const listQuranLogs = createServerFn({ method: "GET" })
 
 export const createQuranLog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { log_date: string; surah?: string; juz?: number; pages?: number; minutes?: number; tafsir?: boolean; reflection?: string }) => d)
+  .inputValidator((d: { log_date: string; surah?: string; juz?: number; pages?: number; minutes?: number; tafsir?: boolean; reflection?: string; verses_completed?: string; completed_at?: string; auto_logged?: boolean }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("quran_logs")
       .insert({ ...data, user_id: context.userId }).select().single();
