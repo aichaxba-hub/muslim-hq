@@ -158,6 +158,7 @@ export function VoiceDhikrCounter({
     recognition.onend = () => {
       if (keepListeningRef.current) {
         try {
+          countedByResultRef.current.clear();
           recognition.start();
           setListening(true);
         } catch {
