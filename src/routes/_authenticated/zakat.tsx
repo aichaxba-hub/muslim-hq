@@ -130,12 +130,8 @@ function ZakatPage() {
           </div>
         </Card>
 
-        <Card>
-          <h3 className="font-serif text-2xl mb-3">Wealth duas</h3>
-          <p className="font-quran text-2xl leading-loose mb-2" dir="rtl">اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ</p>
-          <p className="text-sm text-muted-foreground italic">“O Allah, suffice me with what You have made lawful, keeping me from what You have forbidden.”</p>
-        </Card>
       </div>
+
 
        <PageHeader title="Zakat entries & payments" />
       <div className="grid gap-2 mb-8">
