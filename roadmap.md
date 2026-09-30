@@ -11,3 +11,4 @@
 - [x] Connect real microphone permission, continuous live recitation counting, and direct voice-session saving
 - [x] Rename “The Five” to “The Fard” in the Salah tab
 - [x] Restrict live voice counting to tested common dhikr phrases and pronunciation variants
+- [x] Add an in-app Arabic Quran reader with official access to The Clear Quran translation

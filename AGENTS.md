@@ -11,3 +11,4 @@
 
 - Dhikr speech recognition runs entirely through the browser Web Speech API so microphone audio and transcripts are never stored or sent to the app backend.
 - Dhikr phrase recognition lives in a pure client-safe matcher module so phrase variants can be tested without microphone or UI dependencies.
+- Quran Arabic text is read client-side from Quran.com's public API; The Clear Quran translation links to its official protected reader to respect licensing.
