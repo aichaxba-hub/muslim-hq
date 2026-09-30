@@ -18,3 +18,6 @@
 - The personal Zakat calculator uses majority gold or silver nisab, counts short-term holdings fully, estimates long-term and pay-now retirement holdings at 30%, deducts currently due obligations, and applies 2.5% only when net wealth meets nisab.
 - Hawl reminders are derived from the saved anniversary at view time, not scheduled, because no external delivery or persisted status is needed.
 - Review's top dua category is the most common saved Dua Vault category created within the selected lifetime, year, or month.
+- Missed salah → Qada sync happens server-side in upsertWorshipLog (auto_logged rows) so every Salah entry point stays consistent.
+- Reminders run client-side in ReminderCenter (settings in localStorage) because no push delivery service is configured.
+- Offline support uses vite-plugin-pwa generateSW into dist/client with a guarded registrar in src/lib/pwa.ts; navigations fall back to the precached public /offline page since the signed-in area needs the network.
