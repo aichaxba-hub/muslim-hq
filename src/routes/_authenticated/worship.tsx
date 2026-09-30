@@ -2,18 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getWorshipLog, listWorshipLogs, upsertWorshipLog } from "@/lib/data.functions";
-import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
+import { getProfile, getWorshipLog, listWorshipLogs, upsertWorshipLog } from "@/lib/data.functions";
+import { PRAYERS, PRAYER_LABEL, DEFAULT_COORDS } from "@/lib/prayer-times";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
 import { toast } from "sonner";
+import { QiblaFinder } from "@/components/QiblaFinder";
 
 
 export const Route = createFileRoute("/_authenticated/worship")({
   head: () => ({ meta: [
     { title: "Salah Log — Muslim HQ" },
-    { name: "description", content: "Privately track each daily salah, prayer status, congregation, and masjid attendance." },
+    { name: "description", content: "Privately track each daily salah, prayer status, congregation, and masjid attendance — with a Qibla compass." },
     { property: "og:title", content: "Salah Log — Muslim HQ" },
     { property: "og:description", content: "A calm, private daily salah tracker." },
     { property: "og:type", content: "website" },
@@ -46,7 +47,12 @@ function WorshipHub() {
   const getFn = useServerFn(getWorshipLog);
   const upsertFn = useServerFn(upsertWorshipLog);
   const listFn = useServerFn(listWorshipLogs);
+  const profileFn = useServerFn(getProfile);
 
+  const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
+  const coords = profile.data?.latitude
+    ? { latitude: profile.data.latitude, longitude: profile.data.longitude! }
+    : { latitude: DEFAULT_COORDS.latitude, longitude: DEFAULT_COORDS.longitude };
   const log = useQuery({ queryKey: ["worship", date], queryFn: () => getFn({ data: { date } }) });
   const history = useQuery({ queryKey: ["worship-history-all"], queryFn: () => listFn({ data: { limit: 90 } }) });
 
@@ -69,6 +75,10 @@ function WorshipHub() {
         <input type="date" value={date} onChange={e => setDate(e.target.value)}
           className="px-3 py-2 rounded-full ring-1 ring-border bg-background text-sm" />
         <span className="text-xs text-muted-foreground">Viewing {date}</span>
+      </div>
+
+      <div className="mb-6">
+        <QiblaFinder latitude={coords.latitude} longitude={coords.longitude} hasLocation={!!profile.data?.latitude} />
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
