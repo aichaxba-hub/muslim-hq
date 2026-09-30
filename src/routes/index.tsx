@@ -4,6 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: Landing,
+  head: () => ({
+    meta: [
+      { title: "Muslim HQ — The Ultimate Islamic System" },
+      { name: "description", content: "A calm, all-in-one Islamic life dashboard. Track prayers, Quran, fasting, dhikr, duas, goals and reflection. Your deen, your pace." },
+      { property: "og:title", content: "Muslim HQ — The Ultimate Islamic System" },
+      { property: "og:description", content: "A calm, all-in-one Islamic life dashboard. Your deen, your pace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
 });
 
 function Landing() {
