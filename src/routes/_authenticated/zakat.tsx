@@ -62,7 +62,12 @@ function ZakatPage() {
 
   const [s, setS] = useState(emptySadaqah);
 
-  const totalSadaqah = (sadaqah.data ?? []).reduce((a: number, r: any) => a + (+r.amount || 0), 0);
+  const givingTotals = (sadaqah.data ?? []).reduce((a, r: any) => {
+    const amt = +r.amount || 0;
+    if (r.kind === "zakat") a.zakat += amt; else a.sadaqah += amt;
+    if (String(r.log_date).startsWith(String(new Date().getFullYear()))) a.year += amt;
+    return a;
+  }, { sadaqah: 0, zakat: 0, year: 0 });
 
   return (
     <AppShell>
