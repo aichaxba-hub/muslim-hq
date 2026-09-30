@@ -146,6 +146,7 @@ function Dashboard() {
                       <option value="">— log —</option>
                       <option value="on_time">On time</option>
                       <option value="late">Late</option>
+                      <option value="missed">Missed</option>
                       <option value="qada">Qada</option>
                       <option value="excused">Excused</option>
                     </select>
