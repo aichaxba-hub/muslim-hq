@@ -4,10 +4,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createSadaqah, createZakat, listSadaqah, listZakat } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { ZakatCalculator, type ZakatCalculation } from "@/components/ZakatCalculator";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/zakat")({
-  head: () => ({ meta: [{ title: "Zakat & Giving — Muslim HQ" }] }),
+  head: () => ({ meta: [
+    { title: "Zakat Calculator & Giving — Muslim HQ" },
+    { name: "description", content: "Calculate personal Zakat across metals, cash, investments, retirement, other assets, debts, and expenses, then privately track giving." },
+    { property: "og:title", content: "Zakat Calculator & Giving — Muslim HQ" },
+    { property: "og:description", content: "A guided personal Zakat calculator and private giving tracker." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ZakatPage,
 });
 
@@ -19,11 +28,8 @@ function ZakatPage() {
   const sCreateFn = useServerFn(createSadaqah);
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zListFn({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["sadaqah"], queryFn: () => sListFn({ data: undefined as any }) });
-  const zCreate = useMutation({ mutationFn: (p: any) => zCreateFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["zakat"] }) });
+  const zCreate = useMutation({ mutationFn: (p: any) => zCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); toast.success("Zakat entry saved"); }, onError: () => toast.error("Could not save the Zakat entry") });
   const sCreate = useMutation({ mutationFn: (p: any) => sCreateFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["sadaqah"] }) });
-
-  const [calc, setCalc] = useState({ asset_type: "Cash", amount: 0, nisab: 5000 });
-  const zakatDue = useMemo(() => calc.amount >= calc.nisab ? +(calc.amount * 0.025).toFixed(2) : 0, [calc]);
 
   const [s, setS] = useState({ log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false });
 
@@ -33,21 +39,18 @@ function ZakatPage() {
     <AppShell>
       <PageHeader eyebrow="Zakat & Giving" title="Wealth is a trust" subtitle="Purify it. Circulate it." />
 
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <h3 className="font-serif text-2xl mb-4">Zakat Calculator</h3>
-          <div className="space-y-3">
-            <input placeholder="Asset type" value={calc.asset_type} onChange={e => setCalc({ ...calc, asset_type: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <input type="number" placeholder="Amount" value={calc.amount} onChange={e => setCalc({ ...calc, amount: +e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <input type="number" placeholder="Nisab threshold" value={calc.nisab} onChange={e => setCalc({ ...calc, nisab: +e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <div className="p-4 rounded-2xl bg-[color:var(--sand-soft)]">
-              <p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">{calc.amount >= calc.nisab ? "Zakat due (2.5%)" : "Below nisab"}</p>
-              <p className="text-4xl font-serif">{zakatDue.toLocaleString()}</p>
-            </div>
-            <Button onClick={() => zCreate.mutate({ year: new Date().getFullYear(), asset_type: calc.asset_type, amount: calc.amount, nisab: calc.nisab, zakat_due: zakatDue })}>Save entry</Button>
-          </div>
-        </Card>
+      <ZakatCalculator
+        saving={zCreate.isPending}
+        onSave={(result: ZakatCalculation) => zCreate.mutate({
+          year: new Date().getFullYear(),
+          asset_type: `Personal assets (${result.currency})`,
+          amount: +result.netZakatable.toFixed(2),
+          nisab: +result.nisab.toFixed(2),
+          zakat_due: +result.zakatDue.toFixed(2),
+        })}
+      />
 
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
         <Card>
           <h3 className="font-serif text-2xl mb-4">Sadaqah log</h3>
           <p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Total given</p>
@@ -60,6 +63,12 @@ function ZakatPage() {
             <Button onClick={() => sCreate.mutate(s)}>Log sadaqah</Button>
           </div>
         </Card>
+
+        <Card>
+          <h3 className="font-serif text-2xl mb-3">Wealth duas</h3>
+          <p className="font-quran text-2xl leading-loose mb-2" dir="rtl">اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ</p>
+          <p className="text-sm text-muted-foreground italic">“O Allah, suffice me with what You have made lawful, keeping me from what You have forbidden.”</p>
+        </Card>
       </div>
 
       <PageHeader title="Zakat entries" />
@@ -71,12 +80,6 @@ function ZakatPage() {
           </div>
         ))}
       </div>
-
-      <Card>
-        <h3 className="font-serif text-2xl mb-3">Wealth duas</h3>
-        <p className="text-sm mb-2" dir="rtl">اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ</p>
-        <p className="text-sm text-muted-foreground italic">"O Allah, suffice me with what You have made lawful, keeping me from what You have forbidden."</p>
-      </Card>
     </AppShell>
   );
 }

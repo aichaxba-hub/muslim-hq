@@ -16,3 +16,5 @@
 - [x] Add an English Quran translation and live word-by-word recitation highlighting
 - [x] Add an Answered Duas section with manual entry
 - [x] Add private daily Quran study goals with recitation-synced progress
+- [x] Replace the basic Zakat estimate with a seven-step personal Zakat calculator
+- [x] Add a top dua category insight to the Review page
