@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Moon, Sun, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { ReminderCenter } from "@/components/ReminderCenter";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
@@ -80,6 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
       </header>
+      <ReminderCenter />
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">{children}</main>
       <footer className="text-center text-xs text-muted-foreground py-8">
         Your deen, your pace. One prayer at a time.
