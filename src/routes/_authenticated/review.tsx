@@ -164,7 +164,7 @@ function ReviewPage() {
       </div>
 
       <Card className="mb-8">
-        <h3 className="font-serif text-2xl mb-4">{mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
+        <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "Yearly trends" : mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
         <div className="h-72">
           <ResponsiveContainer>
             <LineChart data={chart}>
