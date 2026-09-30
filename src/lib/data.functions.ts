@@ -468,7 +468,7 @@ export const resetAllData = createServerFn({ method: "POST" })
       "zakat_payments", "zakat_entries", "sadaqah_logs", "quran_study_goals",
     ];
     for (const table of tables) {
-      const { error } = await context.supabase.from(table).delete().eq("user_id", context.userId);
+      const { error } = await context.supabase.from(table as any).delete().eq("user_id", context.userId);
       if (error) throw error;
     }
     return { ok: true };
