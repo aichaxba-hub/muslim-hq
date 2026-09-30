@@ -19,11 +19,20 @@ type Verse = {
   text_uthmani: string;
   page_number: number;
   juz_number: number;
-};
-
-type AudioFile = {
-  verse_key: string;
-  url: string;
+  words: Array<{
+    id: number;
+    position: number;
+    char_type_name: "word" | "end";
+    text_uthmani: string;
+  }>;
+  translations: Array<{
+    resource_id: number;
+    text: string;
+  }>;
+  audio?: {
+    url: string;
+    segments?: Array<[number, number, number, number]>;
+  };
 };
 
 const QURAN_API = "https://api.quran.com/api/v4";
@@ -36,75 +45,110 @@ async function fetchChapters(): Promise<Chapter[]> {
 }
 
 async function fetchVerses(chapter: number): Promise<Verse[]> {
-  const response = await fetch(`${QURAN_API}/verses/by_chapter/${chapter}?fields=text_uthmani&per_page=300`);
+  const params = new URLSearchParams({
+    fields: "text_uthmani",
+    word_fields: "text_uthmani",
+    words: "true",
+    translations: "20",
+    audio: "7",
+    per_page: "300",
+  });
+  const response = await fetch(`${QURAN_API}/verses/by_chapter/${chapter}?${params}`);
   if (!response.ok) throw new Error("Could not load this surah.");
   const body = await response.json() as { verses?: Verse[] };
   return body.verses ?? [];
-}
-
-async function fetchAudio(chapter: number): Promise<AudioFile[]> {
-  const response = await fetch(`${QURAN_API}/quran/recitations/7?chapter_number=${chapter}`);
-  if (!response.ok) throw new Error("Could not load recitation audio.");
-  const body = await response.json() as { audio_files?: AudioFile[] };
-  return body.audio_files ?? [];
 }
 
 function audioUrl(path: string) {
   return path.startsWith("http") ? path : `https://verses.quran.com/${path}`;
 }
 
+function cleanTranslation(text: string) {
+  return text
+    .replace(/<sup[^>]*>.*?<\/sup>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
 export function QuranReader() {
   const [chapterId, setChapterId] = useState(1);
   const chapters = useQuery({ queryKey: ["quran-reader", "chapters"], queryFn: fetchChapters, staleTime: 1000 * 60 * 60 * 24 });
   const verses = useQuery({ queryKey: ["quran-reader", "verses", chapterId], queryFn: () => fetchVerses(chapterId), staleTime: 1000 * 60 * 60 * 24 });
-  const recitation = useQuery({ queryKey: ["quran-reader", "recitation", chapterId], queryFn: () => fetchAudio(chapterId), staleTime: 1000 * 60 * 60 * 24 });
   const chapter = chapters.data?.find(item => item.id === chapterId);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const animationRef = useRef<number | null>(null);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
+  const [playbackMs, setPlaybackMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playAll, setPlayAll] = useState(false);
 
   useEffect(() => () => {
     audioRef.current?.pause();
     audioRef.current = null;
+    if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
   }, []);
+
+  useEffect(() => {
+    if (!activeVerse || !playAll) return;
+    document.getElementById(`quran-verse-${activeVerse.replace(":", "-")}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [activeVerse, playAll]);
+
+  function stopProgressLoop() {
+    if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
+    animationRef.current = null;
+  }
+
+  function startProgressLoop(player: HTMLAudioElement) {
+    stopProgressLoop();
+    const update = () => {
+      setPlaybackMs(player.currentTime * 1000);
+      if (!player.paused && !player.ended) animationRef.current = requestAnimationFrame(update);
+    };
+    animationRef.current = requestAnimationFrame(update);
+  }
 
   function stopAudio() {
     audioRef.current?.pause();
     if (audioRef.current) audioRef.current.currentTime = 0;
+    stopProgressLoop();
     audioRef.current = null;
     setActiveVerse(null);
+    setPlaybackMs(0);
     setIsPlaying(false);
     setPlayAll(false);
   }
 
   function playVerse(verseKey: string, continueThroughSurah = false) {
-    const files = recitation.data ?? [];
-    const fileIndex = files.findIndex(item => item.verse_key === verseKey);
-    const file = files[fileIndex];
-    if (!file) return;
+    const verseList = verses.data ?? [];
+    const verseIndex = verseList.findIndex(item => item.verse_key === verseKey);
+    const verse = verseList[verseIndex];
+    if (!verse?.audio?.url) return;
 
     if (activeVerse === verseKey && audioRef.current) {
       if (audioRef.current.paused) {
         void audioRef.current.play();
-        setIsPlaying(true);
       } else {
         audioRef.current.pause();
-        setIsPlaying(false);
       }
       return;
     }
 
     audioRef.current?.pause();
-    const player = new Audio(audioUrl(file.url));
+    stopProgressLoop();
+    setPlaybackMs(0);
+    const player = new Audio(audioUrl(verse.audio.url));
     audioRef.current = player;
     setActiveVerse(verseKey);
     setPlayAll(continueThroughSurah);
-    player.onplay = () => setIsPlaying(true);
-    player.onpause = () => setIsPlaying(false);
+    player.onplay = () => { setIsPlaying(true); startProgressLoop(player); };
+    player.onpause = () => { setIsPlaying(false); stopProgressLoop(); };
     player.onerror = () => stopAudio();
     player.onended = () => {
-      const next = files[fileIndex + 1];
+      const next = verseList[verseIndex + 1];
       if (continueThroughSurah && next) {
         playVerse(next.verse_key, true);
       } else {
@@ -154,14 +198,14 @@ export function QuranReader() {
         <div className="flex flex-wrap items-center gap-2 border-b border-border py-4">
           <Button
             variant="ghost"
-            disabled={recitation.isPending || !recitation.data?.length}
+            disabled={verses.isPending || !verses.data?.some(item => item.audio?.url)}
             onClick={() => {
-              const first = recitation.data?.[0];
+              const first = verses.data?.find(item => item.audio?.url);
               if (first) playVerse(activeVerse && playAll ? activeVerse : first.verse_key, true);
             }}
             aria-label={isPlaying && playAll ? "Pause surah recitation" : "Listen to surah"}
           >
-            {recitation.isPending ? <LoaderCircle className="mr-2 inline size-4 animate-spin" /> : isPlaying && playAll ? <Pause className="mr-2 inline size-4" /> : <Play className="mr-2 inline size-4" />}
+            {verses.isPending ? <LoaderCircle className="mr-2 inline size-4 animate-spin" /> : isPlaying && playAll ? <Pause className="mr-2 inline size-4" /> : <Play className="mr-2 inline size-4" />}
             {isPlaying && playAll ? "Pause recitation" : "Listen to surah"}
           </Button>
           {activeVerse && (
@@ -186,14 +230,18 @@ export function QuranReader() {
         ) : (
           <div className="divide-y divide-border">
             {verses.data?.map(verse => (
-              <article key={verse.id} className="py-7 first:pt-8">
+              <article
+                id={`quran-verse-${verse.verse_key.replace(":", "-")}`}
+                key={verse.id}
+                className={`scroll-mt-40 py-7 first:pt-8 ${activeVerse === verse.verse_key ? "bg-muted/45" : ""}`}
+              >
                 <div className="mb-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span className="grid size-8 shrink-0 place-items-center rounded-full ring-1 ring-border">{verse.verse_number}</span>
                     <Button
                       variant="ghost"
                       className="h-9 px-3"
-                      disabled={recitation.isPending || !recitation.data?.some(item => item.verse_key === verse.verse_key)}
+                      disabled={verses.isPending || !verse.audio?.url}
                       onClick={() => playVerse(verse.verse_key)}
                       aria-label={`${activeVerse === verse.verse_key && isPlaying ? "Pause" : "Play"} verse ${verse.verse_key}`}
                     >
@@ -204,8 +252,25 @@ export function QuranReader() {
                   <span>Juz {verse.juz_number} · Page {verse.page_number}</span>
                 </div>
                 <p lang="ar" dir="rtl" translate="no" className="font-quran text-right text-3xl leading-[2.25] md:text-4xl">
-                  {verse.text_uthmani}
+                  {verse.words?.length ? verse.words.map(word => {
+                    const segment = verse.audio?.segments?.find(item => item[1] === word.position);
+                    const isActiveWord = activeVerse === verse.verse_key && Boolean(segment) && playbackMs >= (segment?.[2] ?? 0) && playbackMs < (segment?.[3] ?? 0);
+                    return (
+                      <span
+                        key={word.id}
+                        className={isActiveWord ? "rounded-md bg-accent px-1 text-accent-foreground ring-1 ring-ring/30 transition-colors" : "px-1 transition-colors"}
+                        aria-current={isActiveWord ? "true" : undefined}
+                      >
+                        {word.text_uthmani}
+                      </span>
+                    );
+                  }) : verse.text_uthmani}
                 </p>
+                {verse.translations?.[0]?.text && (
+                  <p lang="en" translate="no" className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
+                    {cleanTranslation(verse.translations[0].text)}
+                  </p>
+                )}
               </article>
             ))}
           </div>
@@ -230,7 +295,7 @@ export function QuranReader() {
           </a>
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-          Arabic text provided by Quran.com. The Clear Quran® translation opens on its official reader and is credited to Dr. Mustafa Khattab.
+          Arabic text, word timings, and Saheeh International English translation provided by Quran.com. The Clear Quran® opens on its official reader and is credited to Dr. Mustafa Khattab.
         </p>
       </section>
     </Card>
