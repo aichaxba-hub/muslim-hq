@@ -16,3 +16,4 @@
 - Quran study goals are private user-owned records; progress advances only when a planned ayah's audio finishes or the user marks the goal complete.
 - Answered duas are stored separately from the Dua Vault as private, user-owned gratitude journal entries.
 - The personal Zakat calculator uses selectable majority/Hanafi gold or silver nisab, counts short-term holdings fully, estimates long-term and pay-now retirement holdings at 30%, deducts currently due obligations, and applies 2.5% only when net wealth meets nisab.
+- Review's top dua category is the most common saved Dua Vault category created within the selected lifetime, year, or month.

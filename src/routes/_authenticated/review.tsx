@@ -2,14 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
+import { listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { Landmark, Users } from "lucide-react";
+import { BookHeart, Landmark, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/review")({
-  head: () => ({ meta: [{ title: "Review — Muslim HQ" }] }),
+  head: () => ({ meta: [
+    { title: "Worship Review — Muslim HQ" },
+    { name: "description", content: "Reflect on your Salah, Quran, fasting, dhikr, duas, giving, and journaling over a month, year, or lifetime." },
+    { property: "og:title", content: "Worship Review — Muslim HQ" },
+    { property: "og:description", content: "A calm, private review of your worship rhythms and spiritual practices." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ReviewPage,
 });
 
@@ -27,12 +34,14 @@ function ReviewPage() {
   const dl = useServerFn(listDhikr);
   const rl = useServerFn(listReflections);
   const sl = useServerFn(listSadaqah);
+  const dul = useServerFn(listDuas);
   const worship = useQuery({ queryKey: ["review", "w"], queryFn: () => wl({ data: { limit: 365 } }) });
   const quran = useQuery({ queryKey: ["review", "q"], queryFn: () => ql({ data: undefined as any }) });
   const fasting = useQuery({ queryKey: ["review", "f"], queryFn: () => fl({ data: undefined as any }) });
   const dhikr = useQuery({ queryKey: ["review", "d"], queryFn: () => dl({ data: undefined as any }) });
   const reflections = useQuery({ queryKey: ["review", "r"], queryFn: () => rl({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["review", "s"], queryFn: () => sl({ data: undefined as any }) });
+  const duas = useQuery({ queryKey: ["review", "duas"], queryFn: () => dul({ data: undefined as any }) });
 
   const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
@@ -128,6 +137,21 @@ function ReviewPage() {
     return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
   }, [mode, month, year, worship.data]);
 
+  const topDuaCategory = useMemo(() => {
+    const inRange = (date: string | null | undefined) => {
+      if (!date) return mode === "lifetime";
+      if (mode === "monthly") return inMonth(date, month);
+      if (mode === "annual") return date.slice(0, 4) === year;
+      return true;
+    };
+    const counts = new Map<string, number>();
+    (duas.data ?? []).filter((dua: any) => inRange(dua.created_at)).forEach((dua: any) => {
+      const category = dua.category?.trim() || "Uncategorized";
+      counts.set(category, (counts.get(category) ?? 0) + 1);
+    });
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] ?? null;
+  }, [duas.data, mode, month, year]);
+
   return (
     <AppShell>
       <PageHeader eyebrow="Review" title="A quiet audit" subtitle="Numbers do not measure sincerity — but they show up." />
@@ -166,6 +190,16 @@ function ReviewPage() {
       </div>
 
       <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : monthLabel(month)}</h3>
+      <Card className="mb-4">
+        <div className="flex items-center gap-3">
+          <div className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-[color:var(--sage)]"><BookHeart className="size-5" /></div>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Top dua category</p>
+            <p className="mt-1 font-serif text-2xl">{topDuaCategory?.[0] ?? "No duas saved"}</p>
+            <p className="text-xs text-muted-foreground">{topDuaCategory ? `${topDuaCategory[1]} saved ${topDuaCategory[1] === 1 ? "dua" : "duas"} in this period` : "Your most-saved category will appear here."}</p>
+          </div>
+        </div>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
         <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
