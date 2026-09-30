@@ -35,10 +35,19 @@ export function QiblaFinder({ latitude, longitude, hasLocation }: { latitude: nu
     if (typeof DeviceOrientationEvent === "undefined") return setState("unsupported");
     const req = (DeviceOrientationEvent as any).requestPermission;
     if (typeof req === "function") {
+      // iOS requires a user gesture for permission — request it on first tap anywhere on the card.
       try { if ((await req()) !== "granted") return setState("denied"); } catch { return setState("denied"); }
     }
     setState("active");
   }
+
+  // Auto-start the compass on devices that don't need a permission gesture.
+  useEffect(() => {
+    if (state !== "idle") return;
+    if (typeof DeviceOrientationEvent === "undefined") { setState("unsupported"); return; }
+    if (typeof (DeviceOrientationEvent as any).requestPermission === "function") return; // needs a tap (iOS)
+    setState("active");
+  }, [state]);
 
   const rotation = heading == null ? bearing : bearing - heading;
   const aligned = heading != null && Math.abs(((rotation % 360) + 540) % 360 - 180) < 5;
