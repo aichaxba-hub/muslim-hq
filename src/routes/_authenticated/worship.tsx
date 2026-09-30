@@ -107,7 +107,6 @@ function WorshipHub() {
           <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Optional Prayers</h4>
           <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).sunnah} onChange={e => upsert.mutate({ sunnah: e.target.checked })} /> Sunnah completed</label>
           <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).nafl} onChange={e => upsert.mutate({ nafl: e.target.checked })} /> Nafl completed</label>
-          <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).congregation} onChange={e => upsert.mutate({ congregation: e.target.checked })} /> Prayed in congregation</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={!!(l as any).jummah} onChange={e => upsert.mutate({ jummah: e.target.checked })} /> Jummah attended</label>
         </Card>
         <Card>
