@@ -43,7 +43,6 @@ function ReviewPage() {
   const duas = useQuery({ queryKey: ["review", "duas"], queryFn: () => dul({ data: undefined as any }) });
   const adl = useServerFn(listAnsweredDuas);
   const answeredDuas = useQuery({ queryKey: ["review", "answered"], queryFn: () => adl({ data: undefined as any }) });
-  const profileFn = useServerFn(getProfile);
   const zakatFn = useServerFn(listZakat);
   const paymentsFn = useServerFn(listZakatPayments);
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
