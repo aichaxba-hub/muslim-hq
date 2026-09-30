@@ -216,20 +216,21 @@ function ReviewPage() {
         </div>
       </Card>
 
-      <Card className="mb-8">
-        <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "Yearly trends" : mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
-        <div className="h-72">
-          <ResponsiveContainer>
-            <LineChart data={chart}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis dataKey="label" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="salah" stroke="var(--sage-deep)" name="Salah" />
-              <Line type="monotone" dataKey="pages" stroke="var(--gold)" name="Quran pages" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <Card>
+        <h3 className="font-serif text-2xl mb-1">Answered duas</h3>
+        <p className="text-xs text-muted-foreground mb-4">Gratitude, counted — {answeredDuaCounts.total} answered {answeredDuaCounts.total === 1 ? "dua" : "duas"} in this period.</p>
+        {answeredDuaCounts.byCategory.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No answered duas recorded yet — the ones you mark as answered will appear here.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {answeredDuaCounts.byCategory.map(([category, count]) => (
+              <div key={category} className="rounded-2xl ring-1 ring-border p-3">
+                <p className="text-sm font-medium truncate">{category}</p>
+                <p className="text-2xl font-serif mt-1">{count}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </AppShell>
   );
