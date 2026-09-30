@@ -107,24 +107,36 @@ function Dashboard() {
             {PRAYERS.map(p => {
               const status = (log.data?.[`${p}_status` as keyof typeof log.data] as string | null) ?? null;
               const time = formatTime(times[p]);
+              const d = log.data as any;
               return (
-                <div key={p} className={`flex items-center justify-between p-3 rounded-2xl ring-1 ring-border ${status ? "bg-[color:var(--sand-soft)]" : ""}`}>
-                  <div className="flex items-center gap-3">
-                    <span className={`size-2 rounded-full ${status === "on_time" ? "bg-[color:var(--sage)]" : status === "late" ? "bg-[color:var(--gold)]" : status === "qada" ? "bg-destructive" : "bg-muted"}`} />
-                    <span className="text-sm font-medium">{PRAYER_LABEL[p]}</span>
-                    <span className="text-xs text-muted-foreground">{time}</span>
+                <div key={p} className={`p-3 rounded-2xl ring-1 ring-border ${status ? "bg-[color:var(--sand-soft)]" : ""}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <span className={`size-2 rounded-full ${status === "on_time" ? "bg-[color:var(--sage)]" : status === "late" ? "bg-[color:var(--gold)]" : status === "qada" ? "bg-destructive" : "bg-muted"}`} />
+                      <span className="text-sm font-medium">{PRAYER_LABEL[p]}</span>
+                      <span className="text-xs text-muted-foreground">{time}</span>
+                    </div>
+                    <select
+                      value={status ?? ""}
+                      onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
+                      className="text-xs bg-transparent focus:outline-none cursor-pointer"
+                    >
+                      <option value="">— log —</option>
+                      <option value="on_time">On time</option>
+                      <option value="late">Late</option>
+                      <option value="qada">Qada</option>
+                      <option value="excused">Excused</option>
+                    </select>
                   </div>
-                  <select
-                    value={status ?? ""}
-                    onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
-                    className="text-xs bg-transparent focus:outline-none cursor-pointer"
-                  >
-                    <option value="">— log —</option>
-                    <option value="on_time">On time</option>
-                    <option value="late">Late</option>
-                    <option value="qada">Qada</option>
-                    <option value="excused">Excused</option>
-                  </select>
+                  <div className="mt-2">
+                    <PrayerPlaceToggles
+                      compact
+                      congregation={!!d?.[`${p}_congregation`]}
+                      masjid={!!d?.[`${p}_masjid`]}
+                      onToggleCongregation={v => upsert.mutate({ [`${p}_congregation`]: v })}
+                      onToggleMasjid={v => upsert.mutate({ [`${p}_masjid`]: v })}
+                    />
+                  </div>
                 </div>
               );
             })}
