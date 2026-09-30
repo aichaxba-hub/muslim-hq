@@ -2,11 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
+import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { BookHeart, Landmark, Users } from "lucide-react";
 import { useMemo, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [
@@ -42,6 +41,8 @@ function ReviewPage() {
   const reflections = useQuery({ queryKey: ["review", "r"], queryFn: () => rl({ data: undefined as any }) });
   const sadaqah = useQuery({ queryKey: ["review", "s"], queryFn: () => sl({ data: undefined as any }) });
   const duas = useQuery({ queryKey: ["review", "duas"], queryFn: () => dul({ data: undefined as any }) });
+  const adl = useServerFn(listAnsweredDuas);
+  const answeredDuas = useQuery({ queryKey: ["review", "answered"], queryFn: () => adl({ data: undefined as any }) });
 
   const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
@@ -106,36 +107,22 @@ function ReviewPage() {
     };
   }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
-  const chart = useMemo(() => {
-    if (mode === "lifetime") {
-      const map: Record<string, { label: string; pages: number; salah: number }> = {};
-      (worship.data ?? []).forEach((l: any) => {
-        const y = l.log_date.slice(0, 4);
-        map[y] ??= { label: y, pages: 0, salah: 0 };
-        map[y].pages += l.quran_pages ?? 0;
-        map[y].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
-      });
-      return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
-    }
-    if (mode === "annual") {
-      const map: Record<string, { label: string; pages: number; salah: number }> = {};
-      (worship.data ?? []).filter((l: any) => l.log_date.slice(0, 4) === year).forEach((l: any) => {
-        const m = l.log_date.slice(0, 7);
-        map[m] ??= { label: m, pages: 0, salah: 0 };
-        map[m].pages += l.quran_pages ?? 0;
-        map[m].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
-      });
-      return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
-    }
-    const map: Record<string, { label: string; pages: number; salah: number }> = {};
-    (worship.data ?? []).filter((l: any) => inMonth(l.log_date, month)).forEach((l: any) => {
-      const day = l.log_date.slice(8, 10);
-      map[day] ??= { label: day, pages: 0, salah: 0 };
-      map[day].pages += l.quran_pages ?? 0;
-      map[day].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
+  const answeredDuaCounts = useMemo(() => {
+    const inRange = (date: string | null | undefined) => {
+      if (!date) return mode === "lifetime";
+      if (mode === "monthly") return inMonth(date, month);
+      if (mode === "annual") return date.slice(0, 4) === year;
+      return true;
+    };
+    const rows = (answeredDuas.data ?? []).filter((a: any) => inRange(a.answered_date));
+    const counts = new Map<string, number>();
+    rows.forEach((a: any) => {
+      const category = a.category?.trim() || "My Duas";
+      counts.set(category, (counts.get(category) ?? 0) + 1);
     });
-    return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
-  }, [mode, month, year, worship.data]);
+    const byCategory = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    return { total: rows.length, byCategory };
+  }, [answeredDuas.data, mode, month, year]);
 
   const topDuaCategory = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
