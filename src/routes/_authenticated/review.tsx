@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
 import { PRAYERS } from "@/lib/prayer-times";
 import { useMemo, useState } from "react";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [{ title: "Review — Muslim HQ" }] }),
@@ -90,33 +90,6 @@ function ReviewPage() {
     return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
   }, [mode, month, worship.data]);
 
-  const monthlyData = useMemo(() => {
-    const [y, m] = month.split("-").map(Number);
-    const days = new Date(y, m, 0).getDate();
-    const wByDate = new Map<string, any>();
-    (worship.data ?? []).forEach((l: any) => wByDate.set(l.log_date, l));
-    const qByDate = new Map<string, number>();
-    (quran.data ?? []).forEach((l: any) => qByDate.set(l.log_date, (qByDate.get(l.log_date) ?? 0) + (l.pages ?? 0)));
-    const fByDate = new Map<string, any>();
-    (fasting.data ?? []).forEach((l: any) => fByDate.set(l.log_date, l));
-    const dByDate = new Map<string, number>();
-    (dhikr.data ?? []).forEach((l: any) => dByDate.set(l.log_date, (dByDate.get(l.log_date) ?? 0) + (l.count ?? 0)));
-
-    return Array.from({ length: days }, (_, i) => {
-      const day = String(i + 1).padStart(2, "0");
-      const date = `${month}-${day}`;
-      const w = wByDate.get(date);
-      const done = w && !w.excused ? PRAYERS.filter(p => w[`${p}_status`] && w[`${p}_status`] !== "qada").length : 0;
-      return {
-        label: String(i + 1),
-        salahPct: w && !w.excused ? Math.round((done / 5) * 100) : null,
-        pages: (w?.quran_pages ?? 0) + (qByDate.get(date) ?? 0),
-        fasted: fByDate.get(date)?.completed ? 1 : 0,
-        dhikr: (w?.dhikr_count ?? 0) + (dByDate.get(date) ?? 0),
-      };
-    });
-  }, [month, worship.data, quran.data, fasting.data, dhikr.data]);
-
   return (
     <AppShell>
       <PageHeader eyebrow="Review" title="A quiet audit" subtitle="Numbers do not measure sincerity — but they show up." />
@@ -172,67 +145,6 @@ function ReviewPage() {
           </ResponsiveContainer>
         </div>
       </Card>
-
-      {mode === "monthly" && (
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          <Card>
-            <h3 className="font-serif text-xl mb-3">Prayer completion (%)</h3>
-            <div className="h-56">
-              <ResponsiveContainer>
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="label" fontSize={11} />
-                  <YAxis domain={[0, 100]} fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="salahPct" stroke="var(--sage-deep)" name="Completion %" dot={false} connectNulls />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card>
-            <h3 className="font-serif text-xl mb-3">Quran pages</h3>
-            <div className="h-56">
-              <ResponsiveContainer>
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="label" fontSize={11} />
-                  <YAxis allowDecimals={false} fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="pages" stroke="var(--gold)" name="Pages" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card>
-            <h3 className="font-serif text-xl mb-3">Fasting days</h3>
-            <div className="h-56">
-              <ResponsiveContainer>
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="label" fontSize={11} />
-                  <YAxis allowDecimals={false} domain={[0, 1]} tickFormatter={(v: number) => (v === 1 ? "Yes" : "No")} fontSize={11} />
-                  <Tooltip formatter={(v: number) => (v === 1 ? "Fasted" : "No fast")} />
-                  <Bar dataKey="fasted" fill="var(--sage-deep)" name="Fasted" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card>
-            <h3 className="font-serif text-xl mb-3">Dua &amp; dhikr usage</h3>
-            <div className="h-56">
-              <ResponsiveContainer>
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="label" fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="dhikr" stroke="var(--gold)" name="Dhikr count" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </div>
-      )}
     </AppShell>
   );
 }
