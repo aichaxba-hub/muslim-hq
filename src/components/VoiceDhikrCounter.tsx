@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, LoaderCircle, Mic, MicOff, RotateCcw, Save, WandSparkles } from "lucide-react";
 import { Button, Card } from "@/components/AppShell";
-import { findDhikrMatches } from "@/lib/dhikr-voice";
+import { findStableDhikrMatches } from "@/lib/dhikr-voice";
 
 type SpeechRecognitionResultLike = {
   isFinal: boolean;
@@ -102,7 +102,7 @@ export function VoiceDhikrCounter({
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const result = event.results[index];
         const transcript = result?.[0]?.transcript?.trim() ?? "";
-        const matches = findDhikrMatches(transcript);
+        const matches = findStableDhikrMatches(transcript, result.isFinal);
         const alreadyCounted = countedByResultRef.current.get(index) ?? 0;
         const newMatches = Math.max(0, matches.length - alreadyCounted);
         if (newMatches > 0) {
