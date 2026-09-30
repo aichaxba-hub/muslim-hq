@@ -15,5 +15,6 @@
 - Quran recitation audio streams client-side from Quran.com's verse audio API using Mishary Rashid Alafasy, with no audio stored by the app.
 - Quran study goals are private user-owned records; progress advances only when a planned ayah's audio finishes or the user marks the goal complete.
 - Answered duas are stored separately from the Dua Vault as private, user-owned gratitude journal entries.
-- The personal Zakat calculator uses selectable majority/Hanafi gold or silver nisab, counts short-term holdings fully, estimates long-term and pay-now retirement holdings at 30%, deducts currently due obligations, and applies 2.5% only when net wealth meets nisab.
+- The personal Zakat calculator uses majority gold or silver nisab, counts short-term holdings fully, estimates long-term and pay-now retirement holdings at 30%, deducts currently due obligations, and applies 2.5% only when net wealth meets nisab.
+- Hawl reminders are derived from the saved anniversary at view time, not scheduled, because no external delivery or persisted status is needed.
 - Review's top dua category is the most common saved Dua Vault category created within the selected lifetime, year, or month.

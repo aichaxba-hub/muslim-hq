@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr } from "@/lib/data.functions";
+import { getProfile, listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
+import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { BookHeart, Landmark, Users } from "lucide-react";
+import { BookHeart, CalendarDays, Landmark, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/review")({
@@ -43,6 +44,15 @@ function ReviewPage() {
   const duas = useQuery({ queryKey: ["review", "duas"], queryFn: () => dul({ data: undefined as any }) });
   const adl = useServerFn(listAnsweredDuas);
   const answeredDuas = useQuery({ queryKey: ["review", "answered"], queryFn: () => adl({ data: undefined as any }) });
+  const profileFn = useServerFn(getProfile);
+  const zakatFn = useServerFn(listZakat);
+  const paymentsFn = useServerFn(listZakatPayments);
+  const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
+  const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
+  const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
+  const anniversary = profile.data?.zakat_anniversary;
+  const hawl = anniversary ? hawlProgress(anniversary) : null;
+  const reminder = anniversary ? hawlReminder(anniversary) : null;
 
   const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
@@ -139,9 +149,27 @@ function ReviewPage() {
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] ?? null;
   }, [duas.data, mode, month, year]);
 
+  const zakatTotals = useMemo(() => {
+    const inRange = (date: string | null | undefined) => mode === "lifetime" || !!date && (mode === "annual" ? date.slice(0, 4) === year : inMonth(date, month));
+    const entries = (zakat.data ?? []).filter((entry: any) => inRange(entry.created_at));
+    const ids = new Set(entries.map(entry => entry.id));
+    const due = entries.reduce((sum, entry) => sum + Number(entry.zakat_due ?? 0), 0);
+    const paid = (payments.data ?? []).filter(payment => ids.has(payment.zakat_entry_id)).reduce((sum, payment) => sum + Number(payment.amount), 0);
+    return { due, paid, remaining: Math.max(0, due - paid) };
+  }, [zakat.data, payments.data, mode, month, year]);
+
   return (
     <AppShell>
       <PageHeader eyebrow="Review" title="A quiet audit" subtitle="Numbers do not measure sincerity — but they show up." />
+
+      <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
+        <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
+          <h2 className="font-serif text-2xl">Zakat & Hawl</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{reminder ? <strong className="font-medium text-foreground" role="status">{reminder.message}</strong> : hawl ? `${hawl.daysRemaining} days until your next Zakat anniversary` : "Set your Zakat anniversary to see when it is approaching."}</p>
+          {hawl && <p className="mt-1 text-xs text-muted-foreground">Estimated anniversary: {hawl.due.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} · Local moon sighting may differ.</p>}
+          <Link to="/zakat" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4">{hawl ? "Review Zakat" : "Set anniversary"}</Link>
+        </div></div>
+      </section>
 
       <div className="flex flex-wrap items-center gap-3 mb-8">
         <div className="flex rounded-full border border-[color:var(--sand)] overflow-hidden">
@@ -197,6 +225,9 @@ function ReviewPage() {
         <Stat label="Fasts" value={stats.fastsCompleted} />
         <Stat label="Dhikr total" value={stats.dhikrTotal} />
         <Stat label="Sadaqah" value={stats.sadaqahTotal.toLocaleString()} />
+        <Stat label="Zakat due" value={zakat.isLoading ? "…" : zakatTotals.due.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
+        <Stat label="Zakat paid" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
+        <Stat label="Zakat remaining" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Reflections" value={stats.reflectionsCount} />
         <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
         <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />

@@ -19,8 +19,9 @@
 - [x] Replace the basic Zakat estimate with a seven-step personal Zakat calculator
 - [x] Add a top dua category insight to the Review page
 - [x] Review page: remove the trends chart and add an "Answered duas" section (total + per-category counts for the selected period)
-- [ ] Show dollar amounts in the Sadaqah log
-- [ ] Add live GoldAPI gold and silver prices to the Zakat calculator
-- [ ] Add a Zakat al-Fitr calculator with household and food-price inputs
-- [ ] Save a Zakat anniversary and show Hawl progress
-- [ ] Record Zakat payments and mark fully paid entries
+- [x] Show dollar amounts in the Sadaqah log
+- [x] Add GoldAPI gold and silver price integration to the Zakat calculator (provider currently rejects requests)
+- [x] Add a Zakat al-Fitr calculator with household and food-price inputs
+- [x] Save a Zakat anniversary and show Hawl progress
+- [x] Record Zakat payments and mark fully paid entries
+- [x] Show an in-app reminder in Zakat and Review within 30 days of the Hawl anniversary; show Review payment totals
