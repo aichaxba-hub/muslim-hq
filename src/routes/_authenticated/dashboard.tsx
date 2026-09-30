@@ -33,6 +33,14 @@ function Dashboard() {
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
   const log = useQuery({ queryKey: ["worship", today], queryFn: () => todayFn({ data: { date: today } }) });
   const history = useQuery({ queryKey: ["worship-history"], queryFn: () => historyFn({ data: { limit: 60 } }) });
+  const zakatFn = useServerFn(listZakat);
+  const paymentsFn = useServerFn(listZakatPayments);
+  const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
+  const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
+
+  const anniversary = profile.data?.zakat_anniversary;
+  const hawl = anniversary ? hawlProgress(anniversary) : null;
+  const reminder = anniversary ? hawlReminder(anniversary) : null;
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: today, ...patch } as any }),
