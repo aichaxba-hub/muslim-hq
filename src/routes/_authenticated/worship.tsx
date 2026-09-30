@@ -60,7 +60,7 @@ function WorshipHub() {
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <Card>
-          <h3 className="font-serif text-2xl mb-4">The Five</h3>
+          <h3 className="font-serif text-2xl mb-4">The Fard</h3>
           <div className="space-y-2">
             {PRAYERS.map(p => (
               <div key={p} className="p-3 rounded-2xl ring-1 ring-border">
