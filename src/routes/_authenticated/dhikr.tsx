@@ -5,9 +5,19 @@ import { useServerFn } from "@tanstack/react-start";
 import { createDhikr, listDhikr } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
+import { VoiceDhikrCounter } from "@/components/VoiceDhikrCounter";
 
 export const Route = createFileRoute("/_authenticated/dhikr")({
-  head: () => ({ meta: [{ title: "Dhikr — Muslim HQ" }] }),
+  head: () => ({
+    meta: [
+      { title: "Dhikr Counter — Muslim HQ" },
+      { name: "description", content: "Count dhikr by tap or voice, then save each remembrance session privately." },
+      { property: "og:title", content: "Dhikr Counter — Muslim HQ" },
+      { property: "og:description", content: "Count dhikr by tap or voice, then save each remembrance session privately." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: DhikrPage,
 });
 const CATS = ["SubhanAllah", "Alhamdulillah", "Allahu Akbar", "La ilaha illa Allah", "Astaghfirullah", "Salawat", "Other"];
@@ -37,6 +47,16 @@ function DhikrPage() {
           <Button variant="ghost" onClick={() => setTaps(0)}>Reset</Button>
         </div>
       </Card>
+
+      <VoiceDhikrCounter
+        onUseCount={(count, category) => {
+          setForm(current => ({
+            ...current,
+            count,
+            category: category && CATS.includes(category) ? category : current.category,
+          }));
+        }}
+      />
 
       <Card className="mb-6">
         <h3 className="font-serif text-2xl mb-4">Log a session</h3>

@@ -7,3 +7,4 @@
 - [x] Dua audio player
 - [x] Ramadan plan page + daily checklist
 - [x] Focus Worship tab into a Salah-only daily log
+- [x] Add hands-free voice recognition and counting to the Dhikr tab
