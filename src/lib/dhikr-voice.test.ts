@@ -37,7 +37,7 @@ describe("dhikr voice phrase matching", () => {
 
   it("counts SubhanAllah alone without matching the longer tasbih phrase", () => {
     assert.deepEqual(categories("subhan allah"), ["SubhanAllah"]);
-i  });
+  });
 
   it("rejects partial phrases and unrelated speech", () => {
     assert.deepEqual(categories("سبحان random words الحمد weather today الله"), []);
