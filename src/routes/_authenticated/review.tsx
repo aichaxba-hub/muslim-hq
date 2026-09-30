@@ -90,6 +90,33 @@ function ReviewPage() {
     return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
   }, [mode, month, worship.data]);
 
+  const monthlyData = useMemo(() => {
+    const [y, m] = month.split("-").map(Number);
+    const days = new Date(y, m, 0).getDate();
+    const wByDate = new Map<string, any>();
+    (worship.data ?? []).forEach((l: any) => wByDate.set(l.log_date, l));
+    const qByDate = new Map<string, number>();
+    (quran.data ?? []).forEach((l: any) => qByDate.set(l.log_date, (qByDate.get(l.log_date) ?? 0) + (l.pages ?? 0)));
+    const fByDate = new Map<string, any>();
+    (fasting.data ?? []).forEach((l: any) => fByDate.set(l.log_date, l));
+    const dByDate = new Map<string, number>();
+    (dhikr.data ?? []).forEach((l: any) => dByDate.set(l.log_date, (dByDate.get(l.log_date) ?? 0) + (l.count ?? 0)));
+
+    return Array.from({ length: days }, (_, i) => {
+      const day = String(i + 1).padStart(2, "0");
+      const date = `${month}-${day}`;
+      const w = wByDate.get(date);
+      const done = w && !w.excused ? PRAYERS.filter(p => w[`${p}_status`] && w[`${p}_status`] !== "qada").length : 0;
+      return {
+        label: String(i + 1),
+        salahPct: w && !w.excused ? Math.round((done / 5) * 100) : null,
+        pages: (w?.quran_pages ?? 0) + (qByDate.get(date) ?? 0),
+        fasted: fByDate.get(date)?.completed ? 1 : 0,
+        dhikr: (w?.dhikr_count ?? 0) + (dByDate.get(date) ?? 0),
+      };
+    });
+  }, [month, worship.data, quran.data, fasting.data, dhikr.data]);
+
   return (
     <AppShell>
       <PageHeader eyebrow="Review" title="A quiet audit" subtitle="Numbers do not measure sincerity — but they show up." />
