@@ -149,7 +149,7 @@ function ReviewPage() {
         )}
       </div>
 
-      <h3 className="font-serif text-2xl mb-4">{mode === "annual" ? "This year" : monthLabel(month)}</h3>
+      <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : monthLabel(month)}</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
         <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
