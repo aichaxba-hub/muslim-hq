@@ -18,6 +18,7 @@ export const VOICE_DHIKR_CATEGORIES = [
   "Salawat",
   "La hawla wa la quwwata illa billah",
   "HasbunAllahu wa ni'mal wakeel",
+  "Subhanallahi wa bihamdihi, subhanallahil azeem",
 ] as const;
 
 const PHRASES: DhikrPhrase[] = [
@@ -75,6 +76,13 @@ const PHRASES: DhikrPhrase[] = [
     variants: [
       /(?:^|\s)حسبنا\s+الله\s+ونعم\s+الوكيل(?=\s|$)/gu,
       /(?:^|\s)hasbun(?:a)?\s+allahu?\s+wa\s+ni(?:m|am)al\s+wakeel(?=\s|$)/gu,
+    ],
+  },
+  {
+    category: "Subhanallahi wa bihamdihi, subhanallahil azeem",
+    variants: [
+      /(?:^|\s)سبحان\s+الله\s+وبحمده\s+سبحان\s+الله\s+العظيم(?=\s|$)/gu,
+      /(?:^|\s)subhan(?:a)?\s*allahi\s+wa\s+bi\s?hamdihi\s+subhan(?:a)?\s*allahil\s+(?:az(?:e|i)?em|adheem|azim)(?=\s|$)/gu,
     ],
   },
 ];
