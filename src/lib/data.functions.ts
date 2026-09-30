@@ -459,6 +459,21 @@ export const createSadaqah = createServerFn({ method: "POST" })
     return row;
   });
 
+export const resetAllData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const tables = [
+      "worship_logs", "qada_prayers", "quran_logs", "fasting_logs", "dhikr_logs",
+      "duas", "answered_duas", "reflections", "goals",
+      "zakat_payments", "zakat_entries", "sadaqah_logs", "quran_study_goals",
+    ];
+    for (const table of tables) {
+      const { error } = await context.supabase.from(table).delete().eq("user_id", context.userId);
+      if (error) throw error;
+    }
+    return { ok: true };
+  });
+
 export const deleteAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
