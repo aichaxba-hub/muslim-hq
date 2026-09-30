@@ -77,6 +77,10 @@ function WorshipHub() {
         <span className="text-xs text-muted-foreground">Viewing {date}</span>
       </div>
 
+      <div className="mb-6">
+        <QiblaFinder latitude={coords.latitude} longitude={coords.longitude} hasLocation={!!profile.data?.latitude} />
+      </div>
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <Card>
           <h3 className="font-serif text-2xl mb-4">The Fard</h3>
