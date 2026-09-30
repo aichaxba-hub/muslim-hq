@@ -11,7 +11,6 @@ const NAV = [
   { to: "/qada", label: "Qada" },
   { to: "/quran", label: "Quran" },
   { to: "/fasting", label: "Fasting" },
-  { to: "/ramadan", label: "Ramadan" },
   { to: "/dhikr", label: "Dhikr" },
   { to: "/duas", label: "Duas" },
   { to: "/goals", label: "Goals" },
