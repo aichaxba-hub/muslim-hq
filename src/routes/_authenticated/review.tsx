@@ -67,6 +67,16 @@ function ReviewPage() {
       if (st === "qada") qada++;
     }));
     const jummah = w.filter((l: any) => l.jummah).length;
+
+    // Congregation / masjid tallies — the two are tracked independently.
+    let jamaah = 0, masjid = 0;
+    const perPrayer: Record<string, { jamaah: number; masjid: number }> = {};
+    w.forEach((l: any) => PRAYERS.forEach(p => {
+      perPrayer[p] ??= { jamaah: 0, masjid: 0 };
+      if (l[`${p}_congregation`]) { jamaah++; perPrayer[p].jamaah++; }
+      if (l[`${p}_masjid`]) { masjid++; perPrayer[p].masjid++; }
+    }));
+
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
       onTimePct: totalSlots ? Math.round((onTime / totalSlots) * 100) : 0,
@@ -78,6 +88,11 @@ function ReviewPage() {
       jummahRate: eligible.length ? Math.round((jummah / eligible.length) * 100) : 0,
       sadaqahTotal: s.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
       reflectionsCount: r.length,
+      jamaahCount: jamaah,
+      jamaahPct: done ? Math.round((jamaah / done) * 100) : 0,
+      masjidCount: masjid,
+      masjidPct: done ? Math.round((masjid / done) * 100) : 0,
+      perPrayer,
     };
   }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
