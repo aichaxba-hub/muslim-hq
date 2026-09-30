@@ -79,12 +79,22 @@ function ReviewPage() {
       sadaqahTotal: s.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
       reflectionsCount: r.length,
     };
-  }, [mode, month, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
+  }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
   const chart = useMemo(() => {
-    if (mode === "annual") {
+    if (mode === "lifetime") {
       const map: Record<string, { label: string; pages: number; salah: number }> = {};
       (worship.data ?? []).forEach((l: any) => {
+        const y = l.log_date.slice(0, 4);
+        map[y] ??= { label: y, pages: 0, salah: 0 };
+        map[y].pages += l.quran_pages ?? 0;
+        map[y].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
+      });
+      return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
+    }
+    if (mode === "annual") {
+      const map: Record<string, { label: string; pages: number; salah: number }> = {};
+      (worship.data ?? []).filter((l: any) => l.log_date.slice(0, 4) === year).forEach((l: any) => {
         const m = l.log_date.slice(0, 7);
         map[m] ??= { label: m, pages: 0, salah: 0 };
         map[m].pages += l.quran_pages ?? 0;
@@ -100,7 +110,7 @@ function ReviewPage() {
       map[day].salah += PRAYERS.filter(p => l[`${p}_status`] && l[`${p}_status`] !== "qada").length;
     });
     return Object.values(map).sort((a, b) => a.label.localeCompare(b.label));
-  }, [mode, month, worship.data]);
+  }, [mode, month, year, worship.data]);
 
   return (
     <AppShell>
@@ -108,7 +118,7 @@ function ReviewPage() {
 
       <div className="flex flex-wrap items-center gap-3 mb-8">
         <div className="flex rounded-full border border-[color:var(--sand)] overflow-hidden">
-          {(["annual", "monthly"] as const).map(m => (
+          {(["lifetime", "annual", "monthly"] as const).map(m => (
             <button
               key={m}
               onClick={() => setMode(m)}
@@ -118,6 +128,17 @@ function ReviewPage() {
             </button>
           ))}
         </div>
+        {mode === "annual" && (
+          <select
+            value={year}
+            onChange={e => setYear(e.target.value)}
+            className="rounded-full border border-[color:var(--sand)] bg-transparent px-4 py-2 text-sm"
+          >
+            {years.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        )}
         {mode === "monthly" && (
           <input
             type="month"
