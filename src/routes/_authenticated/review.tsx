@@ -52,7 +52,6 @@ function ReviewPage() {
   const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
   const anniversary = profile.data?.zakat_anniversary;
   const hawl = anniversary ? hawlProgress(anniversary) : null;
-  const reminder = anniversary ? hawlReminder(anniversary) : null;
 
   const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
