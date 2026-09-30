@@ -176,7 +176,23 @@ function ReviewPage() {
         <Stat label="Dhikr total" value={stats.dhikrTotal} />
         <Stat label="Sadaqah" value={stats.sadaqahTotal.toLocaleString()} />
         <Stat label="Reflections" value={stats.reflectionsCount} />
+        <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
+        <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
       </div>
+
+      <Card className="mb-8">
+        <h3 className="font-serif text-2xl mb-1">Jama'ah & Masjid by prayer</h3>
+        <p className="text-xs text-muted-foreground mb-4">Counted separately — a prayer can be one, both, or neither.</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {PRAYERS.map(p => (
+            <div key={p} className="rounded-2xl ring-1 ring-border p-3">
+              <p className="text-sm font-medium mb-2">{PRAYER_LABEL[p]}</p>
+              <p className="text-xs text-muted-foreground">👥 Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
+              <p className="text-xs text-muted-foreground">🕌 Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <Card className="mb-8">
         <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "Yearly trends" : mode === "annual" ? "Monthly trends" : `Daily trends — ${monthLabel(month)}`}</h3>
