@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Dhikr speech recognition runs entirely through the browser Web Speech API so microphone audio and transcripts are never stored or sent to the app backend.
+- Dhikr phrase recognition lives in a pure client-safe matcher module so phrase variants can be tested without microphone or UI dependencies.

@@ -10,3 +10,4 @@
 - [x] Add hands-free voice recognition and counting to the Dhikr tab
 - [x] Connect real microphone permission, continuous live recitation counting, and direct voice-session saving
 - [x] Rename “The Five” to “The Fard” in the Salah tab
+- [x] Restrict live voice counting to tested common dhikr phrases and pronunciation variants
