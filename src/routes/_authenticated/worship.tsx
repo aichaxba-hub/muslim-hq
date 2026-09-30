@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getWorshipLog, listWorshipLogs, upsertWorshipLog } from "@/lib/data.functions";
 import { FAST_TYPES } from "@/lib/fasting";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
+import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
 
