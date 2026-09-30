@@ -250,6 +250,7 @@ export type Database = {
       }
       qada_prayers: {
         Row: {
+          auto_logged: boolean
           completed: boolean | null
           created_at: string | null
           id: string
@@ -261,6 +262,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_logged?: boolean
           completed?: boolean | null
           created_at?: string | null
           id?: string
@@ -272,6 +274,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_logged?: boolean
           completed?: boolean | null
           created_at?: string | null
           id?: string
@@ -286,6 +289,8 @@ export type Database = {
       }
       quran_logs: {
         Row: {
+          auto_logged: boolean
+          completed_at: string | null
           created_at: string | null
           id: string
           juz: number | null
@@ -296,8 +301,11 @@ export type Database = {
           surah: string | null
           tafsir: boolean | null
           user_id: string
+          verses_completed: string | null
         }
         Insert: {
+          auto_logged?: boolean
+          completed_at?: string | null
           created_at?: string | null
           id?: string
           juz?: number | null
@@ -308,8 +316,11 @@ export type Database = {
           surah?: string | null
           tafsir?: boolean | null
           user_id: string
+          verses_completed?: string | null
         }
         Update: {
+          auto_logged?: boolean
+          completed_at?: string | null
           created_at?: string | null
           id?: string
           juz?: number | null
@@ -320,6 +331,7 @@ export type Database = {
           surah?: string | null
           tafsir?: boolean | null
           user_id?: string
+          verses_completed?: string | null
         }
         Relationships: []
       }
@@ -494,32 +506,46 @@ export type Database = {
           cause: string | null
           created_at: string | null
           id: string
+          kind: string
           log_date: string
           notes: string | null
           ramadan: boolean | null
           user_id: string
+          zakat_payment_id: string | null
         }
         Insert: {
           amount?: number | null
           cause?: string | null
           created_at?: string | null
           id?: string
+          kind?: string
           log_date: string
           notes?: string | null
           ramadan?: boolean | null
           user_id: string
+          zakat_payment_id?: string | null
         }
         Update: {
           amount?: number | null
           cause?: string | null
           created_at?: string | null
           id?: string
+          kind?: string
           log_date?: string
           notes?: string | null
           ramadan?: boolean | null
           user_id?: string
+          zakat_payment_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sadaqah_logs_zakat_payment_id_fkey"
+            columns: ["zakat_payment_id"]
+            isOneToOne: false
+            referencedRelation: "zakat_payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       worship_logs: {
         Row: {

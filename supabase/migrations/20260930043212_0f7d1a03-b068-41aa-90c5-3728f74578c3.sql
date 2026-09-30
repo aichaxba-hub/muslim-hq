@@ -1,0 +1,4 @@
+ALTER TABLE public.qada_prayers ADD COLUMN IF NOT EXISTS auto_logged boolean NOT NULL DEFAULT false;
+CREATE UNIQUE INDEX IF NOT EXISTS qada_auto_unique ON public.qada_prayers (user_id, prayer, missed_date) WHERE auto_logged;
+ALTER TABLE public.quran_logs ADD COLUMN IF NOT EXISTS verses_completed text, ADD COLUMN IF NOT EXISTS completed_at timestamptz, ADD COLUMN IF NOT EXISTS auto_logged boolean NOT NULL DEFAULT false;
+ALTER TABLE public.sadaqah_logs ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'sadaqah', ADD COLUMN IF NOT EXISTS zakat_payment_id uuid REFERENCES public.zakat_payments(id) ON DELETE SET NULL;
