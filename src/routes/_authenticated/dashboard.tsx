@@ -10,9 +10,19 @@ import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { CalendarDays } from "lucide-react";
+import { QiblaFinder } from "@/components/QiblaFinder";
+import { OnboardingDialog } from "@/components/OnboardingDialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Muslim HQ" }] }),
+  head: () => ({ meta: [
+    { title: "Dashboard — Muslim HQ" },
+    { name: "description", content: "Today's prayer times, Qibla direction, streaks, and Zakat reminders in one calm view." },
+    { property: "og:title", content: "Dashboard — Muslim HQ" },
+    { property: "og:description", content: "Today's prayer times, Qibla direction, streaks, and Zakat reminders." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Dashboard,
 });
 
@@ -44,19 +54,9 @@ function Dashboard() {
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: today, ...patch } as any }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["worship", today] }); qc.invalidateQueries({ queryKey: ["worship-history"] }); },
+    onSuccess: (row: any) => { qc.invalidateQueries({ queryKey: ["worship", today] }); qc.invalidateQueries({ queryKey: ["worship-history"] }); qc.invalidateQueries({ queryKey: ["qada"] }); if (row?.qadaAdded) toast(`${row.qadaAdded} added to your Qada list`); },
   });
 
-  // Ask for location once
-  useEffect(() => {
-    if (!profile.data) return;
-    if (profile.data.latitude || !navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => updateProfileFn({ data: { latitude: pos.coords.latitude, longitude: pos.coords.longitude, location_label: "Your location" } })
-        .then(() => qc.invalidateQueries({ queryKey: ["profile"] })),
-      () => {}
-    );
-  }, [profile.data, updateProfileFn, qc]);
 
   const coords = profile.data?.latitude
     ? { latitude: profile.data.latitude, longitude: profile.data.longitude!, label: profile.data.location_label ?? "", method: profile.data.calc_method, madhab: (profile.data as any).madhab }
@@ -80,6 +80,7 @@ function Dashboard() {
 
   return (
     <AppShell>
+      {profile.data && !profile.data.onboarding_complete && <OnboardingDialog initial={profile.data as any} />}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-[color:var(--sage)] font-medium">Assalamu alaikum</p>
@@ -91,6 +92,8 @@ function Dashboard() {
           <p className="text-xs text-muted-foreground mt-1 font-mono">{now.toLocaleTimeString()}</p>
         </div>
       </header>
+
+      <QiblaFinder latitude={coords.latitude} longitude={coords.longitude} hasLocation={!!profile.data?.latitude} />
 
       <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
         <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
