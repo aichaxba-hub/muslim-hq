@@ -3,7 +3,9 @@ import { AppShell, Button, Card, PageHeader } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getProfile, updateProfile } from "@/lib/data.functions";
+import { getProfile, updateProfile, deleteAccount } from "@/lib/data.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "@tanstack/react-router";
 import { CALC_METHODS, MADHABS, computeTimes, formatTime, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { toast } from "sonner";
 import { LocateFixed } from "lucide-react";
@@ -33,6 +35,19 @@ function ProfilePage() {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [locating, setLocating] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const navigate = useNavigate();
+  const deleteFn = useServerFn(deleteAccount);
+
+  const del = useMutation({
+    mutationFn: () => deleteFn({ data: undefined as any }),
+    onSuccess: async () => {
+      await supabase.auth.signOut();
+      toast.success("Your account and data have been deleted");
+      navigate({ to: "/" });
+    },
+    onError: () => toast.error("Could not delete your account — please try again"),
+  });
   const [method, setMethod] = useState("MoonsightingCommittee");
   const [madhab, setMadhab] = useState("shafi");
 
@@ -217,6 +232,30 @@ function ProfilePage() {
           {save.isPending ? "Saving…" : "Save changes"}
         </Button>
       </div>
+
+      <Card className="mt-10 ring-destructive/40">
+        <h2 className="font-serif text-xl mb-1 text-destructive">Delete account</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          This permanently deletes your account and all your data — prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records. This cannot be undone.
+        </p>
+        <label className="block text-sm text-muted-foreground mb-1.5">Type <span className="font-semibold text-foreground">DELETE</span> to confirm</label>
+        <input
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="DELETE"
+          className="w-full max-w-xs rounded-xl bg-background ring-1 ring-border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-destructive mb-3"
+        />
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => del.mutate()}
+            disabled={confirmText !== "DELETE" || del.isPending}
+            className="text-destructive ring-1 ring-destructive/40 hover:bg-destructive/10"
+          >
+            {del.isPending ? "Deleting…" : "Permanently delete my account"}
+          </Button>
+        </div>
+      </Card>
     </AppShell>
   );
 }
