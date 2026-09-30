@@ -4,6 +4,7 @@ export function hawlProgress(anniversary: string, now = new Date()) {
   if (Number.isNaN(start.getTime())) return null;
   const lunarYear = 354.367 * 86400000;
   const elapsed = now.getTime() - start.getTime();
+  if (elapsed < 0) return { due: start, percent: 0, daysRemaining: Math.ceil(-elapsed / 86400000) };
   const cycles = Math.max(0, Math.ceil(elapsed / lunarYear));
   const due = new Date(start.getTime() + cycles * lunarYear);
   const previous = new Date(due.getTime() - lunarYear);

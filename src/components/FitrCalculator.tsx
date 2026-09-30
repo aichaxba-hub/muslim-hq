@@ -7,7 +7,7 @@ export function FitrCalculator() {
   const [step, setStep] = useState(0);
   const [location, setLocation] = useState("");
   const [household, setHousehold] = useState(1);
-  const [method, setMethod] = useState<"food" | "income">("food");
+  const [method, setMethod] = useState<"food" | "income">("income");
   const [income, setIncome] = useState<"low" | "medium" | "high">("medium");
   const [selectedFood, setSelectedFood] = useState(foods[0]);
   const [prices, setPrices] = useState<Record<string, number>>({});
