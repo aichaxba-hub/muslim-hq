@@ -3,13 +3,11 @@ import { AppShell, Card } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listZakat, listZakatPayments, updateProfile, upsertWorshipLog } from "@/lib/data.functions";
+import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, updateProfile, upsertWorshipLog } from "@/lib/data.functions";
 import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
 import { computeTimes, DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
-import { CalendarDays } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Muslim HQ" }] }),
