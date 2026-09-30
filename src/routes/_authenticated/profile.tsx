@@ -3,7 +3,7 @@ import { AppShell, Button, Card, PageHeader } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getProfile, updateProfile, deleteAccount, resetAllData } from "@/lib/data.functions";
+import { getProfile, updateProfile, deleteAccount, resetAllData, exportAllData } from "@/lib/data.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { CALC_METHODS, MADHABS, computeTimes, formatTime, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
@@ -40,6 +40,22 @@ function ProfilePage() {
   const navigate = useNavigate();
   const deleteFn = useServerFn(deleteAccount);
   const resetFn = useServerFn(resetAllData);
+  const exportFn = useServerFn(exportAllData);
+
+  const exportData = useMutation({
+    mutationFn: () => exportFn({ data: undefined as any }),
+    onSuccess: (data) => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `muslim-hq-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Your data has been exported");
+    },
+    onError: () => toast.error("Could not export your data — please try again"),
+  });
 
   const reset = useMutation({
     mutationFn: () => resetFn({ data: undefined as any }),
@@ -245,7 +261,17 @@ function ProfilePage() {
         </Button>
       </div>
 
-      <Card className="mt-10 ring-destructive/40">
+      <Card className="mt-10">
+        <h2 className="font-serif text-xl mb-1">Export your data</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Download everything you've tracked — prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records — as a JSON file you keep.
+        </p>
+        <Button variant="ghost" onClick={() => exportData.mutate()} disabled={exportData.isPending}>
+          {exportData.isPending ? "Preparing your export…" : "Download my data"}
+        </Button>
+      </Card>
+
+      <Card className="mt-6 ring-destructive/40">
         <h2 className="font-serif text-xl mb-1 text-destructive">Reset all data</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Start fresh — this clears all your tracked data (prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records) but keeps your account and settings. This cannot be undone.

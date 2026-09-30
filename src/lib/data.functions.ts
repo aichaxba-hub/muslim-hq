@@ -459,14 +459,38 @@ export const createSadaqah = createServerFn({ method: "POST" })
     return row;
   });
 
+const USER_DATA_TABLES = [
+  "worship_logs", "qada_prayers", "quran_logs", "fasting_logs", "dhikr_logs",
+  "duas", "answered_duas", "reflections", "goals",
+  "zakat_payments", "zakat_entries", "sadaqah_logs", "quran_study_goals",
+] as const;
+
+export const exportAllData = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- export bundle mixes table shapes
+    const out: Record<string, any> = {
+      app: "Muslim HQ",
+      exported_at: new Date().toISOString(),
+      user_id: context.userId,
+    };
+    const { data: profile, error: pErr } = await context.supabase
+      .from("profiles").select("*").eq("id", context.userId).maybeSingle();
+    if (pErr) throw pErr;
+    out.profile = profile ?? null;
+    for (const table of USER_DATA_TABLES) {
+      const { data, error } = await context.supabase
+        .from(table as any).select("*").eq("user_id", context.userId);
+      if (error) throw error;
+      out[table] = data ?? [];
+    }
+    return out;
+  });
+
 export const resetAllData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const tables = [
-      "worship_logs", "qada_prayers", "quran_logs", "fasting_logs", "dhikr_logs",
-      "duas", "answered_duas", "reflections", "goals",
-      "zakat_payments", "zakat_entries", "sadaqah_logs", "quran_study_goals",
-    ];
+    const tables = [...USER_DATA_TABLES];
     for (const table of tables) {
       const { error } = await context.supabase.from(table as any).delete().eq("user_id", context.userId);
       if (error) throw error;
