@@ -8,4 +8,4 @@
 - [x] Ramadan plan page + daily checklist
 - [x] Focus Worship tab into a Salah-only daily log
 - [x] Add hands-free voice recognition and counting to the Dhikr tab
-- [ ] Connect real microphone permission, continuous live recitation counting, and direct voice-session saving
+- [x] Connect real microphone permission, continuous live recitation counting, and direct voice-session saving
