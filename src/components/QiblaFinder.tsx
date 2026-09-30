@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Compass } from "lucide-react";
-import { Card, Button } from "@/components/AppShell";
+import { Card } from "@/components/AppShell";
 
 const KAABA = { lat: 21.4225, lng: 39.8262 };
 
@@ -35,16 +35,25 @@ export function QiblaFinder({ latitude, longitude, hasLocation }: { latitude: nu
     if (typeof DeviceOrientationEvent === "undefined") return setState("unsupported");
     const req = (DeviceOrientationEvent as any).requestPermission;
     if (typeof req === "function") {
+      // iOS requires a user gesture for permission — request it on first tap anywhere on the card.
       try { if ((await req()) !== "granted") return setState("denied"); } catch { return setState("denied"); }
     }
     setState("active");
   }
 
+  // Auto-start the compass on devices that don't need a permission gesture.
+  useEffect(() => {
+    if (state !== "idle") return;
+    if (typeof DeviceOrientationEvent === "undefined") { setState("unsupported"); return; }
+    if (typeof (DeviceOrientationEvent as any).requestPermission === "function") return; // needs a tap (iOS)
+    setState("active");
+  }, [state]);
+
   const rotation = heading == null ? bearing : bearing - heading;
   const aligned = heading != null && Math.abs(((rotation % 360) + 540) % 360 - 180) < 5;
 
   return (
-    <Card className="mb-8">
+    <Card className="mb-8" onClick={state === "idle" ? start : undefined} role={state === "idle" ? "button" : undefined}>
       <div className="flex flex-col sm:flex-row items-center gap-6">
         <div className="relative size-40 shrink-0 rounded-full ring-1 ring-border bg-muted" aria-label={`Qibla is ${Math.round(bearing)} degrees from north`} role="img">
           {["N", "E", "S", "W"].map((d, i) => (
@@ -64,9 +73,8 @@ export function QiblaFinder({ latitude, longitude, hasLocation }: { latitude: nu
               state === "active" ? (heading == null ? "Move your phone in a figure-eight to calibrate." : aligned ? "You are facing the Qibla." : "Turn until the arrow points straight up.") :
               state === "denied" ? "Motion access was declined. Use the degree reading with any compass." :
               state === "unsupported" ? "This device has no compass sensor. Use the degree reading." :
-              "Hold your phone flat and start the live compass."}
+              "Tap anywhere on this card to enable the live compass."}
           </p>
-          {state !== "active" && <Button className="mt-3" onClick={start}>Start live compass</Button>}
         </div>
       </div>
     </Card>
