@@ -43,15 +43,11 @@ function ReviewPage() {
   const duas = useQuery({ queryKey: ["review", "duas"], queryFn: () => dul({ data: undefined as any }) });
   const adl = useServerFn(listAnsweredDuas);
   const answeredDuas = useQuery({ queryKey: ["review", "answered"], queryFn: () => adl({ data: undefined as any }) });
-  const profileFn = useServerFn(getProfile);
   const zakatFn = useServerFn(listZakat);
   const paymentsFn = useServerFn(listZakatPayments);
-  const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
   const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
-  const anniversary = profile.data?.zakat_anniversary;
-  const hawl = anniversary ? hawlProgress(anniversary) : null;
-  const reminder = anniversary ? hawlReminder(anniversary) : null;
+
 
   const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
