@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Muslim HQ — The Ultimate Islamic System" },
-      { name: "description", content: "A calm, all-in-one Islamic life dashboard. Track prayers, Quran, fasting, dhikr, duas, goals and reflection. Your deen, your pace." },
+      { name: "description", content: "Muslim HQ is a calm, all-in-one Islamic life dashboard: track your prayers, Quran, fasting, dhikr, duas, goals and reflection — your deen, your pace." },
       { property: "og:title", content: "Muslim HQ — The Ultimate Islamic System" },
       { property: "og:description", content: "A calm, all-in-one Islamic life dashboard. Your deen, your pace." },
       { property: "og:type", content: "website" },
