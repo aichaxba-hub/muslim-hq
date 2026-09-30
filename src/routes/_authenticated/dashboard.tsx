@@ -207,6 +207,16 @@ function Dashboard() {
         ))}
       </div>
 
+      {/* Zakat */}
+      <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
+        <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
+          <h2 className="font-serif text-2xl">Zakat</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{reminder ? <strong className="font-medium text-foreground" role="status">{reminder.message}</strong> : hawl ? `${hawl.daysRemaining} days until your next Zakat anniversary` : "Set your Zakat anniversary to see when it is approaching."}</p>
+          {hawl && <p className="mt-1 text-xs text-muted-foreground">Estimated anniversary: {hawl.due.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} · Local moon sighting may differ.</p>}
+          <Link to="/zakat" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4">{hawl ? "Review Zakat" : "Set anniversary"}</Link>
+        </div></div>
+      </section>
+
       {/* Quick links */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
