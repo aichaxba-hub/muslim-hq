@@ -11,6 +11,7 @@ import { AYAT_BANNERS } from "@/lib/dua-seed";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { CalendarDays } from "lucide-react";
 import { QiblaFinder } from "@/components/QiblaFinder";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { OnboardingDialog } from "@/components/OnboardingDialog";
 import { toast } from "sonner";
 
@@ -89,6 +90,7 @@ function Dashboard() {
           <p>{formatGregorian()}</p>
           <p className="text-[color:var(--sage)]">{formatHijri()} AH</p>
           <p className="text-xs text-muted-foreground mt-1 font-mono">{now.toLocaleTimeString()}</p>
+          <div className="mt-2 flex md:justify-end"><InstallAppButton /></div>
         </div>
       </header>
 
