@@ -12,6 +12,10 @@ export const Route = createFileRoute("/_authenticated/ramadan")({
   head: () => ({ meta: [
     { title: "Ramadan Plan — Muslim HQ" },
     { name: "description", content: "Set your Ramadan goals and tick off a gentle daily checklist." },
+    { property: "og:title", content: "Ramadan Plan — Muslim HQ" },
+    { property: "og:description", content: "Daily salah, Quran, fasting and dua goals with a gentle Ramadan checklist." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: RamadanPage,
 });

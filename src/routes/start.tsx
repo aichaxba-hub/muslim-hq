@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/start")({
-  head: () => ({ meta: [{ title: "Start Here — Muslim HQ" }, { name: "description", content: "A gentle 3-day starter plan for using Muslim HQ." }] }),
+head: () => ({ meta: [
+    { title: "Start Here — Muslim HQ" },
+    { name: "description", content: "A gentle 3-day starter plan for using Muslim HQ." },
+    { property: "og:title", content: "Start Here — Muslim HQ" },
+    { property: "og:description", content: "A gentle 3-day starter plan for building your worship rhythm with Muslim HQ." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: StartHere,
 });
 
