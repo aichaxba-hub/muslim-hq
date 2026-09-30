@@ -132,7 +132,7 @@ function Dashboard() {
                 <div key={p} className={`p-3 rounded-2xl ring-1 ring-border ${status ? "bg-[color:var(--sand-soft)]" : ""}`}>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      <span className={`size-2 rounded-full ${status === "on_time" ? "bg-[color:var(--sage)]" : status === "late" ? "bg-[color:var(--gold)]" : status === "qada" ? "bg-destructive" : "bg-muted"}`} />
+                      <span className={`size-2 rounded-full ${status === "on_time" ? "bg-[color:var(--sage)]" : status === "late" ? "bg-[color:var(--gold)]" : status === "qada" || status === "missed" ? "bg-destructive" : "bg-muted"}`} />
                       <span className="text-sm font-medium">{PRAYER_LABEL[p]}</span>
                       <span className="text-xs text-muted-foreground">{time}</span>
                     </div>
@@ -242,7 +242,7 @@ function computeStreaks(logs: any[]) {
   const sorted = [...logs].sort((a, b) => (a.log_date < b.log_date ? 1 : -1));
   const dayComplete = (l: any) => l.excused || PRAYERS.every(p => {
     const s = l[`${p}_status`];
-    return s && s !== "qada";
+    return s && s !== "qada" && s !== "missed";
   });
   const dayQuran = (l: any) => (l.quran_pages ?? 0) > 0 || (l.quran_minutes ?? 0) > 0;
   const dayDhikr = (l: any) => (l.dhikr_count ?? 0) > 0;

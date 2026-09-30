@@ -78,9 +78,9 @@ function ReviewPage() {
     let done = 0, onTime = 0, qada = 0;
     eligible.forEach((l: any) => PRAYERS.forEach(p => {
       const st = l[`${p}_status`];
-      if (st && st !== "qada") done++;
+      if (st && st !== "qada" && st !== "missed") done++;
       if (st === "on_time") onTime++;
-      if (st === "qada") qada++;
+      if (st === "qada" || st === "missed") qada++;
     }));
     const jummah = w.filter((l: any) => l.jummah).length;
 

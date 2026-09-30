@@ -152,7 +152,7 @@ function WorshipHub() {
       <PageHeader eyebrow="History" title="Recent days" />
       <div className="grid gap-2">
         {(history.data ?? []).slice(0, 30).map((r: any) => {
-          const done = PRAYERS.filter(p => r[`${p}_status`] && r[`${p}_status`] !== "qada").length;
+          const done = PRAYERS.filter(p => r[`${p}_status`] && !["qada","missed"].includes(r[`${p}_status`])).length;
           return (
             <button key={r.id} onClick={() => setDate(r.log_date)} className="text-left flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:bg-muted transition">
               <div>
