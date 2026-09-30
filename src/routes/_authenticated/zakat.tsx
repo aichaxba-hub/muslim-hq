@@ -8,7 +8,7 @@ import { useState } from "react";
 import { ZakatCalculator, type ZakatCalculation } from "@/components/ZakatCalculator";
 import { toast } from "sonner";
 import { FitrCalculator } from "@/components/FitrCalculator";
-import { hawlProgress } from "@/lib/hawl";
+import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { CalendarDays, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/zakat")({
@@ -44,6 +44,7 @@ function ZakatPage() {
   const [paymentNote, setPaymentNote] = useState("");
   const anniversaryValue = profile.data?.zakat_anniversary ?? "";
   const progress = anniversaryValue ? hawlProgress(anniversaryValue) : null;
+  const reminder = anniversaryValue ? hawlReminder(anniversaryValue) : null;
   const anniversarySave = useMutation({ mutationFn: (value: string) => profileUpdateFn({ data: { zakat_anniversary: value } }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Zakat anniversary saved"); }, onError: () => toast.error("Could not save anniversary") });
   const paymentCreate = useMutation({ mutationFn: (p: { zakat_entry_id: string; amount: number; paid_on: string; note?: string }) => paymentCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); qc.invalidateQueries({ queryKey: ["zakat-payments"] }); setPaymentEntry(null); setPaymentAmount(""); setPaymentNote(""); toast.success("Payment recorded"); }, onError: (error) => toast.error(error instanceof Error ? error.message : "Could not record payment") });
   const zCreate = useMutation({ mutationFn: (p: any) => zCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); toast.success("Zakat entry saved"); }, onError: () => toast.error("Could not save the Zakat entry") });
@@ -70,6 +71,7 @@ function ZakatPage() {
         <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 text-primary" /><div><h2 className="font-serif text-2xl">Your Hawl</h2><p className="text-sm text-muted-foreground">Set the date your wealth first reached nisab. A lunar year later, review what you owe.</p></div></div>
         <div className="mt-4 flex flex-wrap items-end gap-3"><label className="grid gap-1 text-sm">Zakat anniversary date<input aria-label="Zakat anniversary date" type="date" className="h-11 rounded-lg bg-background px-3 ring-1 ring-border" value={anniversary || anniversaryValue} onChange={e => setAnniversary(e.target.value)} /></label><Button disabled={!anniversary || anniversarySave.isPending} onClick={() => anniversarySave.mutate(anniversary)}>Save date</Button></div>
         {progress && <div className="mt-5 max-w-2xl"><div className="flex flex-wrap justify-between gap-2 text-sm"><strong>{progress.daysRemaining === 0 ? "Zakat is due today" : `${progress.daysRemaining} days until Zakat is due`}</strong><span>{progress.due.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={progress.percent} aria-valuemin={0} aria-valuemax={100} aria-label="Hawl progress"><div className="h-full bg-primary transition-[width]" style={{ width: `${progress.percent}%` }} /></div><p className="mt-2 text-xs text-muted-foreground">{progress.percent}% of the current lunar year · Estimated date; local moon sighting may differ.</p></div>}
+        {reminder && <p className="mt-4 max-w-2xl border-l-2 border-primary bg-muted px-4 py-3 text-sm" role="status">{reminder.message}</p>}
       </section>
 
       <ZakatCalculator

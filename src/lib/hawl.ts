@@ -12,3 +12,15 @@ export function hawlProgress(anniversary: string, now = new Date()) {
   const daysRemaining = Math.max(0, Math.ceil((due.getTime() - now.getTime()) / 86400000));
   return { due, percent, daysRemaining };
 }
+
+/** In-app reminder derived from the saved anniversary; no background job required. */
+export function hawlReminder(anniversary: string, now = new Date()) {
+  const progress = hawlProgress(anniversary, now);
+  if (!progress || progress.daysRemaining > 30) return null;
+  return {
+    ...progress,
+    message: progress.daysRemaining === 0
+      ? "Your Zakat anniversary is today. Review your wealth and what you owe."
+      : `Your Zakat anniversary is in ${progress.daysRemaining} ${progress.daysRemaining === 1 ? "day" : "days"}. Review your wealth and prepare to give.`,
+  };
+}
