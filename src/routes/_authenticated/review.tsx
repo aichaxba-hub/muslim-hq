@@ -222,7 +222,7 @@ function ReviewPage() {
         {answeredDuaCounts.byCategory.length === 0 ? (
           <p className="text-sm text-muted-foreground">No answered duas recorded yet — the ones you mark as answered will appear here.</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {answeredDuaCounts.byCategory.map(([category, count]) => (
               <div key={category} className="rounded-2xl ring-1 ring-border p-3">
                 <p className="text-sm font-medium truncate">{category}</p>
