@@ -5,9 +5,17 @@ import { useServerFn } from "@tanstack/react-start";
 import { createQuranLog, listQuranLogs } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
+import { QuranReader } from "@/components/QuranReader";
 
 export const Route = createFileRoute("/_authenticated/quran")({
-  head: () => ({ meta: [{ title: "Quran Tracker — Muslim HQ" }] }),
+  head: () => ({ meta: [
+    { title: "Read & Track the Quran — Muslim HQ" },
+    { name: "description", content: "Read the Quran in Arabic, access The Clear Quran translation, and privately track your reading and reflections." },
+    { property: "og:title", content: "Read & Track the Quran — Muslim HQ" },
+    { property: "og:description", content: "Read the Quran in Arabic, access The Clear Quran translation, and privately track your reading and reflections." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: QuranPage,
 });
 
@@ -27,6 +35,8 @@ function QuranPage() {
   return (
     <AppShell>
       <PageHeader eyebrow="Quran" title="Reading & reflection" subtitle="Even a single page turns into light on Yawm al-Qiyamah." />
+
+      <QuranReader />
 
       <div className="grid grid-cols-3 gap-4 mb-8">
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>
