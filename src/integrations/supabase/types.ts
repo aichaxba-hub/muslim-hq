@@ -439,21 +439,31 @@ export type Database = {
       }
       worship_logs: {
         Row: {
+          asr_congregation: boolean | null
+          asr_masjid: boolean | null
           asr_status: string | null
           congregation: boolean | null
           created_at: string | null
           dhikr_count: number | null
+          dhuhr_congregation: boolean | null
+          dhuhr_masjid: boolean | null
           dhuhr_status: string | null
           excuse_type: string | null
           excused: boolean | null
+          fajr_congregation: boolean | null
+          fajr_masjid: boolean | null
           fajr_status: string | null
           fast_type: string | null
           fasted: boolean | null
           id: string
           intention: string | null
+          isha_congregation: boolean | null
+          isha_masjid: boolean | null
           isha_status: string | null
           jummah: boolean | null
           log_date: string
+          maghrib_congregation: boolean | null
+          maghrib_masjid: boolean | null
           maghrib_status: string | null
           nafl: boolean | null
           notes: string | null
@@ -467,21 +477,31 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          asr_congregation?: boolean | null
+          asr_masjid?: boolean | null
           asr_status?: string | null
           congregation?: boolean | null
           created_at?: string | null
           dhikr_count?: number | null
+          dhuhr_congregation?: boolean | null
+          dhuhr_masjid?: boolean | null
           dhuhr_status?: string | null
           excuse_type?: string | null
           excused?: boolean | null
+          fajr_congregation?: boolean | null
+          fajr_masjid?: boolean | null
           fajr_status?: string | null
           fast_type?: string | null
           fasted?: boolean | null
           id?: string
           intention?: string | null
+          isha_congregation?: boolean | null
+          isha_masjid?: boolean | null
           isha_status?: string | null
           jummah?: boolean | null
           log_date: string
+          maghrib_congregation?: boolean | null
+          maghrib_masjid?: boolean | null
           maghrib_status?: string | null
           nafl?: boolean | null
           notes?: string | null
@@ -495,21 +515,31 @@ export type Database = {
           user_id: string
         }
         Update: {
+          asr_congregation?: boolean | null
+          asr_masjid?: boolean | null
           asr_status?: string | null
           congregation?: boolean | null
           created_at?: string | null
           dhikr_count?: number | null
+          dhuhr_congregation?: boolean | null
+          dhuhr_masjid?: boolean | null
           dhuhr_status?: string | null
           excuse_type?: string | null
           excused?: boolean | null
+          fajr_congregation?: boolean | null
+          fajr_masjid?: boolean | null
           fajr_status?: string | null
           fast_type?: string | null
           fasted?: boolean | null
           id?: string
           intention?: string | null
+          isha_congregation?: boolean | null
+          isha_masjid?: boolean | null
           isha_status?: string | null
           jummah?: boolean | null
           log_date?: string
+          maghrib_congregation?: boolean | null
+          maghrib_masjid?: boolean | null
           maghrib_status?: string | null
           nafl?: boolean | null
           notes?: string | null
