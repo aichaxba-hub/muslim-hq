@@ -2,17 +2,22 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { createQuranLog, listQuranLogs } from "@/lib/data.functions";
+import { createQuranLog, createQuranStudyGoal, deleteQuranStudyGoal, listQuranLogs, listQuranStudyGoals, setQuranStudyGoalComplete, updateQuranStudyProgress } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
-import { QuranReader } from "@/components/QuranReader";
+import { QuranReader, type QuranStudySelection } from "@/components/QuranReader";
+import { BookOpenCheck, Check, Play, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+type Chapter = { id: number; name_simple: string; verses_count: number; translated_name: { name: string } };
+type StudyGoal = { id: string; goal_date: string; surah_number: number; surah_name: string; start_ayah: number; end_ayah: number; last_completed_ayah: number; completed: boolean; note: string | null };
 
 export const Route = createFileRoute("/_authenticated/quran")({
   head: () => ({ meta: [
     { title: "Read & Track the Quran — Muslim HQ" },
-    { name: "description", content: "Read the Quran in Arabic with an English translation, synchronized recitation, and private reading reflections." },
+    { name: "description", content: "Read the Quran with English translation, synchronized recitation, private daily study goals, and progress tracking." },
     { property: "og:title", content: "Read & Track the Quran — Muslim HQ" },
-    { property: "og:description", content: "Read the Quran in Arabic with an English translation, synchronized recitation, and private reading reflections." },
+    { property: "og:description", content: "Read the Quran with English translation, synchronized recitation, private daily study goals, and progress tracking." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
@@ -23,10 +28,47 @@ function QuranPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listQuranLogs);
   const createFn = useServerFn(createQuranLog);
+  const listGoalsFn = useServerFn(listQuranStudyGoals);
+  const createGoalFn = useServerFn(createQuranStudyGoal);
+  const progressFn = useServerFn(updateQuranStudyProgress);
+  const completeGoalFn = useServerFn(setQuranStudyGoalComplete);
+  const deleteGoalFn = useServerFn(deleteQuranStudyGoal);
   const { data = [] } = useQuery({ queryKey: ["quran"], queryFn: () => listFn({ data: undefined as any }) });
+  const { data: studyGoals = [], isPending: goalsPending } = useQuery({ queryKey: ["quran-study-goals"], queryFn: () => listGoalsFn({ data: undefined as any }) });
+  const { data: chapters = [] } = useQuery<Chapter[]>({ queryKey: ["quran-reader", "chapters"], queryFn: async () => {
+    const response = await fetch("https://api.quran.com/api/v4/chapters?language=en");
+    if (!response.ok) throw new Error("Could not load surahs");
+    return ((await response.json()) as { chapters?: Chapter[] }).chapters ?? [];
+  }, staleTime: 1000 * 60 * 60 * 24 });
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["quran"] }) });
+  const refreshGoals = () => qc.invalidateQueries({ queryKey: ["quran-study-goals"] });
+  const addGoal = useMutation({ mutationFn: (p: any) => createGoalFn({ data: p }), onSuccess: () => { refreshGoals(); setShowGoalForm(false); toast.success("Study goal added"); }, onError: () => toast.error("Could not add the study goal") });
+  const updateProgress = useMutation({ mutationFn: (p: { id: string; ayah: number }) => progressFn({ data: p }), onSuccess: refreshGoals });
+  const completeGoal = useMutation({ mutationFn: (p: { id: string; completed: boolean }) => completeGoalFn({ data: p }), onSuccess: refreshGoals });
+  const removeGoal = useMutation({ mutationFn: (id: string) => deleteGoalFn({ data: { id } }), onSuccess: () => { refreshGoals(); toast.success("Study goal removed"); } });
 
   const [form, setForm] = useState({ log_date: todayISO(), surah: "", juz: 0, pages: 0, minutes: 0, tafsir: false, reflection: "" });
+  const [showGoalForm, setShowGoalForm] = useState(false);
+  const [goalForm, setGoalForm] = useState({ goal_date: todayISO(), surah_number: 1, start_ayah: 1, end_ayah: 7, note: "" });
+  const [activeGoalId, setActiveGoalId] = useState<string | null>(null);
+  const [resumeRequest, setResumeRequest] = useState(0);
+  const selectedChapter = chapters.find(chapter => chapter.id === goalForm.surah_number);
+  const activeGoal = (studyGoals as StudyGoal[]).find(goal => goal.id === activeGoalId) ?? null;
+  const readerSelection: QuranStudySelection | null = activeGoal ? {
+    id: activeGoal.id, surahNumber: activeGoal.surah_number, surahName: activeGoal.surah_name,
+    startAyah: activeGoal.start_ayah, endAyah: activeGoal.end_ayah, lastCompletedAyah: activeGoal.last_completed_ayah,
+  } : null;
+
+  function chooseSurah(surahNumber: number) {
+    const chapter = chapters.find(item => item.id === surahNumber);
+    setGoalForm(current => ({ ...current, surah_number: surahNumber, start_ayah: 1, end_ayah: chapter?.verses_count ?? 1 }));
+  }
+
+  function openGoal(goal: StudyGoal, resume = false) {
+    setActiveGoalId(goal.id);
+    if (resume) setResumeRequest(value => value + 1);
+    window.setTimeout(() => document.getElementById("quran-reader")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  }
 
   const totalPages = data.reduce((s: number, r: any) => s + (r.pages ?? 0), 0);
   const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
@@ -36,7 +78,61 @@ function QuranPage() {
     <AppShell>
       <PageHeader eyebrow="Quran" title="Reading & reflection" subtitle="Even a single page turns into light on Yawm al-Qiyamah." />
 
-      <QuranReader />
+      <Card className="mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]"><BookOpenCheck className="size-4" /> My study plan</p>
+            <h2 className="font-serif text-2xl">Daily surah goals</h2>
+          </div>
+          <Button onClick={() => setShowGoalForm(value => !value)}><Plus className="mr-2 inline size-4" /> Add goal</Button>
+        </div>
+
+        {showGoalForm && (
+          <form className="mt-5 border-y border-border py-5" onSubmit={event => {
+            event.preventDefault();
+            if (!selectedChapter) return;
+            addGoal.mutate({ ...goalForm, surah_name: selectedChapter.name_simple });
+          }}>
+            <div className="grid gap-3 md:grid-cols-4">
+              <label className="grid gap-1.5 text-xs text-muted-foreground">Day<input aria-label="Goal date" type="date" value={goalForm.goal_date} onChange={event => setGoalForm({ ...goalForm, goal_date: event.target.value })} className="h-11 rounded-lg bg-background px-3 text-foreground ring-1 ring-border" /></label>
+              <label className="grid gap-1.5 text-xs text-muted-foreground md:col-span-2">Surah<select aria-label="Goal surah" value={goalForm.surah_number} onChange={event => chooseSurah(Number(event.target.value))} className="h-11 rounded-lg bg-background px-3 text-foreground ring-1 ring-border">{chapters.map(chapter => <option key={chapter.id} value={chapter.id}>{chapter.id}. {chapter.name_simple} · {chapter.verses_count} ayat</option>)}</select></label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="grid gap-1.5 text-xs text-muted-foreground">From ayah<input aria-label="Start ayah" min={1} max={selectedChapter?.verses_count} type="number" value={goalForm.start_ayah} onChange={event => setGoalForm({ ...goalForm, start_ayah: Number(event.target.value) })} className="h-11 min-w-0 rounded-lg bg-background px-3 text-foreground ring-1 ring-border" /></label>
+                <label className="grid gap-1.5 text-xs text-muted-foreground">To ayah<input aria-label="End ayah" min={goalForm.start_ayah} max={selectedChapter?.verses_count} type="number" value={goalForm.end_ayah} onChange={event => setGoalForm({ ...goalForm, end_ayah: Number(event.target.value) })} className="h-11 min-w-0 rounded-lg bg-background px-3 text-foreground ring-1 ring-border" /></label>
+              </div>
+            </div>
+            <textarea aria-label="Study intention" placeholder="Intention or note (optional)" maxLength={500} value={goalForm.note} onChange={event => setGoalForm({ ...goalForm, note: event.target.value })} className="mt-3 w-full rounded-lg bg-background px-3 py-2 ring-1 ring-border" rows={2} />
+            <Button type="submit" disabled={addGoal.isPending || !selectedChapter || goalForm.end_ayah > (selectedChapter?.verses_count ?? 0) || goalForm.end_ayah < goalForm.start_ayah} className="mt-3">{addGoal.isPending ? "Saving…" : "Save goal"}</Button>
+          </form>
+        )}
+
+        <div className="mt-5 grid gap-3">
+          {goalsPending && <div className="h-24 animate-pulse rounded-lg bg-muted" />}
+          {!goalsPending && studyGoals.length === 0 && <p className="py-5 text-sm text-muted-foreground">No study goals yet. Begin with one surah or a few ayat today.</p>}
+          {(studyGoals as StudyGoal[]).map(goal => {
+            const total = goal.end_ayah - goal.start_ayah + 1;
+            const reached = goal.last_completed_ayah >= goal.start_ayah ? Math.min(total, goal.last_completed_ayah - goal.start_ayah + 1) : 0;
+            const percent = goal.completed ? 100 : Math.round(reached / total * 100);
+            return <article key={goal.id} className="rounded-lg border border-border p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2"><h3 className="font-medium">{goal.surah_name} · ayat {goal.start_ayah}–{goal.end_ayah}</h3><span className="text-xs text-muted-foreground">{goal.goal_date === todayISO() ? "Today" : goal.goal_date}</span>{goal.completed && <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">Complete</span>}</div>
+                  {goal.note && <p className="mt-1 text-sm text-muted-foreground">{goal.note}</p>}
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  <Button variant="ghost" className="h-9 px-3" onClick={() => openGoal(goal)}><BookOpenCheck className="mr-1.5 inline size-4" /> Open</Button>
+                  {!goal.completed && <Button variant="ghost" className="h-9 px-3" onClick={() => openGoal(goal, true)}><Play className="mr-1.5 inline size-4" /> Resume</Button>}
+                  <Button variant="ghost" className="h-9 px-3" onClick={() => completeGoal.mutate({ id: goal.id, completed: !goal.completed })}><Check className="mr-1.5 inline size-4" /> {goal.completed ? "Reopen" : "Complete"}</Button>
+                  <Button variant="ghost" className="h-9 px-3" aria-label={`Delete ${goal.surah_name} study goal`} onClick={() => removeGoal.mutate(goal.id)}><Trash2 className="size-4" /></Button>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-3"><div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${percent}%` }} /></div><span className="w-24 text-right text-xs text-muted-foreground">{reached} of {total} · {percent}%</span></div>
+            </article>;
+          })}
+        </div>
+      </Card>
+
+      <QuranReader studySelection={readerSelection} resumeRequest={resumeRequest} onVerseCompleted={(id, ayah) => updateProgress.mutate({ id, ayah })} />
 
       <div className="grid grid-cols-3 gap-4 mb-8">
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>

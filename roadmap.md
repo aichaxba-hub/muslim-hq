@@ -15,3 +15,4 @@
 - [x] Add verse-by-verse and continuous surah audio playback to the Quran reader
 - [x] Add an English Quran translation and live word-by-word recitation highlighting
 - [x] Add an Answered Duas section with manual entry
+- [x] Add private daily Quran study goals with recitation-synced progress

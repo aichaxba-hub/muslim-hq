@@ -35,6 +35,15 @@ type Verse = {
   };
 };
 
+export type QuranStudySelection = {
+  id: string;
+  surahNumber: number;
+  surahName: string;
+  startAyah: number;
+  endAyah: number;
+  lastCompletedAyah: number;
+};
+
 const QURAN_API = "https://api.quran.com/api/v4";
 
 async function fetchChapters(): Promise<Chapter[]> {
@@ -74,8 +83,12 @@ function cleanTranslation(text: string) {
     .replace(/&gt;/g, ">");
 }
 
-export function QuranReader() {
-  const [chapterId, setChapterId] = useState(1);
+export function QuranReader({ studySelection, resumeRequest = 0, onVerseCompleted }: {
+  studySelection?: QuranStudySelection | null;
+  resumeRequest?: number;
+  onVerseCompleted?: (goalId: string, ayah: number) => void;
+}) {
+  const [chapterId, setChapterId] = useState(studySelection?.surahNumber ?? 1);
   const chapters = useQuery({ queryKey: ["quran-reader", "chapters"], queryFn: fetchChapters, staleTime: 1000 * 60 * 60 * 24 });
   const verses = useQuery({ queryKey: ["quran-reader", "verses", chapterId], queryFn: () => fetchVerses(chapterId), staleTime: 1000 * 60 * 60 * 24 });
   const chapter = chapters.data?.find(item => item.id === chapterId);
@@ -85,6 +98,19 @@ export function QuranReader() {
   const [playbackMs, setPlaybackMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playAll, setPlayAll] = useState(false);
+
+  useEffect(() => {
+    if (!studySelection) return;
+    stopAudio();
+    setChapterId(studySelection.surahNumber);
+  }, [studySelection?.id, studySelection?.surahNumber]);
+
+  useEffect(() => {
+    if (!resumeRequest || !studySelection || chapterId !== studySelection.surahNumber || !verses.data?.length) return;
+    const nextAyah = Math.max(studySelection.startAyah, studySelection.lastCompletedAyah + 1);
+    const nextVerse = verses.data.find(item => item.verse_number === nextAyah && item.audio?.url);
+    if (nextVerse) playVerse(nextVerse.verse_key, true);
+  }, [resumeRequest, studySelection?.id, chapterId, verses.data]);
 
   useEffect(() => () => {
     audioRef.current?.pause();
@@ -148,8 +174,12 @@ export function QuranReader() {
     player.onpause = () => { setIsPlaying(false); stopProgressLoop(); };
     player.onerror = () => stopAudio();
     player.onended = () => {
+      if (studySelection?.surahNumber === chapterId && verse.verse_number >= studySelection.startAyah && verse.verse_number <= studySelection.endAyah) {
+        onVerseCompleted?.(studySelection.id, verse.verse_number);
+      }
       const next = verseList[verseIndex + 1];
-      if (continueThroughSurah && next) {
+      const reachedStudyEnd = studySelection?.surahNumber === chapterId && verse.verse_number >= studySelection.endAyah;
+      if (continueThroughSurah && next && !reachedStudyEnd) {
         playVerse(next.verse_key, true);
       } else {
         stopAudio();
@@ -215,6 +245,26 @@ export function QuranReader() {
           )}
           <span className="text-xs text-muted-foreground">Mishary Rashid Alafasy · verse by verse</span>
         </div>
+
+        {studySelection?.surahNumber === chapterId && (
+          <div className="flex flex-col gap-3 border-b border-border bg-muted/35 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium">Study goal · {studySelection.surahName} {studySelection.startAyah}–{studySelection.endAyah}</p>
+              <p className="text-xs text-muted-foreground">Audio progress is saved after each ayah finishes.</p>
+            </div>
+            <Button
+              variant="ghost"
+              disabled={studySelection.lastCompletedAyah >= studySelection.endAyah || verses.isPending}
+              onClick={() => {
+                const nextAyah = Math.max(studySelection.startAyah, studySelection.lastCompletedAyah + 1);
+                const nextVerse = verses.data?.find(item => item.verse_number === nextAyah);
+                if (nextVerse) playVerse(nextVerse.verse_key, true);
+              }}
+            >
+              <Play className="mr-2 inline size-4" /> Resume at ayah {Math.min(studySelection.endAyah, Math.max(studySelection.startAyah, studySelection.lastCompletedAyah + 1))}
+            </Button>
+          </div>
+        )}
 
         {chapters.isError || verses.isError ? (
           <div className="py-14 text-center">
