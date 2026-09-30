@@ -18,3 +18,4 @@
 - [x] Add private daily Quran study goals with recitation-synced progress
 - [x] Replace the basic Zakat estimate with a seven-step personal Zakat calculator
 - [x] Add a top dua category insight to the Review page
+- [x] Review page: remove the trends chart and add an "Answered duas" section (total + per-category counts for the selected period)
