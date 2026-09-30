@@ -56,16 +56,26 @@ function WorshipHub() {
           <h3 className="font-serif text-2xl mb-4">The Five</h3>
           <div className="space-y-2">
             {PRAYERS.map(p => (
-              <div key={p} className="flex items-center justify-between p-3 rounded-2xl ring-1 ring-border">
-                <span className="font-medium text-sm">{PRAYER_LABEL[p]}</span>
-                <select
-                  value={(l as any)[`${p}_status`] ?? ""}
-                  onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
-                  className="text-sm bg-transparent focus:outline-none"
-                >
-                  <option value="">— not logged —</option>
-                  {STATUSES.map(s => <option key={s.v} value={s.v}>{s.l}</option>)}
-                </select>
+              <div key={p} className="p-3 rounded-2xl ring-1 ring-border">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-sm">{PRAYER_LABEL[p]}</span>
+                  <select
+                    value={(l as any)[`${p}_status`] ?? ""}
+                    onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
+                    className="text-sm bg-transparent focus:outline-none"
+                  >
+                    <option value="">— not logged —</option>
+                    {STATUSES.map(s => <option key={s.v} value={s.v}>{s.l}</option>)}
+                  </select>
+                </div>
+                <div className="mt-2">
+                  <PrayerPlaceToggles
+                    congregation={!!(l as any)[`${p}_congregation`]}
+                    masjid={!!(l as any)[`${p}_masjid`]}
+                    onToggleCongregation={v => upsert.mutate({ [`${p}_congregation`]: v })}
+                    onToggleMasjid={v => upsert.mutate({ [`${p}_masjid`]: v })}
+                  />
+                </div>
               </div>
             ))}
           </div>
