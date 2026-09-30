@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      answered_duas: {
+        Row: {
+          answered_date: string
+          category: string
+          created_at: string
+          dua_text: string | null
+          id: string
+          reflection: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answered_date?: string
+          category?: string
+          created_at?: string
+          dua_text?: string | null
+          id?: string
+          reflection?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answered_date?: string
+          category?: string
+          created_at?: string
+          dua_text?: string | null
+          id?: string
+          reflection?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dhikr_logs: {
         Row: {
           category: string | null
