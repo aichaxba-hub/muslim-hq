@@ -225,9 +225,9 @@ function ReviewPage() {
         <Stat label="Fasts" value={stats.fastsCompleted} />
         <Stat label="Dhikr total" value={stats.dhikrTotal} />
         <Stat label="Sadaqah" value={stats.sadaqahTotal.toLocaleString()} />
-        <Stat label="Zakat due" value={zakatTotals.due.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
-        <Stat label="Zakat paid" value={zakatTotals.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
-        <Stat label="Zakat remaining" value={zakatTotals.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
+        <Stat label="Zakat due" value={zakat.isLoading ? "…" : zakatTotals.due.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
+        <Stat label="Zakat paid" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
+        <Stat label="Zakat remaining" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Reflections" value={stats.reflectionsCount} />
         <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
         <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
