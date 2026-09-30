@@ -28,6 +28,13 @@ const STATUSES = [
   { v: "excused", l: "Excused" },
 ];
 
+const NAFL_PRAYERS = [
+  { v: "duha", l: "Duha" },
+  { v: "tahajjud", l: "Tahajjud" },
+  { v: "witr", l: "Witr" },
+  { v: "istikhara", l: "Istikhara" },
+];
+
 const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel", "Other"];
 
 
@@ -58,7 +65,7 @@ function WorshipHub() {
         <span className="text-xs text-muted-foreground">Viewing {date}</span>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <Card>
           <h3 className="font-serif text-2xl mb-4">The Fard</h3>
           <div className="space-y-2">
@@ -89,6 +96,26 @@ function WorshipHub() {
         </Card>
 
         <Card>
+          <h3 className="font-serif text-2xl mb-4">The Nafl</h3>
+          <div className="space-y-2">
+            {NAFL_PRAYERS.map(n => (
+              <div key={n.v} className="p-3 rounded-2xl ring-1 ring-border flex items-center justify-between gap-2">
+                <span className="font-medium text-sm">{n.l}</span>
+                <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!(l as any)[n.v]}
+                    onChange={e => upsert.mutate({ [n.v]: e.target.checked })}
+                  />
+                  Prayed
+                </label>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">Optional prayers — a bonus, never a burden.</p>
+        </Card>
+
+        <Card>
           <h3 className="font-serif text-2xl mb-4">Excused today</h3>
           <label className="flex items-center gap-3 mb-3">
             <input type="checkbox" checked={!!(l as any).excused} onChange={e => upsert.mutate({ excused: e.target.checked })} />
@@ -112,7 +139,6 @@ function WorshipHub() {
         <Card>
           <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Optional Prayers</h4>
           <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).sunnah} onChange={e => upsert.mutate({ sunnah: e.target.checked })} /> Sunnah completed</label>
-          <label className="flex items-center gap-2 mb-2"><input type="checkbox" checked={!!(l as any).nafl} onChange={e => upsert.mutate({ nafl: e.target.checked })} /> Nafl completed</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={!!(l as any).jummah} onChange={e => upsert.mutate({ jummah: e.target.checked })} /> Jummah attended</label>
         </Card>
       </div>
