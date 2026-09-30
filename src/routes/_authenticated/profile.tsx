@@ -232,6 +232,30 @@ function ProfilePage() {
           {save.isPending ? "Saving…" : "Save changes"}
         </Button>
       </div>
+
+      <Card className="mt-10 ring-destructive/40">
+        <h2 className="font-serif text-xl mb-1 text-destructive">Delete account</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          This permanently deletes your account and all your data — prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records. This cannot be undone.
+        </p>
+        <label className="block text-sm text-muted-foreground mb-1.5">Type <span className="font-semibold text-foreground">DELETE</span> to confirm</label>
+        <input
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="DELETE"
+          className="w-full max-w-xs rounded-xl bg-background ring-1 ring-border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-destructive mb-3"
+        />
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => del.mutate()}
+            disabled={confirmText !== "DELETE" || del.isPending}
+            className="text-destructive ring-1 ring-destructive/40 hover:bg-destructive/10"
+          >
+            {del.isPending ? "Deleting…" : "Permanently delete my account"}
+          </Button>
+        </div>
+      </Card>
     </AppShell>
   );
 }
