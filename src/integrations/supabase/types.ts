@@ -214,6 +214,7 @@ export type Database = {
           seeded: boolean | null
           theme: string | null
           updated_at: string | null
+          zakat_anniversary: string | null
         }
         Insert: {
           calc_method?: string | null
@@ -228,6 +229,7 @@ export type Database = {
           seeded?: boolean | null
           theme?: string | null
           updated_at?: string | null
+          zakat_anniversary?: string | null
         }
         Update: {
           calc_method?: string | null
@@ -242,6 +244,7 @@ export type Database = {
           seeded?: boolean | null
           theme?: string | null
           updated_at?: string | null
+          zakat_anniversary?: string | null
         }
         Relationships: []
       }
@@ -688,6 +691,47 @@ export type Database = {
           zakat_due?: number | null
         }
         Relationships: []
+      }
+      zakat_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          paid_on: string
+          updated_at: string
+          user_id: string
+          zakat_entry_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_on?: string
+          updated_at?: string
+          user_id: string
+          zakat_entry_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_on?: string
+          updated_at?: string
+          user_id?: string
+          zakat_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zakat_payments_zakat_entry_id_fkey"
+            columns: ["zakat_entry_id"]
+            isOneToOne: false
+            referencedRelation: "zakat_entries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
