@@ -20,8 +20,10 @@ export default defineConfig({
         injectRegister: null,
         manifest: false,
         filename: "sw.js",
+        outDir: "dist/client",
         devOptions: { enabled: false },
         workbox: {
+          globDirectory: "dist/client",
           globPatterns: ["**/*.{js,css,woff2,png,ico,svg}"],
           navigateFallback: null,
           additionalManifestEntries: [{ url: "/offline", revision: String(Date.now()) }],
