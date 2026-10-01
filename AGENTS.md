@@ -20,4 +20,5 @@
 - Review's top dua category is the most common saved Dua Vault category created within the selected lifetime, year, or month.
 - Missed salah → Qada sync happens server-side in upsertWorshipLog (auto_logged rows) so every Salah entry point stays consistent.
 - Reminders run client-side in ReminderCenter (settings in localStorage) because no push delivery service is configured.
-- Offline support uses vite-plugin-pwa generateSW into dist/client with a guarded registrar in src/lib/pwa.ts; navigations fall back to the precached public /offline page since the signed-in area needs the network.
+- Offline support uses vite-plugin-pwa generateSW into dist/client; signed-in screens need the network, so navigations fall back to /offline.
+- Profile exports generate JSON, CSV, or multi-sheet Excel in-browser after a private fetch, without an extra data service.
