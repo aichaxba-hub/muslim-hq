@@ -5,7 +5,7 @@ export type ExportBundle = {
   exported_at?: string;
   user_id?: string;
   profile?: ExportRow | null;
-  [section: string]: string | ExportRow | ExportRow[] | null;
+  [section: string]: string | ExportRow | ExportRow[] | null | undefined;
 };
 
 const LABELS: Record<string, string> = {
