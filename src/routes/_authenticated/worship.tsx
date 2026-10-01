@@ -27,7 +27,6 @@ const STATUSES = [
   { v: "on_time", l: "On time" },
   { v: "late", l: "Late" },
   { v: "missed", l: "Missed" },
-  { v: "qada", l: "Qada" },
   { v: "excused", l: "Excused" },
 ];
 
