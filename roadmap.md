@@ -43,4 +43,4 @@
 
 - [x] Add private account-based worship backups with non-destructive restore across devices
 
-- [ ] Remove "& Hawl" from dashboard Zakat section
+- [x] Removed "& Hawl" from dashboard Zakat section
