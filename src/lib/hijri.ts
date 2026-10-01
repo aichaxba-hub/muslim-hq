@@ -112,14 +112,14 @@ export function upcomingIslamicEvents(now = new Date(), offset = 0, horizon = 40
       if (!ongoing && h.day !== e.from) continue;
       const mName = HIJRI_MONTHS[(e.month || h.month) - 1];
       const range = e.from === e.to ? `${e.from} ${mName}` : `${e.from}–${e.to} ${mName}`;
-      found.set(e.name, { name: e.name, note: e.note, start: d, daysUntil: i, ongoing, label: range });
+      found.set(e.name, { name: e.name, note: e.note, start: d, daysUntil: i, ongoing, label: range, startLabel: gregorianLabel(d) });
     }
   }
   // Islamic month reminder: next 1st of month
   for (let i = 1; i <= 31; i++) {
     const h = hijriDay(shift(now, i), offset);
     if (h.day === 1 && h.month !== today.month) {
-      found.set("month", { name: `${HIJRI_MONTHS[h.month - 1]} begins`, note: "New Islamic month — look out for the moon", start: shift(now, i), daysUntil: i, ongoing: false, label: `1 ${HIJRI_MONTHS[h.month - 1]}` });
+      found.set("month", { name: `${HIJRI_MONTHS[h.month - 1]} begins`, note: "New Islamic month — look out for the moon", start: shift(now, i), daysUntil: i, ongoing: false, label: `1 ${HIJRI_MONTHS[h.month - 1]}`, startLabel: gregorianLabel(shift(now, i)) });
       break;
     }
   }
