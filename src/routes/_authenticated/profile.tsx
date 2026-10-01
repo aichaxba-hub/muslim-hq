@@ -3,12 +3,12 @@ import { AppShell, Button, Card, PageHeader } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getProfile, updateProfile, deleteAccount, resetAllData, exportAllData } from "@/lib/data.functions";
+import { getProfile, updateProfile, deleteAccount, resetAllData, exportAllData, listWorshipBackups, createWorshipBackup, restoreWorshipBackup, deleteWorshipBackup } from "@/lib/data.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { CALC_METHODS, MADHABS, computeTimes, formatTime, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { toast } from "sonner";
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, CloudUpload, RotateCcw, Trash2 } from "lucide-react";
 import { ReminderSettingsCard } from "@/components/ReminderSettingsCard";
 import { downloadExport } from "@/lib/export-spreadsheet";
 
@@ -42,6 +42,30 @@ function ProfilePage() {
   const deleteFn = useServerFn(deleteAccount);
   const resetFn = useServerFn(resetAllData);
   const exportFn = useServerFn(exportAllData);
+
+  const listBackupsFn = useServerFn(listWorshipBackups);
+  const createBackupFn = useServerFn(createWorshipBackup);
+  const restoreBackupFn = useServerFn(restoreWorshipBackup);
+  const deleteBackupFn = useServerFn(deleteWorshipBackup);
+  const backups = useQuery({ queryKey: ["worship-backups"], queryFn: () => listBackupsFn() });
+  const createBackup = useMutation({
+    mutationFn: () => createBackupFn(),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["worship-backups"] }); toast.success("Worship backup saved to your account"); },
+    onError: () => toast.error("Could not save your backup — please try again"),
+  });
+  const restoreBackup = useMutation({
+    mutationFn: (id: string) => restoreBackupFn({ data: { id } }),
+    onSuccess: (result) => {
+      qc.invalidateQueries();
+      toast.success(`Backup restored — ${typeof result === "object" && result && "restored" in result ? result.restored : 0} records added`);
+    },
+    onError: () => toast.error("Could not restore your backup — please try again"),
+  });
+  const removeBackup = useMutation({
+    mutationFn: (id: string) => deleteBackupFn({ data: { id } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["worship-backups"] }); toast.success("Backup deleted"); },
+    onError: () => toast.error("Could not delete your backup"),
+  });
 
   const exportData = useMutation({
     mutationFn: async (format: "json" | "csv" | "xlsx") => {
@@ -259,6 +283,37 @@ function ProfilePage() {
       </div>
 
       <Card className="mt-10">
+        <h2 className="font-serif text-xl mb-1">Worship backup</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Your saved Salah, Qada, Quran, fasting and dhikr records already follow your account when you sign in on another phone. Save a private snapshot here for an extra way to recover them later.
+        </p>
+        <Button onClick={() => createBackup.mutate()} disabled={createBackup.isPending} className="inline-flex items-center gap-2">
+          <CloudUpload className="size-4" />{createBackup.isPending ? "Saving…" : "Back up worship data"}
+        </Button>
+        {backups.isError && <p className="text-sm text-destructive mt-4">Could not load backups. Please try again.</p>}
+        {backups.data && backups.data.length > 0 && (
+          <div className="mt-5 border-t border-border divide-y divide-border">
+            {backups.data.map((backup) => (
+              <div key={backup.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">{backup.label}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(backup.created_at).toLocaleString()}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" title="Restore missing records" aria-label={`Restore ${backup.label}`} disabled={restoreBackup.isPending} onClick={() => {
+                    if (window.confirm("Restore missing worship records from this backup? Your current records will not be overwritten.")) restoreBackup.mutate(backup.id);
+                  }}><RotateCcw className="size-4" /></Button>
+                  <Button variant="ghost" title="Delete backup" aria-label={`Delete ${backup.label}`} disabled={removeBackup.isPending} onClick={() => {
+                    if (window.confirm("Permanently delete this worship backup?")) removeBackup.mutate(backup.id);
+                  }}><Trash2 className="size-4" /></Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card className="mt-6">
         <h2 className="font-serif text-xl mb-1">Export your data</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Keep a copy of everything you've tracked — prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records. Excel has a separate sheet for each section; CSV is one table.
@@ -279,7 +334,7 @@ function ProfilePage() {
       <Card className="mt-6 ring-destructive/40">
         <h2 className="font-serif text-xl mb-1 text-destructive">Reset all data</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Start fresh — this clears all your tracked data (prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records) but keeps your account and settings. This cannot be undone.
+          Start fresh — this clears all your tracked data and worship backups but keeps your account and settings. This cannot be undone.
         </p>
         <label className="block text-sm text-muted-foreground mb-1.5">Type <span className="font-semibold text-foreground">RESET</span> to confirm</label>
         <input

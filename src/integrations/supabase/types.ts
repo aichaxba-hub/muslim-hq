@@ -547,6 +547,33 @@ export type Database = {
           },
         ]
       }
+      worship_backups: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          snapshot: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          snapshot: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          snapshot?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       worship_logs: {
         Row: {
           asr_congregation: boolean | null
@@ -764,7 +791,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      restore_worship_backup: { Args: { backup_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
