@@ -211,6 +211,7 @@ export type Database = {
           longitude: number | null
           madhab: string | null
           onboarding_complete: boolean | null
+          quran_daily_goal: number | null
           seeded: boolean | null
           theme: string | null
           updated_at: string | null
@@ -226,6 +227,7 @@ export type Database = {
           longitude?: number | null
           madhab?: string | null
           onboarding_complete?: boolean | null
+          quran_daily_goal?: number | null
           seeded?: boolean | null
           theme?: string | null
           updated_at?: string | null
@@ -241,6 +243,7 @@ export type Database = {
           longitude?: number | null
           madhab?: string | null
           onboarding_complete?: boolean | null
+          quran_daily_goal?: number | null
           seeded?: boolean | null
           theme?: string | null
           updated_at?: string | null

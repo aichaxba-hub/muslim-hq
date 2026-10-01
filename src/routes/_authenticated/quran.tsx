@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { createQuranLog, createQuranStudyGoal, deleteQuranStudyGoal, listQuranLogs, listQuranStudyGoals, setQuranStudyGoalComplete, updateQuranStudyProgress } from "@/lib/data.functions";
+import { createQuranLog, createQuranStudyGoal, deleteQuranStudyGoal, getProfile, listQuranLogs, listQuranStudyGoals, setQuranStudyGoalComplete, updateProfile, updateQuranStudyProgress } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
 import { useEffect, useMemo, useState } from "react";
 import { QuranReader, type QuranSessionMilestone, type QuranStudySelection } from "@/components/QuranReader";
@@ -101,14 +101,32 @@ function QuranPage() {
   const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
   const totalJuz = data.reduce((s: number, r: any) => s + (Number(r.juz) || 0), 0);
 
+  const profileFn = useServerFn(getProfile);
+  const saveProfileFn = useServerFn(updateProfile);
+  const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
   const [dailyGoal, setDailyGoal] = useState(10);
+  const [goalSynced, setGoalSynced] = useState(false);
   useEffect(() => {
     const saved = Number(window.localStorage.getItem(RHYTHM_KEY));
-    if (RHYTHM_OPTIONS.includes(saved)) setDailyGoal(saved);
+    if (!goalSynced && RHYTHM_OPTIONS.includes(saved)) setDailyGoal(saved);
   }, []);
+  useEffect(() => {
+    const saved = Number((profile as any)?.quran_daily_goal);
+    if (!goalSynced && RHYTHM_OPTIONS.includes(saved)) {
+      setDailyGoal(saved);
+      setGoalSynced(true);
+    }
+  }, [profile, goalSynced]);
+  const saveDailyGoal = useMutation({
+    mutationFn: (value: number) => saveProfileFn({ data: { quran_daily_goal: value } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+    onError: () => toast.error("Could not save your daily goal"),
+  });
   function chooseDailyGoal(value: number) {
     setDailyGoal(value);
+    setGoalSynced(true);
     window.localStorage.setItem(RHYTHM_KEY, String(value));
+    saveDailyGoal.mutate(value);
   }
 
   const rhythm = useMemo(() => {
