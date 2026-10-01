@@ -1,10 +1,10 @@
 type ExportRow = Record<string, unknown>;
 
 export type ExportBundle = {
-  app: string;
-  exported_at: string;
-  user_id: string;
-  profile: ExportRow | null;
+  app?: string;
+  exported_at?: string;
+  user_id?: string;
+  profile?: ExportRow | null;
   [section: string]: string | ExportRow | ExportRow[] | null;
 };
 
@@ -70,7 +70,7 @@ export async function downloadExport(data: ExportBundle, format: "json" | "csv" 
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Muslim HQ";
   const overview = workbook.addWorksheet("About");
-  overview.addRows([["Muslim HQ data export", ""], ["Exported at", data.exported_at], ["Account ID", data.user_id]]);
+  overview.addRows([["Muslim HQ data export", ""], ["Exported at", data.exported_at ?? ""], ["Account ID", data.user_id ?? ""]]);
   overview.getColumn(1).width = 25;
   overview.getColumn(2).width = 40;
 
