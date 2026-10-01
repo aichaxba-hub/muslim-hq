@@ -58,6 +58,19 @@ function GoalsPage() {
         </Card>
       )}
 
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {[
+          { label: "Goals completed", value: data.filter((g: any) => g.status === "Completed").length },
+          { label: "In progress", value: data.filter((g: any) => g.status === "In Progress").length },
+          { label: "Total goals", value: data.length },
+        ].map(t => (
+          <Card key={t.label} className="text-center">
+            <p className="font-serif text-3xl">{t.value}</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{t.label}</p>
+          </Card>
+        ))}
+      </div>
+
       <div className="grid md:grid-cols-2 gap-4">
         {data.map((g: any) => (
           <Card key={g.id}>
