@@ -139,6 +139,36 @@ function QuranPage() {
       <Card className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">Quran rhythm</p>
+            <h2 className="font-serif text-2xl">Your daily goal</h2>
+          </div>
+          <label className="grid gap-1.5 text-xs text-muted-foreground">Ayat per day
+            <select aria-label="Daily ayat goal" value={dailyGoal} onChange={event => chooseDailyGoal(Number(event.target.value))} className="h-11 rounded-lg bg-background px-3 text-foreground ring-1 ring-border">
+              {RHYTHM_OPTIONS.map(option => <option key={option} value={option}>{option} ayat</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${rhythmPercent}%` }} /></div>
+          <span className="w-28 text-right text-xs text-muted-foreground">{rhythm.todayAyat} of {dailyGoal} · {rhythmPercent}%</span>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {rhythm.todayAyat >= dailyGoal
+            ? "Today's goal is complete, alhamdulillah."
+            : rhythm.todayAyat > 0
+              ? `${dailyGoal - rhythm.todayAyat} ayat to go today — your logged sessions count automatically.`
+              : "Log or listen to a session and it counts toward today's goal automatically."}
+        </p>
+        <div className="mt-5 grid grid-cols-2 gap-4">
+          <div className="rounded-lg border border-border p-4"><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Ayat this month</p><p className="font-serif text-3xl">{rhythm.monthAyat}</p></div>
+          <div className="rounded-lg border border-border p-4"><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Surahs covered this month</p><p className="font-serif text-3xl">{rhythm.monthSurahs}</p></div>
+        </div>
+      </Card>
+
+
+      <Card className="mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
             <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]"><BookOpenCheck className="size-4" /> My study plan</p>
             <h2 className="font-serif text-2xl">Daily surah goals</h2>
           </div>
