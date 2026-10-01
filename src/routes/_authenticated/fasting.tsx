@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listFasting, upsertFasting } from "@/lib/data.functions";
+import { listFasting, upsertFasting, getProfile, updateProfile } from "@/lib/data.functions";
 import { FAST_TYPES } from "@/lib/fasting";
-import { todayISO } from "@/lib/hijri";
-import { useState } from "react";
+import { todayISO, ramadanRange } from "@/lib/hijri";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/fasting")({
 head: () => ({ meta: [
@@ -30,9 +31,62 @@ function FastingPage() {
   const done = (t: string) => data.filter((f: any) => f.fast_type === t && f.completed).length;
   const sunnahCount = data.filter((f: any) => (f.fast_type === "Monday Sunnah" || f.fast_type === "Thursday Sunnah") && f.completed).length;
 
+  const profileFn = useServerFn(getProfile);
+  const updateProfileFn = useServerFn(updateProfile);
+  const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: () => profileFn() });
+  const owed = Number((profile as any)?.ramadan_fasts_owed ?? 0);
+  const saveOwed = useMutation({
+    mutationFn: (n: number) => updateProfileFn({ data: { ramadan_fasts_owed: Math.max(0, n) } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+    onError: () => toast.error("Couldn't save your target"),
+  });
+  const madeUp = done("Ramadan Makeup");
+  const remaining = Math.max(0, owed - madeUp);
+  const nextRamadan = useMemo(() => {
+    const today = todayISO();
+    const y = new Date().getFullYear();
+    const r = [ramadanRange(y), ramadanRange(y + 1)].find(x => x && x.start > today);
+    if (!r) return null;
+    const days = Math.round((new Date(r.start + "T12:00:00").getTime() - new Date(today + "T12:00:00").getTime()) / 86400000);
+    return { ...r, daysUntil: days };
+  }, []);
+  const weeks = nextRamadan ? Math.max(1, Math.floor(nextRamadan.daysUntil / 7)) : 0;
+  const perWeek = remaining && weeks ? Math.ceil(remaining / weeks) : 0;
+  const logMakeup = () => upsert.mutate({ log_date: todayISO(), fast_type: "Ramadan Makeup", completed: true, notes: "" }, { onSuccess: () => toast.success("Fast made up — may Allah accept it") });
+
   return (
     <AppShell>
       <PageHeader eyebrow="Fasting" title="Sawm journal" subtitle="Every fast is a shield." />
+
+      <Card className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Ramadan fasts to make up</p>
+            <p className="font-serif text-5xl mt-1">{remaining}</p>
+            <p className="text-xs text-muted-foreground mt-1">{madeUp} made up of {owed} owed</p>
+            {owed > 0 && <div className="mt-3 h-2 w-full md:w-64 rounded-full bg-muted overflow-hidden"><div className="h-full bg-primary" style={{ width: `${Math.min(100, (madeUp / owed) * 100)}%` }} /></div>}
+          </div>
+          <div className="flex flex-col gap-3 md:items-end">
+            <div className="flex items-center gap-2">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground">Days owed</span>
+              <button aria-label="Decrease days owed" onClick={() => saveOwed.mutate(owed - 1)} disabled={owed <= 0} className="h-8 w-8 rounded-full ring-1 ring-border disabled:opacity-40">−</button>
+              <span className="w-8 text-center font-semibold">{owed}</span>
+              <button aria-label="Increase days owed" onClick={() => saveOwed.mutate(owed + 1)} className="h-8 w-8 rounded-full ring-1 ring-border">+</button>
+            </div>
+            <Button onClick={logMakeup} disabled={remaining === 0}>+1 made up today</Button>
+          </div>
+        </div>
+        {nextRamadan && (
+          <div className="mt-5 pt-4 border-t border-border text-sm leading-relaxed">
+            <p>Ramadan {nextRamadan.hijriYear} begins in about <span className="font-semibold">{nextRamadan.daysUntil}</span> days ({new Date(nextRamadan.start + "T12:00:00").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}).</p>
+            <p className="text-muted-foreground mt-1">
+              {remaining === 0
+                ? "Your balance is clear, masha'Allah."
+                : `About ${perWeek} fast${perWeek > 1 ? "s" : ""} a week clears it before Ramadan — pairing with Monday and Thursday sunnah days is a gentle rhythm.`}
+            </p>
+          </div>
+        )}
+      </Card>
 
       <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mb-8">
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Ramadan</p><p className="text-3xl font-serif">{done("Ramadan")}</p></Card>

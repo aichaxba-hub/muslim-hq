@@ -212,6 +212,7 @@ export type Database = {
           madhab: string | null
           onboarding_complete: boolean | null
           quran_daily_goal: number | null
+          ramadan_fasts_owed: number | null
           seeded: boolean | null
           theme: string | null
           updated_at: string | null
@@ -228,6 +229,7 @@ export type Database = {
           madhab?: string | null
           onboarding_complete?: boolean | null
           quran_daily_goal?: number | null
+          ramadan_fasts_owed?: number | null
           seeded?: boolean | null
           theme?: string | null
           updated_at?: string | null
@@ -244,6 +246,7 @@ export type Database = {
           madhab?: string | null
           onboarding_complete?: boolean | null
           quran_daily_goal?: number | null
+          ramadan_fasts_owed?: number | null
           seeded?: boolean | null
           theme?: string | null
           updated_at?: string | null
