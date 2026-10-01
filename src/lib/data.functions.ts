@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { Json } from "@/integrations/supabase/types";
 import { SEED_DUAS } from "./dua-seed";
 
 // ---------- Profile ----------
@@ -514,7 +515,7 @@ export const createWorshipBackup = createServerFn({ method: "POST" })
       snapshot[table] = rows;
     }
     const { data, error } = await context.supabase.from("worship_backups")
-      .insert({ user_id: context.userId, label: `Worship backup · ${new Date().toISOString().slice(0, 10)}`, snapshot }).select("id,label,created_at").single();
+      .insert({ user_id: context.userId, label: `Worship backup · ${new Date().toISOString().slice(0, 10)}`, snapshot: snapshot as Json }).select("id,label,created_at").single();
     if (error) throw error;
     return data;
   });
