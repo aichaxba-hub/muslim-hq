@@ -39,7 +39,7 @@ function FastingPage() {
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Shawwal</p><p className="text-3xl font-serif">{done("Shawwal")}</p></Card>
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Day of Arafah</p><p className="text-3xl font-serif">{done("Day of Arafah")}</p></Card>
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Sunnah</p><p className="text-3xl font-serif">{sunnahCount}</p></Card>
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Qada</p><p className="text-3xl font-serif">{done("Qada (Makeup)")}</p></Card>
+        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Ramadan Makeup</p><p className="text-3xl font-serif">{done("Ramadan Makeup")}</p></Card>
       </div>
 
       <Card className="mb-6">
