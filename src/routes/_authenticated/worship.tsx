@@ -25,7 +25,6 @@ export const Route = createFileRoute("/_authenticated/worship")({
 
 const STATUSES = [
   { v: "on_time", l: "On time" },
-  { v: "late", l: "Late" },
   { v: "missed", l: "Missed" },
   { v: "excused", l: "Excused" },
 ];
