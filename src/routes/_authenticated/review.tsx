@@ -4,8 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { BookHeart, Landmark, Users } from "lucide-react";
+import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
+
+const NAFL_PRAYERS = [
+  { v: "duha", l: "Duha" },
+  { v: "tahajjud", l: "Tahajjud" },
+  { v: "witr", l: "Witr" },
+  { v: "istikhara", l: "Istikhara" },
+] as const;
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [
@@ -93,6 +100,12 @@ function ReviewPage() {
       if (l[`${p}_masjid`]) { masjid++; perPrayer[p].masjid++; }
     }));
 
+    // Nafl are voluntary — counted from every logged day in range, excused days included.
+    const naflCounts: Record<string, number> = {};
+    w.forEach((l: any) => NAFL_PRAYERS.forEach(n => {
+      if (l[n.v]) naflCounts[n.v] = (naflCounts[n.v] ?? 0) + 1;
+    }));
+
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
       onTimePct: totalSlots ? Math.round((onTime / totalSlots) * 100) : 0,
@@ -110,6 +123,7 @@ function ReviewPage() {
       masjidCount: masjid,
       masjidPct: done ? Math.round((masjid / done) * 100) : 0,
       perPrayer,
+      naflCounts,
     };
   }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
@@ -230,6 +244,19 @@ function ReviewPage() {
               <p className="text-sm font-medium mb-2">{PRAYER_LABEL[p]}</p>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users size={12} /> Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Landmark size={12} /> Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="mb-8">
+        <h3 className="font-serif text-2xl mb-1">The Nafl</h3>
+        <p className="text-xs text-muted-foreground mb-4">Voluntary prayers, counted separately — excused days included.</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {NAFL_PRAYERS.map(n => (
+            <div key={n.v} className="rounded-2xl ring-1 ring-border p-3">
+              <p className="flex items-center gap-1.5 text-sm font-medium"><MoonStar size={12} className="text-[color:var(--sage)]" /> {n.l}</p>
+              <p className="text-2xl font-serif mt-1">{stats.naflCounts[n.v] ?? 0}</p>
             </div>
           ))}
         </div>
