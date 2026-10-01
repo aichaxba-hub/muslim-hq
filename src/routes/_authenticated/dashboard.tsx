@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listQada, listQuranLogs, listDhikr, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
-import { formatGregorian, formatHijri, formatHijriAdjusted, HIJRI_OFFSET_KEY, todayISO, upcomingIslamicEvents } from "@/lib/hijri";
+import { formatGregorian, formatHijri, formatHijriAdjusted, HIJRI_OFFSET_KEY, todayISO, nextIslamicEventGroup } from "@/lib/hijri";
 import { DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";

@@ -87,6 +87,12 @@ const EVENTS: EventDef[] = [
 
 export type IslamicEvent = { name: string; note: string; start: Date; daysUntil: number; ongoing: boolean; label: string };
 
+function eventSpanDays(e: IslamicEvent): [number, number] {
+  const def = EVENTS.find(d => d.name === e.name);
+  const duration = def ? def.to - def.from : 0; // "month begins" reminder is a single day
+  return [e.daysUntil, e.daysUntil + duration];
+}
+
 /** Upcoming/ongoing events within `horizon` days, using the adjusted Hijri calendar. */
 export function upcomingIslamicEvents(now = new Date(), offset = 0, horizon = 400): IslamicEvent[] {
   const found = new Map<string, IslamicEvent>();
