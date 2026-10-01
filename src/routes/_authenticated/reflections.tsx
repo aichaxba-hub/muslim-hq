@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createReflection, listReflections } from "@/lib/data.functions";
 import { todayISO, weekStartISO } from "@/lib/hijri";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/reflections")({
 head: () => ({ meta: [
