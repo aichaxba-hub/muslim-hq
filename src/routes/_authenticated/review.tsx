@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
+import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
