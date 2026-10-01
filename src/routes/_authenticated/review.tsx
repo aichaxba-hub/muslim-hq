@@ -7,6 +7,7 @@ import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { weekStartISO } from "@/lib/hijri";
+import { ReviewInsightsCard } from "@/components/ReviewInsightsCard";
 
 const NAFL_PRAYERS = [
   { v: "duha", l: "Duha" },
@@ -241,6 +242,11 @@ function ReviewPage() {
           />
         )}
       </div>
+      <ReviewInsightsCard
+        ready={!worship.isLoading && !quran.isLoading}
+        period={mode === "weekly" ? `week of ${weekStart}` : mode === "monthly" ? `month ${month}` : mode === "annual" ? `year ${year}` : "lifetime"}
+        stats={{ ...stats, answeredDuas: answeredDuaCounts.total, topDuaCategory: topDuaCategory?.[0] ?? null, zakat: zakatTotals }}
+      />
 
       <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
       <Card className="mb-4">
