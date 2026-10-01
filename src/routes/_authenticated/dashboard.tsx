@@ -155,7 +155,7 @@ function Dashboard() {
                 <li key={e.name} className="text-sm">
                   <span className="font-medium">{e.name}</span>
                   <span className="text-muted-foreground"> — {e.ongoing ? "today / now" : e.daysUntil === 1 ? "tomorrow" : `estimated in ${e.daysUntil} days`}</span>
-                  <p className="text-xs text-muted-foreground">{e.label} · {e.note}</p>
+                  <p className="text-xs text-muted-foreground">{e.label} AH · {e.startLabel} · {e.note}</p>
                 </li>
               ))}
             </ul>
