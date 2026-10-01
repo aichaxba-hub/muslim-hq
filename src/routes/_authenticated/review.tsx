@@ -123,6 +123,7 @@ function ReviewPage() {
       masjidCount: masjid,
       masjidPct: done ? Math.round((masjid / done) * 100) : 0,
       perPrayer,
+      naflCounts,
     };
   }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
@@ -243,6 +244,19 @@ function ReviewPage() {
               <p className="text-sm font-medium mb-2">{PRAYER_LABEL[p]}</p>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users size={12} /> Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Landmark size={12} /> Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="mb-8">
+        <h3 className="font-serif text-2xl mb-1">The Nafl</h3>
+        <p className="text-xs text-muted-foreground mb-4">Voluntary prayers, counted separately — excused days included.</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {NAFL_PRAYERS.map(n => (
+            <div key={n.v} className="rounded-2xl ring-1 ring-border p-3">
+              <p className="flex items-center gap-1.5 text-sm font-medium"><MoonStar size={12} className="text-[color:var(--sage)]" /> {n.l}</p>
+              <p className="text-2xl font-serif mt-1">{stats.naflCounts[n.v] ?? 0}</p>
             </div>
           ))}
         </div>
