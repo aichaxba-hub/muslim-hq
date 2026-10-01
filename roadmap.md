@@ -38,5 +38,5 @@
 - [x] Dashboard: read-only Today's Worship prayer status, today's ayat and dhikr, and outstanding Qada
 - [x] Salah excused changes immediately update the shared Today's Worship summary
 - [x] Automatically refresh Dashboard after Salah logs and Qada completions without a page reload
-- [ ] Menstruation and postpartum excused prayers preserve streaks, create no Qada or missed counts, and are excluded from negative consistency analytics
-- [ ] Completing a Qada prayer updates the dashboard's outstanding count immediately
+- [x] Menstruation and postpartum excused prayers preserve streaks, create no Qada or missed counts, and are excluded from negative consistency analytics
+- [x] Completing a Qada prayer updates the dashboard's outstanding count immediately
