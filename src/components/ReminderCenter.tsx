@@ -54,7 +54,7 @@ export function ReminderCenter() {
         for (const name of PRAYERS) {
           const at = times[name].getTime();
           const diff = now.getTime() - at;
-          if (settings.prayerSoon && diff >= -15 * 60_000 && diff < -14 * 60_000) send(`soon-${name}`, `${PRAYER_LABEL[name]} begins in 15 minutes`, "A quiet moment to prepare, if you can.");
+          if (settings.prayerSoon && diff >= -15 * 60_000 && diff < -10 * 60_000) send(`soon-${name}`, `${PRAYER_LABEL[name]} begins in ${Math.ceil(-diff / 60_000)} minutes`, "A quiet moment to prepare, if you can.");
           if (settings.adhan && diff >= 0 && diff < 5 * 60_000) send(`adhan-${name}`, `Time for ${PRAYER_LABEL[name]}`, "Hayya 'ala as-salah — come to prayer.");
           const iq = at + settings.iqamahOffset * 60_000;
           const d2 = now.getTime() - iq;
@@ -92,7 +92,7 @@ export function ReminderCenter() {
       }
       if (settings.gentleReset && atHour(20) && worship.isSuccess && quran.isSuccess && dhikr.isSuccess) {
         const days = daysSinceActivity([
-          ...worship.data.map(row => row.log_date),
+          ...worship.data.filter(row => PRAYERS.some(name => Boolean(row[`${name}_status`])) || (row.dhikr_count ?? 0) > 0 || (row.quran_pages ?? 0) > 0).map(row => row.log_date),
           ...quran.data.map(row => row.log_date),
           ...dhikr.data.map(row => row.log_date),
         ], now);
