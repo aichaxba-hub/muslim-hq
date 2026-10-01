@@ -37,6 +37,7 @@ function ReflectionsPage() {
   };
   const [form, setForm] = useState(empty);
   const set = (k: string, v: string) => setForm({ ...form, [k]: v });
+  const [selected, setSelected] = useState<any>(null);
 
   return (
     <AppShell>
