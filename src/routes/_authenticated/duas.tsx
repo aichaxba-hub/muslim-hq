@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { createAnsweredDua, listAnsweredDuas, listDuas, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
+import { createAnsweredDua, listAnsweredDuas, listDuas, syncDuaLibrary, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
 import { DUA_CATEGORIES } from "@/lib/dua-seed";
 import { CalendarCheck, Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
@@ -32,6 +32,12 @@ function DuasPage() {
   const { data = [] } = useQuery({ queryKey: ["duas"], queryFn: () => listFn({ data: undefined as any }) });
   const { data: answeredDuas = [] } = useQuery({ queryKey: ["answered-duas"], queryFn: () => listAnsweredFn({ data: undefined as any }) });
   const invalidate = () => qc.invalidateQueries({ queryKey: ["duas"] });
+  const syncFn = useServerFn(syncDuaLibrary);
+  useQuery({
+    queryKey: ["dua-library-sync"],
+    staleTime: Infinity,
+    queryFn: async () => { const r = await syncFn(); if (r.added) invalidate(); return r; },
+  });
   const fav = useMutation({ mutationFn: (p: any) => favFn({ data: p }), onSuccess: invalidate });
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => { invalidate(); setShowForm(false); setForm(emptyForm); } });
   const createAnswered = useMutation({

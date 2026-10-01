@@ -3,6 +3,23 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import type { Json } from "@/integrations/supabase/types";
 import { SEED_DUAS } from "./dua-seed";
+import { DUA_LIBRARY } from "./dua-library";
+
+// Adds any library duas the user doesn't have yet (matched by title). Never removes or overwrites.
+export const syncDuaLibrary = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: existing, error } = await supabase.from("duas").select("title").eq("user_id", userId);
+    if (error) throw error;
+    const have = new Set((existing ?? []).map(r => String(r.title).trim().toLowerCase()));
+    const missing = DUA_LIBRARY.filter(d => !have.has(d.title.toLowerCase()));
+    if (missing.length) {
+      const { error: insErr } = await supabase.from("duas").insert(missing.map(d => ({ ...d, user_id: userId })));
+      if (insErr) throw insErr;
+    }
+    return { added: missing.length };
+  });
 
 // ---------- Profile ----------
 export const getProfile = createServerFn({ method: "GET" })
