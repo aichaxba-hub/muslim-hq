@@ -4,8 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { BookHeart, Landmark, Users } from "lucide-react";
+import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
+
+const NAFL_PRAYERS = [
+  { v: "duha", l: "Duha" },
+  { v: "tahajjud", l: "Tahajjud" },
+  { v: "witr", l: "Witr" },
+  { v: "istikhara", l: "Istikhara" },
+] as const;
 
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [
@@ -91,6 +98,12 @@ function ReviewPage() {
       perPrayer[p] ??= { jamaah: 0, masjid: 0 };
       if (l[`${p}_congregation`]) { jamaah++; perPrayer[p].jamaah++; }
       if (l[`${p}_masjid`]) { masjid++; perPrayer[p].masjid++; }
+    }));
+
+    // Nafl are voluntary — counted from every logged day in range, excused days included.
+    const naflCounts: Record<string, number> = {};
+    w.forEach((l: any) => NAFL_PRAYERS.forEach(n => {
+      if (l[n.v]) naflCounts[n.v] = (naflCounts[n.v] ?? 0) + 1;
     }));
 
     return {
