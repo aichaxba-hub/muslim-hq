@@ -44,3 +44,4 @@
 - [x] Add private account-based worship backups with non-destructive restore across devices
 
 - [x] Removed "& Hawl" from dashboard Zakat section
+- [x] Add gentle, activity-aware prayer, Quran, Qada, White Days, adhkar streak, and fresh-start reminders

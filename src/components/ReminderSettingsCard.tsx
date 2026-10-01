@@ -29,6 +29,7 @@ export function ReminderSettingsCard() {
       <h2 className="font-serif text-2xl mb-1">Reminders</h2>
       <p className="text-sm text-muted-foreground mb-4">Alerts appear while Muslim HQ is open (or installed and running on your device).</p>
       {perm !== "granted" && perm !== "unsupported" && <Button onClick={enable} className="mb-3">Allow notifications</Button>}
+      {row("Prayer approaching — 15 minutes before", s.prayerSoon, v => update({ prayerSoon: v }))}
       {row("Adhan — at each prayer time", s.adhan, v => update({ adhan: v }))}
       {row("Iqamah reminder", s.iqamah, v => update({ iqamah: v }),
         <label className="text-xs text-muted-foreground flex items-center gap-1">
@@ -37,6 +38,11 @@ export function ReminderSettingsCard() {
       {row("Evening check-in: “Take 60 seconds to review your day”", s.evening, v => update({ evening: v }),
         <input aria-label="Evening reminder time" type="time" value={s.eveningTime} onChange={e => update({ eveningTime: e.target.value })} className="rounded-md bg-background px-2 py-1 text-xs ring-1 ring-border" />)}
       {row("Hawl anniversary — 30 and 7 days before", s.hawl, v => update({ hawl: v }))}
+      {row("Quran reading pace", s.quranPace, v => update({ quranPace: v }))}
+      {row("Qada daily plan", s.qadaPlan, v => update({ qadaPlan: v }))}
+      {row("White Days — the day before", s.whiteDays, v => update({ whiteDays: v }))}
+      {row("Morning Adhkar milestones", s.adhkarStreak, v => update({ adhkarStreak: v }))}
+      {row("Gentle fresh start", s.gentleReset, v => update({ gentleReset: v }))}
     </Card>
   );
 }

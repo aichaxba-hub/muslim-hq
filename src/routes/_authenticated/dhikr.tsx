@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/dhikr")({
   }),
   component: DhikrPage,
 });
-const CATS = [...VOICE_DHIKR_CATEGORIES, "Other"];
+const CATS = ["Morning Adhkar", ...VOICE_DHIKR_CATEGORIES, "Other"];
 
 function DhikrPage() {
   const qc = useQueryClient();
