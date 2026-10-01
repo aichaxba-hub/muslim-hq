@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS ramadan_fasts_owed integer CHECK (ramadan_fasts_owed IS NULL OR (ramadan_fasts_owed >= 0 AND ramadan_fasts_owed <= 3650));
