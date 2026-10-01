@@ -56,7 +56,7 @@ function QuranPage() {
   const completeGoal = useMutation({ mutationFn: (p: { id: string; completed: boolean }) => completeGoalFn({ data: p }), onSuccess: refreshGoals });
   const removeGoal = useMutation({ mutationFn: (id: string) => deleteGoalFn({ data: { id } }), onSuccess: () => { refreshGoals(); toast.success("Study goal removed"); } });
 
-  const [form, setForm] = useState({ log_date: todayISO(), surah: "", juz: 0, pages: 0, minutes: 0, tafsir: false, reflection: "" });
+  const [form, setForm] = useState({ log_date: todayISO(), surah: "1. Al-Fatihah", reflection: "" });
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalForm, setGoalForm] = useState({ goal_date: todayISO(), surah_number: 1, start_ayah: 1, end_ayah: 7, note: "" });
   const [activeGoalId, setActiveGoalId] = useState<string | null>(null);
@@ -151,16 +151,16 @@ function QuranPage() {
 
       <Card className="mb-6">
         <h3 className="font-serif text-2xl mb-4">Log a session</h3>
-        <div className="grid md:grid-cols-3 gap-3 mb-3">
+        <div className="grid md:grid-cols-2 gap-3 mb-3">
           <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <input placeholder="Surah" value={form.surah} onChange={e => setForm({ ...form, surah: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <input type="number" step={0.5} placeholder="Juz" value={form.juz} onChange={e => setForm({ ...form, juz: +e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <input type="number" placeholder="Pages" value={form.pages} onChange={e => setForm({ ...form, pages: +e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <input type="number" placeholder="Minutes" value={form.minutes} onChange={e => setForm({ ...form, minutes: +e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.tafsir} onChange={e => setForm({ ...form, tafsir: e.target.checked })} /> Tafsir studied</label>
+          <select aria-label="Surah" value={form.surah} onChange={e => setForm({ ...form, surah: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
+            {(chapters.length > 0 ? chapters : [{ id: 1, name_simple: "Al-Fatihah" } as Chapter]).map(chapter => (
+              <option key={chapter.id} value={`${chapter.id}. ${chapter.name_simple}`}>{chapter.id}. {chapter.name_simple}</option>
+            ))}
+          </select>
         </div>
         <textarea placeholder="Reflection..." rows={3} value={form.reflection} onChange={e => setForm({ ...form, reflection: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border mb-3" />
-        <Button onClick={() => { create.mutate(form); setForm({ ...form, surah: "", pages: 0, minutes: 0, reflection: "" }); }}>Add session</Button>
+        <Button onClick={() => { create.mutate(form); setForm({ ...form, reflection: "" }); }}>Add session</Button>
       </Card>
 
       <div className="grid gap-2">
