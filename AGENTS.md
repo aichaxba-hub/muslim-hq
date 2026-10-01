@@ -17,7 +17,7 @@
 - Hawl reminders are derived from the saved anniversary at view time, not scheduled, because no external delivery or persisted status is needed.
 - Review's top dua category is the most common saved Dua Vault category created within the selected lifetime, year, or month.
 - Salah → Qada sync is server-side; menstruation/postpartum excusals remove dated obligations, preventing false missed counts.
-- Activity-aware reminders run client-side in ReminderCenter (settings in localStorage) because no push delivery service is configured.
+- Reminders run client-side in ReminderCenter (settings in localStorage) because no push delivery service is configured.
 - Offline support uses vite-plugin-pwa generateSW into dist/client; signed-in screens need the network, so navigations fall back to /offline.
 - Profile exports generate JSON, CSV, or Excel after a private fetch.
 - Qada completion optimistically updates the shared cache, then reconciles after save.
