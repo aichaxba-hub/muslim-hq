@@ -42,3 +42,5 @@
 - [x] Completing a Qada prayer updates the dashboard's outstanding count immediately
 
 - [x] Add private account-based worship backups with non-destructive restore across devices
+
+- [ ] Remove "& Hawl" from dashboard Zakat section
