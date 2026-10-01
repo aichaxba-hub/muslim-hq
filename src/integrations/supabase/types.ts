@@ -206,6 +206,8 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           id: string
+          khatm_start: string | null
+          khatm_target: string | null
           latitude: number | null
           location_label: string | null
           longitude: number | null
@@ -223,6 +225,8 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           id: string
+          khatm_start?: string | null
+          khatm_target?: string | null
           latitude?: number | null
           location_label?: string | null
           longitude?: number | null
@@ -240,6 +244,8 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           id?: string
+          khatm_start?: string | null
+          khatm_target?: string | null
           latitude?: number | null
           location_label?: string | null
           longitude?: number | null

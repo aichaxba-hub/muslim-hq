@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN khatm_target date, ADD COLUMN khatm_start date;
