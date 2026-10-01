@@ -3,13 +3,12 @@ import { AppShell, Card } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
+import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listQada, listQuranLogs, listDhikr, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
 import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
 import { computeTimes, DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
-import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Check, Circle } from "lucide-react";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { OnboardingDialog } from "@/components/OnboardingDialog";
 import { toast } from "sonner";
@@ -33,6 +32,9 @@ function Dashboard() {
   const todayFn = useServerFn(getWorshipLog);
   const upsertFn = useServerFn(upsertWorshipLog);
   const historyFn = useServerFn(listWorshipLogs);
+  const qadaFn = useServerFn(listQada);
+  const quranFn = useServerFn(listQuranLogs);
+  const dhikrFn = useServerFn(listDhikr);
 
   const today = todayISO();
 
@@ -46,6 +48,19 @@ function Dashboard() {
   const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
   const log = useQuery({ queryKey: ["worship", today], queryFn: () => todayFn({ data: { date: today } }) });
   const history = useQuery({ queryKey: ["worship-history"], queryFn: () => historyFn({ data: { limit: 60 } }) });
+  const qada = useQuery({ queryKey: ["qada"], queryFn: () => qadaFn({ data: undefined as any }) });
+  const quran = useQuery({ queryKey: ["quran"], queryFn: () => quranFn({ data: undefined as any }) });
+  const dhikr = useQuery({ queryKey: ["dhikr"], queryFn: () => dhikrFn({ data: undefined as any }) });
+
+  const ayatToday = (quran.data ?? []).filter(entry => entry.log_date === today).reduce((total, entry) => {
+    const match = entry.verses_completed?.match(/^\d+:(\d+)(?:[–-](\d+))?$/);
+    if (!match) return total;
+    const first = Number(match[1]);
+    const last = Number(match[2] ?? match[1]);
+    return total + Math.max(0, last - first + 1);
+  }, 0);
+  const dhikrToday = (dhikr.data ?? []).filter(entry => entry.log_date === today).reduce((total, entry) => total + (entry.count ?? 0), 0) + (log.data?.dhikr_count ?? 0);
+  const qadaRemaining = (qada.data ?? []).filter(entry => !entry.completed).length;
 
   const anniversary = profile.data?.zakat_anniversary;
   const hawl = anniversary ? hawlProgress(anniversary) : null;
@@ -61,7 +76,6 @@ function Dashboard() {
     ? { latitude: profile.data.latitude, longitude: profile.data.longitude!, label: profile.data.location_label ?? "", method: profile.data.calc_method, madhab: (profile.data as any).madhab }
     : { ...DEFAULT_COORDS, method: profile.data?.calc_method, madhab: (profile.data as any)?.madhab };
 
-  const times = useMemo(() => computeTimes(coords), [coords.latitude, coords.longitude, coords.method, coords.madhab]);
   const [now, setNow] = useState(new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -119,51 +133,25 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="lg:col-span-5 bg-card rounded-3xl p-8 ring-1 ring-border">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-semibold tracking-wide uppercase">Today's Salah</h3>
-            {log.data?.excused && <span className="text-[10px] px-2 py-0.5 rounded bg-[color:var(--accent)] text-[color:var(--accent-foreground)]">Excused</span>}
-          </div>
-          <div className="space-y-2">
+        <section className="lg:col-span-5 bg-card rounded-3xl p-8 ring-1 ring-border" aria-label="Today's Worship">
+          <h3 className="text-sm font-semibold tracking-wide uppercase mb-5">Today's Worship</h3>
+          <div className="space-y-1" aria-label="Today's prayers">
             {PRAYERS.map(p => {
-              const status = (log.data?.[`${p}_status` as keyof typeof log.data] as string | null) ?? null;
-              const time = formatTime(times[p]);
-              const d = log.data as any;
-              return (
-                <div key={p} className={`p-3 rounded-2xl ring-1 ring-border ${status ? "bg-[color:var(--sand-soft)]" : ""}`}>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                      <span className={`size-2 rounded-full ${status === "on_time" ? "bg-[color:var(--sage)]" : status === "late" ? "bg-[color:var(--gold)]" : status === "qada" || status === "missed" ? "bg-destructive" : "bg-muted"}`} />
-                      <span className="text-sm font-medium">{PRAYER_LABEL[p]}</span>
-                      <span className="text-xs text-muted-foreground">{time}</span>
-                    </div>
-                    <select
-                      value={status ?? ""}
-                      onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
-                      className="text-xs bg-transparent focus:outline-none cursor-pointer"
-                    >
-                      <option value="">— log —</option>
-                      <option value="on_time">On time</option>
-                      <option value="late">Late</option>
-                      <option value="missed">Missed</option>
-                      <option value="qada">Qada</option>
-                      <option value="excused">Excused</option>
-                    </select>
-                  </div>
-                  <div className="mt-2">
-                    <PrayerPlaceToggles
-                      compact
-                      congregation={!!d?.[`${p}_congregation`]}
-                      masjid={!!d?.[`${p}_masjid`]}
-                      onToggleCongregation={v => upsert.mutate({ [`${p}_congregation`]: v })}
-                      onToggleMasjid={v => upsert.mutate({ [`${p}_masjid`]: v })}
-                    />
-                  </div>
-                </div>
-              );
+              const status = log.data?.[`${p}_status` as keyof typeof log.data] as string | null | undefined;
+              const completed = status === "on_time" || status === "late" || status === "qada";
+              const excused = log.data?.excused || status === "excused";
+              return <div key={p} className="flex items-center justify-between gap-3 border-b border-border py-2 text-sm">
+                <span className="font-medium">{PRAYER_LABEL[p]}</span>
+                {excused ? <span className="text-xs text-muted-foreground">Excused</span> : completed ? <Check aria-label="Completed" className="size-5 text-primary" strokeWidth={2.5} /> : status === "missed" ? <span className="text-xs text-muted-foreground">Missed</span> : <Circle aria-label={log.isPending ? "Loading" : "Not logged"} className="size-5 text-muted-foreground" strokeWidth={1.5} />}
+              </div>;
             })}
           </div>
-        </div>
+          <dl className="mt-5 space-y-3 text-sm">
+            <div className="flex items-center justify-between gap-3"><dt>Quran <span className="text-muted-foreground">· ayat read today</span></dt><dd className="font-serif text-xl tabular-nums">{quran.isPending ? "…" : ayatToday}</dd></div>
+            <div className="flex items-center justify-between gap-3"><dt>Daily Dhikr</dt><dd className="font-serif text-xl tabular-nums">{dhikr.isPending || log.isPending ? "…" : dhikrToday}</dd></div>
+            <div className="flex items-center justify-between gap-3"><dt>Qada <span className="text-muted-foreground">· remaining</span></dt><dd className="font-serif text-xl tabular-nums">{qada.isPending ? "…" : qadaRemaining}</dd></div>
+          </dl>
+        </section>
       </div>
 
       {/* Intention + dhikr */}
