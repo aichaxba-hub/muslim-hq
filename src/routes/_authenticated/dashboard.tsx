@@ -16,7 +16,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [
     { title: "Dashboard — Muslim HQ" },
-    { name: "description", content: "Today's prayer times, your salah streak, and Zakat & Hawl reminders in one calm view." },
+    { name: "description", content: "Today's prayer times, your salah streak, and Zakat reminders in one calm view." },
     { property: "og:title", content: "Dashboard — Muslim HQ" },
     { property: "og:description", content: "Today's prayer times, salah streaks, and Zakat reminders." },
     { property: "og:type", content: "website" },
@@ -120,7 +120,7 @@ function Dashboard() {
 
       <section className="mb-8 border-y border-border py-5" aria-label="Zakat anniversary reminder">
         <div className="flex items-start gap-3"><CalendarDays className="mt-1 size-5 shrink-0 text-primary" /><div>
-          <h2 className="font-serif text-2xl">Zakat & Hawl</h2>
+          <h2 className="font-serif text-2xl">Zakat</h2>
           <p className="mt-1 text-sm text-muted-foreground">{reminder ? <strong className="font-medium text-foreground" role="status">{reminder.message}</strong> : hawl ? `${hawl.daysRemaining} days until your next Zakat anniversary` : "Set your Zakat anniversary to see when it is approaching."}</p>
           {hawl && <p className="mt-1 text-xs text-muted-foreground">Estimated anniversary: {hawl.due.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} · Local moon sighting may differ.</p>}
           <Link to="/zakat" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4">{hawl ? "Review Zakat" : "Set anniversary"}</Link>
