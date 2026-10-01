@@ -19,6 +19,13 @@ head: () => ({ meta: [
   component: QadaPage,
 });
 
+function finishDate(pending: number, perDay: number): string {
+  const days = Math.ceil(pending / perDay);
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+}
+
 function QadaPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listQada);
