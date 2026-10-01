@@ -47,6 +47,15 @@ function QadaPage() {
   const [filter, setFilter] = useState<"pending" | "completed" | "all">("pending");
   const [prayer, setPrayer] = useState<string>("Fajr");
   const [missed, setMissed] = useState(todayISO());
+  const [perDay, setPerDay] = useState(1);
+  useEffect(() => {
+    const saved = Number(window.localStorage.getItem("mhq-qada-plan"));
+    if (saved >= 1 && saved <= 10) setPerDay(saved);
+  }, []);
+  const savePerDay = (n: number) => {
+    setPerDay(n);
+    window.localStorage.setItem("mhq-qada-plan", String(n));
+  };
 
   const filtered = data.filter((q: any) => filter === "all" ? true : filter === "pending" ? !q.completed : q.completed);
 
