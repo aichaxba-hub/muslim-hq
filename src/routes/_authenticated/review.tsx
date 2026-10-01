@@ -68,6 +68,8 @@ function ReviewPage() {
   const duas = useQuery({ queryKey: ["review", "duas"], queryFn: () => dul({ data: undefined as any }) });
   const adl = useServerFn(listAnsweredDuas);
   const answeredDuas = useQuery({ queryKey: ["review", "answered"], queryFn: () => adl({ data: undefined as any }) });
+  const gl = useServerFn(listGoals);
+  const goals = useQuery({ queryKey: ["review", "goals"], queryFn: () => gl({ data: undefined as any }) });
   const zakatFn = useServerFn(listZakat);
   const paymentsFn = useServerFn(listZakatPayments);
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
@@ -125,6 +127,9 @@ function ReviewPage() {
     w.forEach((l: any) => NAFL_PRAYERS.forEach(n => {
       if (l[n.v]) naflCounts[n.v] = (naflCounts[n.v] ?? 0) + 1;
     }));
+
+    const goalsInRange = (goals.data ?? []).filter((g: any) => inRange(g.created_at));
+    const goalsCompleted = goalsInRange.filter((g: any) => g.status === "Completed").length;
 
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
