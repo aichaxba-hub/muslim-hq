@@ -118,6 +118,11 @@ export const upsertWorshipLog = createServerFn({ method: "POST" })
       .from("worship_logs").upsert(payload, { onConflict: "user_id,log_date" }).select().single();
     if (error) throw error;
     // Excused days never generate makeup obligations, even if an older status was marked missed.
+    if (row.excused && ["Menstruation", "Postpartum"].includes(row.excuse_type ?? "")) {
+      const { error: qErr } = await context.supabase.from("qada_prayers").delete()
+        .eq("user_id", context.userId).eq("missed_date", data.log_date);
+      if (qErr) throw qErr;
+    }
     const labels: Record<string, string> = { fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha" };
     let qadaAdded: string | null = null;
     for (const p of Object.keys(labels)) {
