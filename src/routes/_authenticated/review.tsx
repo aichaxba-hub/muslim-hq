@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
+import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -68,6 +68,8 @@ function ReviewPage() {
   const duas = useQuery({ queryKey: ["review", "duas"], queryFn: () => dul({ data: undefined as any }) });
   const adl = useServerFn(listAnsweredDuas);
   const answeredDuas = useQuery({ queryKey: ["review", "answered"], queryFn: () => adl({ data: undefined as any }) });
+  const gl = useServerFn(listGoals);
+  const goals = useQuery({ queryKey: ["review", "goals"], queryFn: () => gl({ data: undefined as any }) });
   const zakatFn = useServerFn(listZakat);
   const paymentsFn = useServerFn(listZakatPayments);
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
@@ -126,6 +128,9 @@ function ReviewPage() {
       if (l[n.v]) naflCounts[n.v] = (naflCounts[n.v] ?? 0) + 1;
     }));
 
+    const goalsInRange = (goals.data ?? []).filter((g: any) => inRange(g.created_at));
+    const goalsCompleted = goalsInRange.filter((g: any) => g.status === "Completed").length;
+
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
       onTimePct: totalSlots ? Math.round((onTime / totalSlots) * 100) : 0,
@@ -143,8 +148,10 @@ function ReviewPage() {
       masjidPct: done ? Math.round((masjid / done) * 100) : 0,
       perPrayer,
       naflCounts,
+      goalsCompleted,
+      goalsTotal: goalsInRange.length,
     };
-  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
+  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data, goals.data]);
 
   const answeredDuaCounts = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
@@ -263,6 +270,7 @@ function ReviewPage() {
         <Stat label="Reflections" value={stats.reflectionsCount} />
         <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
         <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
+        <Stat label="Goals completed" value={goals.isLoading ? "…" : `${stats.goalsCompleted}${stats.goalsTotal ? ` · of ${stats.goalsTotal}` : ""}`} />
       </div>
 
       <Card className="mb-8">
