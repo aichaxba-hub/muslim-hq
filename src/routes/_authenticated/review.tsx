@@ -28,9 +28,26 @@ export const Route = createFileRoute("/_authenticated/review")({
 
 const inMonth = (date: string | null | undefined, month: string) => !!date && date.slice(0, 7) === month;
 
+function addDays(iso: string, n: number) {
+  const d = new Date(`${iso}T12:00:00`);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+const inWeek = (date: string | null | undefined, weekStart: string) => {
+  if (!date) return false;
+  const day = date.slice(0, 10);
+  return day >= weekStart && day <= addDays(weekStart, 6);
+};
+
 function monthLabel(ym: string) {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+}
+
+function weekLabel(weekStart: string) {
+  const fmt = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return `${fmt(weekStart)} – ${fmt(addDays(weekStart, 6))}`;
 }
 
 function ReviewPage() {
