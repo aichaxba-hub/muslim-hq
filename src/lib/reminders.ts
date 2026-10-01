@@ -1,6 +1,34 @@
 // In-app reminders: scheduled in the open app with browser notifications (plus a toast fallback).
-export type ReminderSettings = { adhan: boolean; iqamah: boolean; iqamahOffset: number; evening: boolean; eveningTime: string; hawl: boolean };
-export const DEFAULT_REMINDERS: ReminderSettings = { adhan: false, iqamah: false, iqamahOffset: 15, evening: false, eveningTime: "21:00", hawl: true };
+export type ReminderSettings = {
+  adhan: boolean;
+  preAdhan: boolean;
+  preAdhanOffset: number;
+  iqamah: boolean;
+  iqamahOffset: number;
+  evening: boolean;
+  eveningTime: string;
+  hawl: boolean;
+  quran: boolean;
+  qada: boolean;
+  events: boolean;
+  streak: boolean;
+  gentle: boolean;
+};
+export const DEFAULT_REMINDERS: ReminderSettings = {
+  adhan: false,
+  preAdhan: true,
+  preAdhanOffset: 15,
+  iqamah: false,
+  iqamahOffset: 15,
+  evening: false,
+  eveningTime: "21:00",
+  hawl: true,
+  quran: true,
+  qada: true,
+  events: true,
+  streak: true,
+  gentle: true,
+};
 const KEY = "mhq-reminders";
 
 export function loadReminders(): ReminderSettings {
