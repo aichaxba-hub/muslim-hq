@@ -45,5 +45,5 @@
 
 - [x] Removed "& Hawl" from dashboard Zakat section
 
-- [ ] Smart reminders: pre-prayer, Quran goal left, Qada plan, event eve, dhikr streak, gentle restart
-- [ ] Weekly view on the Review tab
+- [x] Smart reminders: pre-prayer, Quran goal left, Qada plan, event eve, dhikr streak, gentle restart
+- [x] Weekly view on the Review tab
