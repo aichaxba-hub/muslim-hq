@@ -34,6 +34,9 @@
 - [x] Installable app with offline prayer times + dhikr counter (/offline)
 - [ ] True background push (app closed) — needs a push delivery service
 - [x] Export all data as a JSON download from Profile
+- [x] Export all data as phone-friendly Excel and CSV downloads from Profile
 - [x] Dashboard: read-only Today's Worship prayer status, today's ayat and dhikr, and outstanding Qada
 - [x] Salah excused changes immediately update the shared Today's Worship summary
 - [x] Automatically refresh Dashboard after Salah logs and Qada completions without a page reload
+- [x] Menstruation and postpartum excused prayers preserve streaks, create no Qada or missed counts, and are excluded from negative consistency analytics
+- [x] Completing a Qada prayer updates the dashboard's outstanding count immediately

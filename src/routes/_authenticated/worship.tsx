@@ -169,6 +169,7 @@ function WorshipHub() {
             </select>
           )}
           <p className="text-xs text-muted-foreground mt-3">Excused days do not count against your streaks or percentages.</p>
+          {(l as any).excused && ["Menstruation", "Postpartum"].includes((l as any).excuse_type) && <p className="text-xs text-muted-foreground mt-2">No missed prayers or Qada are recorded for this day.</p>}
         </Card>
       </div>
 

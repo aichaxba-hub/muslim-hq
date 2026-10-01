@@ -31,7 +31,18 @@ function QadaPage() {
     window.localStorage.setItem("muslim-hq-worship-changed", String(Date.now()));
   };
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: notifyChange });
-  const update = useMutation({ mutationFn: (p: any) => updateFn({ data: p }), onSuccess: notifyChange });
+  const update = useMutation({
+    mutationFn: (p: { id: string; completed: boolean; made_up_date: string | null }) => updateFn({ data: p }),
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: ["qada"] });
+      const previous = qc.getQueryData<typeof data>(["qada"]);
+      qc.setQueryData<typeof data>(["qada"], current => current?.map(entry => entry.id === patch.id ? { ...entry, ...patch } : entry));
+      return { previous };
+    },
+    onError: (_error, _patch, context) => { if (context?.previous) qc.setQueryData(["qada"], context.previous); },
+    onSuccess: notifyChange,
+    onSettled: invalidate,
+  });
 
   const [filter, setFilter] = useState<"pending" | "completed" | "all">("pending");
   const [prayer, setPrayer] = useState<string>("Fajr");

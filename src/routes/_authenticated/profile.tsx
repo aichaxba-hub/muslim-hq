@@ -10,6 +10,7 @@ import { CALC_METHODS, MADHABS, computeTimes, formatTime, PRAYERS, PRAYER_LABEL 
 import { toast } from "sonner";
 import { LocateFixed } from "lucide-react";
 import { ReminderSettingsCard } from "@/components/ReminderSettingsCard";
+import { downloadExport } from "@/lib/export-spreadsheet";
 
 export const Route = createFileRoute("/_authenticated/profile")({
 head: () => ({ meta: [
@@ -43,15 +44,11 @@ function ProfilePage() {
   const exportFn = useServerFn(exportAllData);
 
   const exportData = useMutation({
-    mutationFn: () => exportFn({ data: undefined as any }),
-    onSuccess: (data) => {
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `muslim-hq-export-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+    mutationFn: async (format: "json" | "csv" | "xlsx") => {
+      const data = await exportFn({ data: undefined as any });
+      await downloadExport(data, format);
+    },
+    onSuccess: () => {
       toast.success("Your data has been exported");
     },
     onError: () => toast.error("Could not export your data — please try again"),
@@ -264,11 +261,19 @@ function ProfilePage() {
       <Card className="mt-10">
         <h2 className="font-serif text-xl mb-1">Export your data</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Download everything you've tracked — prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records — as a JSON file you keep.
+          Keep a copy of everything you've tracked — prayer logs, Qada, Quran progress, duas, reflections, goals and Zakat records. Excel has a separate sheet for each section; CSV is one table.
         </p>
-        <Button variant="ghost" onClick={() => exportData.mutate()} disabled={exportData.isPending}>
-          {exportData.isPending ? "Preparing your export…" : "Download my data"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" onClick={() => exportData.mutate("xlsx")} disabled={exportData.isPending}>
+            {exportData.isPending && exportData.variables === "xlsx" ? "Preparing…" : "Download Excel"}
+          </Button>
+          <Button variant="ghost" onClick={() => exportData.mutate("csv")} disabled={exportData.isPending}>
+            {exportData.isPending && exportData.variables === "csv" ? "Preparing…" : "Download CSV"}
+          </Button>
+          <Button variant="ghost" onClick={() => exportData.mutate("json")} disabled={exportData.isPending}>
+            {exportData.isPending && exportData.variables === "json" ? "Preparing…" : "Download JSON"}
+          </Button>
+        </div>
       </Card>
 
       <Card className="mt-6 ring-destructive/40">
