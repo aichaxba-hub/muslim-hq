@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createReflection, listReflections } from "@/lib/data.functions";
 import { todayISO, weekStartISO } from "@/lib/hijri";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/reflections")({
 head: () => ({ meta: [
@@ -36,6 +37,7 @@ function ReflectionsPage() {
   };
   const [form, setForm] = useState(empty);
   const set = (k: string, v: string) => setForm({ ...form, [k]: v });
+  const [selected, setSelected] = useState<any>(null);
 
   return (
     <AppShell>
@@ -70,14 +72,51 @@ function ReflectionsPage() {
 
       <div className="grid gap-3">
         {data.map((r: any) => (
-          <Card key={r.id}>
+          <Card
+            key={r.id}
+            className="cursor-pointer transition-shadow hover:shadow-md"
+            onClick={() => setSelected(r)}
+          >
             <p className="text-xs text-muted-foreground">{r.entry_date} · <span className="text-[color:var(--gold)]">{r.mood}</span></p>
             {r.closest_to_allah && <p className="mt-2 text-sm"><strong>Closest:</strong> {r.closest_to_allah}</p>}
             {r.fell_short && <p className="text-sm"><strong>Short:</strong> {r.fell_short}</p>}
             {r.next_intention && <p className="text-sm italic mt-2">→ {r.next_intention}</p>}
           </Card>
         ))}
+        {!data.length && <p className="text-sm text-muted-foreground">No reflections saved yet. Your first one can start right below.</p>}
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selected?.entry_date} · <span className="text-[color:var(--gold)] font-normal">{selected?.mood}</span>
+            </DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-4 text-sm">
+              {[
+                ["closest_to_allah", "What brought me closest to Allah"],
+                ["fell_short", "Where I fell short"],
+                ["distraction", "What distracted my heart most"],
+                ["sincere_dua", "Dua to make more sincerely"],
+                ["one_change", "One change to carry forward"],
+                ["wins", "Wins"],
+                ["struggles", "Struggles"],
+                ["gratitude", "Gratitude"],
+                ["next_intention", "Next week's intention"],
+              ].map(([k, label]) => (
+                (selected as any)[k] ? (
+                  <div key={k}>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+                    <p className="mt-1 whitespace-pre-wrap">{(selected as any)[k]}</p>
+                  </div>
+                ) : null
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
