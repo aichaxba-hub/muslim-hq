@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createQuranLog, createQuranStudyGoal, deleteQuranStudyGoal, listQuranLogs, listQuranStudyGoals, setQuranStudyGoalComplete, updateQuranStudyProgress } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { QuranReader, type QuranSessionMilestone, type QuranStudySelection } from "@/components/QuranReader";
 import { BookOpenCheck, Check, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
