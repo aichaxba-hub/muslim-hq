@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { QuranReader, type QuranSessionMilestone, type QuranStudySelection } from "@/components/QuranReader";
 import { BookOpenCheck, Check, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { KhatmPlanner } from "@/components/KhatmPlanner";
 
 type Chapter = { id: number; name_simple: string; verses_count: number; translated_name: { name: string } };
 type StudyGoal = { id: string; goal_date: string; surah_number: number; surah_name: string; start_ayah: number; end_ayah: number; last_completed_ayah: number; completed: boolean; note: string | null };
@@ -153,6 +154,8 @@ function QuranPage() {
   return (
     <AppShell>
       <PageHeader eyebrow="Quran" title="Reading & reflection" subtitle="Even a single page turns into light on Yawm al-Qiyamah." />
+
+      <KhatmPlanner profile={profile} logs={data as any[]} />
 
       <Card className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
