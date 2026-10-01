@@ -3,7 +3,7 @@ import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createQada, listQada, updateQada } from "@/lib/data.functions";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PRAYER_LABEL, PRAYERS } from "@/lib/prayer-times";
 import { todayISO } from "@/lib/hijri";
 
@@ -101,6 +101,33 @@ function QadaPage() {
           );
         })}
       </div>
+
+      <Card className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+          <div className="shrink-0">
+            <label className="text-xs uppercase tracking-wider text-muted-foreground">My Qada plan</label>
+            <select value={perDay} onChange={e => savePerDay(Number(e.target.value))} className="mt-1 w-full md:w-40 px-3 py-2 rounded-xl bg-background ring-1 ring-border">
+              {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                <option key={n} value={n}>{n} prayer{n > 1 ? "s" : ""} / day</option>
+              ))}
+            </select>
+          </div>
+          {pending.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No outstanding prayers right now — your plan is clear, masha'Allah.</p>
+          ) : (
+            <div className="text-sm leading-relaxed">
+              <p>
+                At <span className="font-semibold">{perDay}</span> prayer{perDay > 1 ? "s" : ""} a day, you'll clear your{" "}
+                <span className="font-semibold">{pending.length}</span> outstanding prayer{pending.length > 1 ? "s" : ""} in about{" "}
+                <span className="font-semibold">{Math.ceil(pending.length / perDay)}</span> day{Math.ceil(pending.length / perDay) > 1 ? "s" : ""}.
+              </p>
+              <p className="text-muted-foreground mt-1">
+                Around {finishDate(pending.length, perDay)}, insha'Allah. Small and steady — make it up when you can.
+              </p>
+            </div>
+          )}
+        </div>
+      </Card>
 
       <div className="flex gap-2 mb-4 text-sm">
         {(["pending", "completed", "all"] as const).map(f => (
