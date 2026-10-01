@@ -92,7 +92,8 @@ function WorshipHub() {
                   <select
                     value={(l as any)[`${p}_status`] ?? ""}
                     onChange={e => upsert.mutate({ [`${p}_status`]: e.target.value || null })}
-                    className="text-sm bg-transparent focus:outline-none"
+                    disabled={!!(l as any).excused}
+                    className="text-sm bg-transparent focus:outline-none disabled:opacity-50"
                   >
                     <option value="">— not logged —</option>
                     {STATUSES.map(s => <option key={s.v} value={s.v}>{s.l}</option>)}
