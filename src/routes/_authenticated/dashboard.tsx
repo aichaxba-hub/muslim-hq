@@ -4,11 +4,21 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listQada, listQuranLogs, listDhikr, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
-import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
+import { formatGregorian, formatHijri, formatHijriAdjusted, HIJRI_OFFSET_KEY, todayISO, upcomingIslamicEvents } from "@/lib/hijri";
 import { DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
-import { CalendarDays, Check, Circle } from "lucide-react";
+import { CalendarDays, Check, Circle, Moon } from "lucide-react";
+
+function useHijriOffset() {
+  const [offset, setOffset] = useState<number | null>(null);
+  useEffect(() => {
+    const n = Number(window.localStorage.getItem(HIJRI_OFFSET_KEY) ?? 0);
+    setOffset(n >= -2 && n <= 2 ? n : 0);
+  }, []);
+  const save = (n: number) => { setOffset(n); window.localStorage.setItem(HIJRI_OFFSET_KEY, String(n)); };
+  return [offset, save] as const;
+}
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { OnboardingDialog } from "@/components/OnboardingDialog";
 import { toast } from "sonner";
@@ -76,6 +86,8 @@ function Dashboard() {
   const anniversary = profile.data?.zakat_anniversary;
   const hawl = anniversary ? hawlProgress(anniversary) : null;
   const reminder = anniversary ? hawlReminder(anniversary) : null;
+  const [hijriOffset, saveOffset] = useHijriOffset();
+  const events = useMemo(() => hijriOffset === null ? [] : upcomingIslamicEvents(new Date(), hijriOffset), [hijriOffset]);
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: today, ...patch } as any }),
@@ -112,7 +124,13 @@ function Dashboard() {
         </div>
         <div className="text-sm text-right">
           <p>{formatGregorian()}</p>
-          <p className="text-[color:var(--sage)]">{formatHijri()} AH</p>
+          <p className="text-[color:var(--sage)]">{hijriOffset === null ? formatHijri() : formatHijriAdjusted(new Date(), hijriOffset)} AH</p>
+          <label className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
+            Moon sighting
+            <select aria-label="Hijri adjustment" value={hijriOffset ?? 0} onChange={e => saveOffset(Number(e.target.value))} className="bg-transparent ring-1 ring-border rounded-full px-2 py-0.5">
+              {[-2, -1, 0, 1, 2].map(n => <option key={n} value={n}>{n > 0 ? `+${n}` : n} day{Math.abs(n) === 1 ? "" : "s"}</option>)}
+            </select>
+          </label>
           <p className="text-xs text-muted-foreground mt-1 font-mono">{now.toLocaleTimeString()}</p>
           <div className="mt-2 flex md:justify-end"><InstallAppButton /></div>
         </div>
@@ -126,6 +144,25 @@ function Dashboard() {
           <Link to="/zakat" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4">{hawl ? "Review Zakat" : "Set anniversary"}</Link>
         </div></div>
       </section>
+
+      {hijriOffset !== null && (
+        <section className="mb-8 border-b border-border pb-5" aria-label="Islamic calendar reminders">
+          <div className="flex items-start gap-3"><Moon className="mt-1 size-5 shrink-0 text-primary" /><div className="flex-1">
+            <h2 className="font-serif text-2xl">{formatHijriAdjusted(new Date(), hijriOffset).replace(/ \d+$/, "")}</h2>
+            <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">Upcoming</p>
+            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+              {events.slice(0, 8).map(e => (
+                <li key={e.name} className="text-sm">
+                  <span className="font-medium">{e.name}</span>
+                  <span className="text-muted-foreground"> — {e.ongoing ? "today / now" : e.daysUntil === 1 ? "tomorrow" : `estimated in ${e.daysUntil} days`}</span>
+                  <p className="text-xs text-muted-foreground">{e.label} · {e.note}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-muted-foreground">Dates are estimates — adjust "Moon sighting" above to match your local community.</p>
+          </div></div>
+        </section>
+      )}
 
       {/* Hero row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
