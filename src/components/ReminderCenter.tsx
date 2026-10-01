@@ -82,13 +82,14 @@ export function ReminderCenter() {
       }
       if (settings.qadaPlan && atHour(19) && qada.isSuccess) {
         const saved = Number(localStorage.getItem("mhq-qada-plan"));
-        const perDay = saved >= 1 && saved <= 10 ? saved : 1;
-        const left = qadaLeftToday(qada.data, perDay, today);
-        if (left > 0) send("qada-plan", "Your Qada plan", `You planned ${left === 1 ? "one Qada prayer" : `${left} Qada prayers`} today. One at a time is enough.`);
+        if (saved >= 1 && saved <= 10) {
+          const left = qadaLeftToday(qada.data, saved, today);
+          if (left > 0) send("qada-plan", "Your Qada plan", `You planned ${left === 1 ? "one Qada prayer" : `${left} Qada prayers`} today. One at a time is enough.`);
+        }
       }
       if (settings.adhkarStreak && atHour(9) && dhikr.isSuccess) {
         const streak = morningAdhkarStreak(dhikr.data, now);
-        if (streak >= 2) send("adhkar-streak", "Morning Adhkar", `You've completed Morning Adhkar ${streak} days in a row. May it bring you peace.`);
+        if ([3, 7, 14, 30].includes(streak) || (streak > 30 && streak % 30 === 0)) send("adhkar-streak", "Morning Adhkar", `You've completed Morning Adhkar ${streak} days in a row. May it bring you peace.`);
       }
       if (settings.gentleReset && atHour(20) && worship.isSuccess && quran.isSuccess && dhikr.isSuccess) {
         const days = daysSinceActivity([
