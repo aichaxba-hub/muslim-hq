@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listQada, listQuranLogs, listDhikr, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
 import { formatGregorian, formatHijri, todayISO } from "@/lib/hijri";
-import { computeTimes, DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
+import { DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
 import { CalendarDays, Check, Circle } from "lucide-react";
@@ -138,11 +138,11 @@ function Dashboard() {
           <div className="space-y-1" aria-label="Today's prayers">
             {PRAYERS.map(p => {
               const status = log.data?.[`${p}_status` as keyof typeof log.data] as string | null | undefined;
-              const completed = status === "on_time" || status === "late" || status === "qada";
+              const completed = status === "on_time" || status === "late";
               const excused = log.data?.excused || status === "excused";
               return <div key={p} className="flex items-center justify-between gap-3 border-b border-border py-2 text-sm">
                 <span className="font-medium">{PRAYER_LABEL[p]}</span>
-                {excused ? <span className="text-xs text-muted-foreground">Excused</span> : completed ? <Check aria-label="Completed" className="size-5 text-primary" strokeWidth={2.5} /> : status === "missed" ? <span className="text-xs text-muted-foreground">Missed</span> : <Circle aria-label={log.isPending ? "Loading" : "Not logged"} className="size-5 text-muted-foreground" strokeWidth={1.5} />}
+                {excused ? <span className="text-xs text-muted-foreground">Excused</span> : completed ? <Check aria-label="Completed" className="size-5 text-primary" strokeWidth={2.5} /> : status === "missed" || status === "qada" ? <span className="text-xs text-muted-foreground">{status === "missed" ? "Missed" : "Qada"}</span> : <Circle aria-label={log.isPending ? "Loading" : "Not logged"} className="size-5 text-muted-foreground" strokeWidth={1.5} />}
               </div>;
             })}
           </div>
