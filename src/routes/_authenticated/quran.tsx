@@ -4,13 +4,31 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createQuranLog, createQuranStudyGoal, deleteQuranStudyGoal, listQuranLogs, listQuranStudyGoals, setQuranStudyGoalComplete, updateQuranStudyProgress } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { QuranReader, type QuranSessionMilestone, type QuranStudySelection } from "@/components/QuranReader";
 import { BookOpenCheck, Check, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Chapter = { id: number; name_simple: string; verses_count: number; translated_name: { name: string } };
 type StudyGoal = { id: string; goal_date: string; surah_number: number; surah_name: string; start_ayah: number; end_ayah: number; last_completed_ayah: number; completed: boolean; note: string | null };
+
+const RHYTHM_KEY = "mhq-quran-rhythm";
+const RHYTHM_OPTIONS = [5, 10, 15, 20, 30, 40, 50, 100];
+
+function countAyat(verses: string | null | undefined): number {
+  if (!verses) return 0;
+  const match = /^(\d+):(\d+)(?:[–-](\d+))?$/.exec(verses.trim());
+  if (!match) return 0;
+  const from = Number(match[2]);
+  const to = match[3] ? Number(match[3]) : from;
+  return Math.max(1, to - from + 1);
+}
+
+function surahNumberOf(verses: string | null | undefined): number | null {
+  if (!verses) return null;
+  const match = /^(\d+):/.exec(verses.trim());
+  return match ? Number(match[1]) : null;
+}
 
 export const Route = createFileRoute("/_authenticated/quran")({
   head: () => ({ meta: [
@@ -83,9 +101,70 @@ function QuranPage() {
   const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
   const totalJuz = data.reduce((s: number, r: any) => s + (Number(r.juz) || 0), 0);
 
+  const [dailyGoal, setDailyGoal] = useState(10);
+  useEffect(() => {
+    const saved = Number(window.localStorage.getItem(RHYTHM_KEY));
+    if (RHYTHM_OPTIONS.includes(saved)) setDailyGoal(saved);
+  }, []);
+  function chooseDailyGoal(value: number) {
+    setDailyGoal(value);
+    window.localStorage.setItem(RHYTHM_KEY, String(value));
+  }
+
+  const rhythm = useMemo(() => {
+    const today = todayISO();
+    const monthPrefix = today.slice(0, 7);
+    let todayAyat = 0;
+    let monthAyat = 0;
+    const monthSurahs = new Set<number>();
+    const monthSurahNames = new Set<string>();
+    for (const row of data as any[]) {
+      const ayat = countAyat(row.verses_completed);
+      if (row.log_date === today) todayAyat += ayat;
+      if (typeof row.log_date === "string" && row.log_date.startsWith(monthPrefix)) {
+        monthAyat += ayat;
+        const number = surahNumberOf(row.verses_completed);
+        if (number) monthSurahs.add(number);
+        else if (row.surah) monthSurahNames.add(String(row.surah).replace(/^\d+\.\s*/, ""));
+      }
+    }
+    return { todayAyat, monthAyat, monthSurahs: monthSurahs.size + monthSurahNames.size };
+  }, [data]);
+  const rhythmPercent = Math.min(100, Math.round((rhythm.todayAyat / dailyGoal) * 100));
+
   return (
     <AppShell>
       <PageHeader eyebrow="Quran" title="Reading & reflection" subtitle="Even a single page turns into light on Yawm al-Qiyamah." />
+
+      <Card className="mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">Quran rhythm</p>
+            <h2 className="font-serif text-2xl">Your daily goal</h2>
+          </div>
+          <label className="grid gap-1.5 text-xs text-muted-foreground">Ayat per day
+            <select aria-label="Daily ayat goal" value={dailyGoal} onChange={event => chooseDailyGoal(Number(event.target.value))} className="h-11 rounded-lg bg-background px-3 text-foreground ring-1 ring-border">
+              {RHYTHM_OPTIONS.map(option => <option key={option} value={option}>{option} ayat</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${rhythmPercent}%` }} /></div>
+          <span className="w-28 text-right text-xs text-muted-foreground">{rhythm.todayAyat} of {dailyGoal} · {rhythmPercent}%</span>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {rhythm.todayAyat >= dailyGoal
+            ? "Today's goal is complete, alhamdulillah."
+            : rhythm.todayAyat > 0
+              ? `${dailyGoal - rhythm.todayAyat} ayat to go today — your logged sessions count automatically.`
+              : "Log or listen to a session and it counts toward today's goal automatically."}
+        </p>
+        <div className="mt-5 grid grid-cols-2 gap-4">
+          <div className="rounded-lg border border-border p-4"><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Ayat this month</p><p className="font-serif text-3xl">{rhythm.monthAyat}</p></div>
+          <div className="rounded-lg border border-border p-4"><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Surahs covered this month</p><p className="font-serif text-3xl">{rhythm.monthSurahs}</p></div>
+        </div>
+      </Card>
+
 
       <Card className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
