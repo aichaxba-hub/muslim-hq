@@ -110,7 +110,7 @@ export const upsertWorshipLog = createServerFn({ method: "POST" })
     const { data: existing, error: readError } = await context.supabase.from("worship_logs")
       .select("*").eq("user_id", context.userId).eq("log_date", data.log_date).maybeSingle();
     if (readError) throw readError;
-    const payload = { ...existing, ...data, user_id: context.userId };
+    const payload: Record<string, any> = { ...existing, ...data, user_id: context.userId };
     if (payload.excused && ["Menstruation", "Postpartum"].includes(String(payload.excuse_type ?? ""))) {
       for (const prayer of ["fajr", "dhuhr", "asr", "maghrib", "isha"]) payload[`${prayer}_status`] = "excused";
     }
@@ -123,7 +123,7 @@ export const upsertWorshipLog = createServerFn({ method: "POST" })
     for (const p of Object.keys(labels)) {
       const key = `${p}_status`;
       if (!row.excused && !(key in data)) continue;
-      if (!row.excused && row[key] === "missed") {
+      if (!row.excused && row[key as keyof typeof row] === "missed") {
         const { error: qErr } = await context.supabase.from("qada_prayers").insert({ user_id: context.userId, prayer: labels[p], missed_date: data.log_date, auto_logged: true, notes: "Added from Salah log" });
         if (!qErr) qadaAdded = labels[p];
       } else {
