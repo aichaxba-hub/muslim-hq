@@ -35,3 +35,5 @@
 - [ ] True background push (app closed) — needs a push delivery service
 - [x] Export all data as a JSON download from Profile
 - [x] Dashboard: read-only Today's Worship prayer status, today's ayat and dhikr, and outstanding Qada
+- [x] Salah excused changes immediately update the shared Today's Worship summary
+- [x] Automatically refresh Dashboard after Salah logs and Qada completions without a page reload
