@@ -70,6 +70,7 @@ function WorshipHub() {
     },
     onSuccess: (row: any) => {
       qc.invalidateQueries({ queryKey: ["qada"] });
+      window.localStorage.setItem("muslim-hq-worship-changed", String(Date.now()));
       if (row?.qadaAdded) toast(`${row.qadaAdded} added to your Qada list`, { description: "Make it up when you can. Allah is Most Merciful." });
     },
     onSettled: () => {

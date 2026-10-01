@@ -52,6 +52,17 @@ function Dashboard() {
   const quran = useQuery({ queryKey: ["quran"], queryFn: () => quranFn({ data: undefined as any }) });
   const dhikr = useQuery({ queryKey: ["dhikr"], queryFn: () => dhikrFn({ data: undefined as any }) });
 
+  useEffect(() => {
+    const refreshWorship = (event: StorageEvent) => {
+      if (event.key !== "muslim-hq-worship-changed") return;
+      qc.invalidateQueries({ queryKey: ["worship", today] });
+      qc.invalidateQueries({ queryKey: ["worship-history"] });
+      qc.invalidateQueries({ queryKey: ["qada"] });
+    };
+    window.addEventListener("storage", refreshWorship);
+    return () => window.removeEventListener("storage", refreshWorship);
+  }, [qc, today]);
+
   const ayatToday = (quran.data ?? []).filter(entry => entry.log_date === today).reduce((total, entry) => {
     const match = entry.verses_completed?.match(/^\d+:(\d+)(?:[–-](\d+))?$/);
     if (!match) return total;
