@@ -101,6 +101,37 @@ function QuranPage() {
   const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
   const totalJuz = data.reduce((s: number, r: any) => s + (Number(r.juz) || 0), 0);
 
+  const [dailyGoal, setDailyGoal] = useState(10);
+  useEffect(() => {
+    const saved = Number(window.localStorage.getItem(RHYTHM_KEY));
+    if (RHYTHM_OPTIONS.includes(saved)) setDailyGoal(saved);
+  }, []);
+  function chooseDailyGoal(value: number) {
+    setDailyGoal(value);
+    window.localStorage.setItem(RHYTHM_KEY, String(value));
+  }
+
+  const rhythm = useMemo(() => {
+    const today = todayISO();
+    const monthPrefix = today.slice(0, 7);
+    let todayAyat = 0;
+    let monthAyat = 0;
+    const monthSurahs = new Set<number>();
+    const monthSurahNames = new Set<string>();
+    for (const row of data as any[]) {
+      const ayat = countAyat(row.verses_completed);
+      if (row.log_date === today) todayAyat += ayat;
+      if (typeof row.log_date === "string" && row.log_date.startsWith(monthPrefix)) {
+        monthAyat += ayat;
+        const number = surahNumberOf(row.verses_completed);
+        if (number) monthSurahs.add(number);
+        else if (row.surah) monthSurahNames.add(String(row.surah).replace(/^\d+\.\s*/, ""));
+      }
+    }
+    return { todayAyat, monthAyat, monthSurahs: monthSurahs.size + monthSurahNames.size };
+  }, [data]);
+  const rhythmPercent = Math.min(100, Math.round((rhythm.todayAyat / dailyGoal) * 100));
+
   return (
     <AppShell>
       <PageHeader eyebrow="Quran" title="Reading & reflection" subtitle="Even a single page turns into light on Yawm al-Qiyamah." />
