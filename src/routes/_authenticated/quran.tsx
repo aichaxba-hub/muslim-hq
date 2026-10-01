@@ -12,6 +12,24 @@ import { toast } from "sonner";
 type Chapter = { id: number; name_simple: string; verses_count: number; translated_name: { name: string } };
 type StudyGoal = { id: string; goal_date: string; surah_number: number; surah_name: string; start_ayah: number; end_ayah: number; last_completed_ayah: number; completed: boolean; note: string | null };
 
+const RHYTHM_KEY = "mhq-quran-rhythm";
+const RHYTHM_OPTIONS = [5, 10, 15, 20, 30, 40, 50, 100];
+
+function countAyat(verses: string | null | undefined): number {
+  if (!verses) return 0;
+  const match = /^(\d+):(\d+)(?:[–-](\d+))?$/.exec(verses.trim());
+  if (!match) return 0;
+  const from = Number(match[2]);
+  const to = match[3] ? Number(match[3]) : from;
+  return Math.max(1, to - from + 1);
+}
+
+function surahNumberOf(verses: string | null | undefined): number | null {
+  if (!verses) return null;
+  const match = /^(\d+):/.exec(verses.trim());
+  return match ? Number(match[1]) : null;
+}
+
 export const Route = createFileRoute("/_authenticated/quran")({
   head: () => ({ meta: [
     { title: "Read & Track the Quran — Muslim HQ" },
