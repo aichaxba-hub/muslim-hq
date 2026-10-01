@@ -148,8 +148,10 @@ function ReviewPage() {
       masjidPct: done ? Math.round((masjid / done) * 100) : 0,
       perPrayer,
       naflCounts,
+      goalsCompleted,
+      goalsTotal: goalsInRange.length,
     };
-  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
+  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data, goals.data]);
 
   const answeredDuaCounts = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
@@ -268,6 +270,7 @@ function ReviewPage() {
         <Stat label="Reflections" value={stats.reflectionsCount} />
         <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
         <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
+        <Stat label="Goals completed" value={goals.isLoading ? "…" : `${stats.goalsCompleted}${stats.goalsTotal ? ` · of ${stats.goalsTotal}` : ""}`} />
       </div>
 
       <Card className="mb-8">
