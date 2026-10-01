@@ -38,7 +38,7 @@ const NAFL_PRAYERS = [
   { v: "istikhara", l: "Istikhara" },
 ];
 
-const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel", "Other"];
+const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel"];
 
 
 function WorshipHub() {
@@ -134,7 +134,12 @@ function WorshipHub() {
         <Card>
           <h3 className="font-serif text-2xl mb-4">Excused today</h3>
           <label className="flex items-center gap-3 mb-3">
-            <input type="checkbox" checked={!!(l as any).excused} onChange={e => upsert.mutate({ excused: e.target.checked })} />
+            <input type="checkbox" checked={!!(l as any).excused} onChange={e => {
+              const patch: Record<string, unknown> = { excused: e.target.checked };
+              for (const p of PRAYERS) patch[`${p}_status`] = e.target.checked ? "excused" : null;
+              if (!e.target.checked) patch.excuse_type = null;
+              upsert.mutate(patch);
+            }} />
             <span className="text-sm">Mark today as excused</span>
           </label>
           {(l as any).excused && (
