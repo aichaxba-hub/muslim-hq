@@ -6,6 +6,7 @@ import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
+import { weekStartISO } from "@/lib/hijri";
 
 const NAFL_PRAYERS = [
   { v: "duha", l: "Duha" },
