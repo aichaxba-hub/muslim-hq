@@ -85,7 +85,11 @@ const EVENTS: EventDef[] = [
   { name: "Eid al-Adha", month: 12, from: 10, to: 10, note: "10 Dhul Hijjah" },
 ];
 
-export type IslamicEvent = { name: string; note: string; start: Date; daysUntil: number; ongoing: boolean; label: string };
+export type IslamicEvent = { name: string; note: string; start: Date; daysUntil: number; ongoing: boolean; label: string; startLabel: string };
+
+function gregorianLabel(d: Date) {
+  return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+}
 
 function eventSpanDays(e: IslamicEvent): [number, number] {
   const def = EVENTS.find(d => d.name === e.name);
