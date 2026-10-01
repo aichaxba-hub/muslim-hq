@@ -40,3 +40,5 @@
 - [x] Automatically refresh Dashboard after Salah logs and Qada completions without a page reload
 - [x] Menstruation and postpartum excused prayers preserve streaks, create no Qada or missed counts, and are excluded from negative consistency analytics
 - [x] Completing a Qada prayer updates the dashboard's outstanding count immediately
+
+- [x] Add private account-based worship backups with non-destructive restore across devices

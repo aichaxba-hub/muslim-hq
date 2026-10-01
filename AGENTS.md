@@ -21,5 +21,6 @@
 - Salah → Qada sync is server-side; menstruation/postpartum excusals remove dated obligations, preventing false missed counts.
 - Reminders run client-side in ReminderCenter (settings in localStorage) because no push delivery service is configured.
 - Offline support uses vite-plugin-pwa generateSW into dist/client; signed-in screens need the network, so navigations fall back to /offline.
-- Profile exports generate JSON, CSV, or multi-sheet Excel in-browser after a private fetch.
-- Qada completion optimistically updates the shared cache, then reconciles after save so dashboard counts change instantly.
+- Profile exports generate JSON, CSV, or Excel after a private fetch.
+- Qada completion optimistically updates the shared cache, then reconciles after save.
+- Worship snapshots stay private per account; restore adds missing records only and reset clears backups.

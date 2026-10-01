@@ -487,6 +487,57 @@ const USER_DATA_TABLES = [
   "zakat_payments", "zakat_entries", "sadaqah_logs", "quran_study_goals",
 ] as const;
 
+const WORSHIP_BACKUP_TABLES = ["worship_logs", "qada_prayers", "quran_logs", "fasting_logs", "dhikr_logs"] as const;
+
+export const listWorshipBackups = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("worship_backups")
+      .select("id,label,created_at").eq("user_id", context.userId).order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  });
+
+export const createWorshipBackup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const snapshot: Record<string, unknown[]> = {};
+    for (const table of WORSHIP_BACKUP_TABLES) {
+      const rows: unknown[] = [];
+      for (let from = 0; ; from += 500) {
+        const { data, error } = await context.supabase.from(table).select("*")
+          .eq("user_id", context.userId).order("created_at", { ascending: true }).order("id", { ascending: true }).range(from, from + 499);
+        if (error) throw error;
+        rows.push(...(data ?? []));
+        if (!data || data.length < 500) break;
+      }
+      snapshot[table] = rows;
+    }
+    const { data, error } = await context.supabase.from("worship_backups")
+      .insert({ user_id: context.userId, label: `Worship backup · ${new Date().toISOString().slice(0, 10)}`, snapshot }).select("id,label,created_at").single();
+    if (error) throw error;
+    return data;
+  });
+
+export const restoreWorshipBackup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: result, error } = await context.supabase.rpc("restore_worship_backup", { backup_id: data.id });
+    if (error) throw error;
+    return result;
+  });
+
+export const deleteWorshipBackup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("worship_backups")
+      .delete().eq("id", data.id).eq("user_id", context.userId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
 export const exportAllData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -512,7 +563,7 @@ export const exportAllData = createServerFn({ method: "GET" })
 export const resetAllData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const tables = [...USER_DATA_TABLES];
+    const tables = [...USER_DATA_TABLES, "worship_backups"];
     for (const table of tables) {
       const { error } = await context.supabase.from(table as any).delete().eq("user_id", context.userId);
       if (error) throw error;
