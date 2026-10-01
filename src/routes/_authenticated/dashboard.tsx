@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureSeeded, getProfile, getWorshipLog, listWorshipLogs, listQada, listQuranLogs, listDhikr, listZakat, listZakatPayments, upsertWorshipLog } from "@/lib/data.functions";
-import { formatGregorian, formatHijri, formatHijriAdjusted, HIJRI_OFFSET_KEY, todayISO, upcomingIslamicEvents } from "@/lib/hijri";
+import { formatGregorian, formatHijri, formatHijriAdjusted, HIJRI_OFFSET_KEY, todayISO, nextIslamicEventGroup } from "@/lib/hijri";
 import { DEFAULT_COORDS, formatCountdown, formatTime, nextPrayer, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
 import { AYAT_BANNERS } from "@/lib/dua-seed";
@@ -87,7 +87,7 @@ function Dashboard() {
   const hawl = anniversary ? hawlProgress(anniversary) : null;
   const reminder = anniversary ? hawlReminder(anniversary) : null;
   const [hijriOffset, saveOffset] = useHijriOffset();
-  const events = useMemo(() => hijriOffset === null ? [] : upcomingIslamicEvents(new Date(), hijriOffset), [hijriOffset]);
+  const events = useMemo(() => hijriOffset === null ? [] : nextIslamicEventGroup(new Date(), hijriOffset), [hijriOffset]);
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: today, ...patch } as any }),
@@ -149,9 +149,9 @@ function Dashboard() {
         <section className="mb-8 border-b border-border pb-5" aria-label="Islamic calendar reminders">
           <div className="flex items-start gap-3"><Moon className="mt-1 size-5 shrink-0 text-primary" /><div className="flex-1">
             <h2 className="font-serif text-2xl">{formatHijriAdjusted(new Date(), hijriOffset).replace(/ \d+$/, "")}</h2>
-            <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">Upcoming</p>
-            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-              {events.slice(0, 8).map(e => (
+            <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{events.length > 1 ? "Upcoming — at the same time" : "Upcoming"}</p>
+            <ul className="mt-2 space-y-2">
+              {events.map(e => (
                 <li key={e.name} className="text-sm">
                   <span className="font-medium">{e.name}</span>
                   <span className="text-muted-foreground"> — {e.ongoing ? "today / now" : e.daysUntil === 1 ? "tomorrow" : `estimated in ${e.daysUntil} days`}</span>

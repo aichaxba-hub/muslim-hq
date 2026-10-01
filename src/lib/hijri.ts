@@ -87,6 +87,12 @@ const EVENTS: EventDef[] = [
 
 export type IslamicEvent = { name: string; note: string; start: Date; daysUntil: number; ongoing: boolean; label: string };
 
+function eventSpanDays(e: IslamicEvent): [number, number] {
+  const def = EVENTS.find(d => d.name === e.name);
+  const duration = def ? def.to - def.from : 0; // "month begins" reminder is a single day
+  return [e.daysUntil, e.daysUntil + duration];
+}
+
 /** Upcoming/ongoing events within `horizon` days, using the adjusted Hijri calendar. */
 export function upcomingIslamicEvents(now = new Date(), offset = 0, horizon = 400): IslamicEvent[] {
   const found = new Map<string, IslamicEvent>();
@@ -114,4 +120,19 @@ export function upcomingIslamicEvents(now = new Date(), offset = 0, horizon = 40
     }
   }
   return [...found.values()].sort((a, b) => a.daysUntil - b.daysUntil);
+}
+
+/**
+ * Only the nearest upcoming event — plus any events concurrent with it
+ * (their date ranges overlap, e.g. Day of Arafah within the ten days
+ * of Dhul Hijjah, or Laylat al-Qadr within Ramadan).
+ */
+export function nextIslamicEventGroup(now = new Date(), offset = 0, horizon = 400): IslamicEvent[] {
+  const all = upcomingIslamicEvents(now, offset, horizon);
+  if (all.length === 0) return [];
+  const [firstStart, firstEnd] = eventSpanDays(all[0]);
+  return all.filter(e => {
+    const [start, end] = eventSpanDays(e);
+    return start <= firstEnd && end >= firstStart;
+  });
 }
