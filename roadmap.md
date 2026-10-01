@@ -44,3 +44,6 @@
 - [x] Add private account-based worship backups with non-destructive restore across devices
 
 - [x] Removed "& Hawl" from dashboard Zakat section
+
+- [x] Smart reminders: pre-prayer, Quran goal left, Qada plan, event eve, dhikr streak, gentle restart
+- [x] Weekly view on the Review tab

@@ -29,6 +29,10 @@ export function ReminderSettingsCard() {
       <h2 className="font-serif text-2xl mb-1">Reminders</h2>
       <p className="text-sm text-muted-foreground mb-4">Alerts appear while Muslim HQ is open (or installed and running on your device).</p>
       {perm !== "granted" && perm !== "unsupported" && <Button onClick={enable} className="mb-3">Allow notifications</Button>}
+      {row("Before each prayer — a heads-up", s.preAdhan, v => update({ preAdhan: v }),
+        <label className="text-xs text-muted-foreground flex items-center gap-1">
+          <input aria-label="Minutes before prayer" type="number" min={5} max={60} value={s.preAdhanOffset} onChange={e => update({ preAdhanOffset: Math.min(60, Math.max(5, +e.target.value || 15)) })} className="w-14 rounded-md bg-background px-2 py-1 ring-1 ring-border" /> min before
+        </label>)}
       {row("Adhan — at each prayer time", s.adhan, v => update({ adhan: v }))}
       {row("Iqamah reminder", s.iqamah, v => update({ iqamah: v }),
         <label className="text-xs text-muted-foreground flex items-center gap-1">

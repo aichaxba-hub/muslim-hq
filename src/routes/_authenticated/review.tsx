@@ -6,6 +6,7 @@ import { listAnsweredDuas, listDuas, listFasting, listQuranLogs, listReflections
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
+import { weekStartISO } from "@/lib/hijri";
 
 const NAFL_PRAYERS = [
   { v: "duha", l: "Duha" },
@@ -17,7 +18,7 @@ const NAFL_PRAYERS = [
 export const Route = createFileRoute("/_authenticated/review")({
   head: () => ({ meta: [
     { title: "Worship Review — Muslim HQ" },
-    { name: "description", content: "Reflect on your Salah, Quran, fasting, dhikr, duas, giving, and journaling over a month, year, or lifetime." },
+    { name: "description", content: "Reflect on your Salah, Quran, fasting, dhikr, duas, giving, and journaling over a week, month, year, or lifetime." },
     { property: "og:title", content: "Worship Review — Muslim HQ" },
     { property: "og:description", content: "A calm, private review of your worship rhythms and spiritual practices." },
     { property: "og:type", content: "website" },
@@ -28,9 +29,26 @@ export const Route = createFileRoute("/_authenticated/review")({
 
 const inMonth = (date: string | null | undefined, month: string) => !!date && date.slice(0, 7) === month;
 
+function addDays(iso: string, n: number) {
+  const d = new Date(`${iso}T12:00:00`);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+const inWeek = (date: string | null | undefined, weekStart: string) => {
+  if (!date) return false;
+  const day = date.slice(0, 10);
+  return day >= weekStart && day <= addDays(weekStart, 6);
+};
+
 function monthLabel(ym: string) {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+}
+
+function weekLabel(weekStart: string) {
+  const fmt = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return `${fmt(weekStart)} – ${fmt(addDays(weekStart, 6))}`;
 }
 
 function ReviewPage() {
@@ -56,7 +74,8 @@ function ReviewPage() {
   const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
 
 
-  const [mode, setMode] = useState<"lifetime" | "annual" | "monthly">("annual");
+  const [mode, setMode] = useState<"lifetime" | "annual" | "monthly" | "weekly">("annual");
+  const [weekStart, setWeekStart] = useState(() => weekStartISO());
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [year, setYear] = useState(() => new Date().getFullYear().toString());
 
@@ -69,6 +88,7 @@ function ReviewPage() {
   const stats = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
       if (!date) return false;
+      if (mode === "weekly") return inWeek(date, weekStart);
       if (mode === "monthly") return inMonth(date, month);
       if (mode === "annual") return date.slice(0, 4) === year;
       return true;
@@ -125,11 +145,12 @@ function ReviewPage() {
       perPrayer,
       naflCounts,
     };
-  }, [mode, month, year, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
+  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data]);
 
   const answeredDuaCounts = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
       if (!date) return mode === "lifetime";
+      if (mode === "weekly") return inWeek(date, weekStart);
       if (mode === "monthly") return inMonth(date, month);
       if (mode === "annual") return date.slice(0, 4) === year;
       return true;
@@ -142,11 +163,12 @@ function ReviewPage() {
     });
     const byCategory = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
     return { total: rows.length, byCategory };
-  }, [answeredDuas.data, mode, month, year]);
+  }, [answeredDuas.data, mode, month, year, weekStart]);
 
   const topDuaCategory = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
       if (!date) return mode === "lifetime";
+      if (mode === "weekly") return inWeek(date, weekStart);
       if (mode === "monthly") return inMonth(date, month);
       if (mode === "annual") return date.slice(0, 4) === year;
       return true;
@@ -157,16 +179,16 @@ function ReviewPage() {
       counts.set(category, (counts.get(category) ?? 0) + 1);
     });
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] ?? null;
-  }, [duas.data, mode, month, year]);
+  }, [duas.data, mode, month, year, weekStart]);
 
   const zakatTotals = useMemo(() => {
-    const inRange = (date: string | null | undefined) => mode === "lifetime" || !!date && (mode === "annual" ? date.slice(0, 4) === year : inMonth(date, month));
+    const inRange = (date: string | null | undefined) => mode === "lifetime" || !!date && (mode === "annual" ? date.slice(0, 4) === year : mode === "weekly" ? inWeek(date, weekStart) : inMonth(date, month));
     const entries = (zakat.data ?? []).filter((entry: any) => inRange(entry.created_at));
     const ids = new Set(entries.map(entry => entry.id));
     const due = entries.reduce((sum, entry) => sum + Number(entry.zakat_due ?? 0), 0);
     const paid = (payments.data ?? []).filter(payment => ids.has(payment.zakat_entry_id)).reduce((sum, payment) => sum + Number(payment.amount), 0);
     return { due, paid, remaining: Math.max(0, due - paid) };
-  }, [zakat.data, payments.data, mode, month, year]);
+  }, [zakat.data, payments.data, mode, month, year, weekStart]);
 
   return (
     <AppShell>
@@ -174,7 +196,7 @@ function ReviewPage() {
 
       <div className="flex flex-wrap items-center gap-3 mb-8">
         <div className="flex rounded-full border border-[color:var(--sand)] overflow-hidden">
-          {(["lifetime", "annual", "monthly"] as const).map(m => (
+          {(["lifetime", "annual", "monthly", "weekly"] as const).map(m => (
             <button
               key={m}
               onClick={() => setMode(m)}
@@ -195,6 +217,15 @@ function ReviewPage() {
             ))}
           </select>
         )}
+        {mode === "weekly" && (
+          <input
+            type="date"
+            aria-label="Week starting"
+            value={weekStart}
+            onChange={e => e.target.value && setWeekStart(weekStartISO(new Date(`${e.target.value}T12:00:00`)))}
+            className="rounded-full border border-[color:var(--sand)] bg-transparent px-4 py-2 text-sm"
+          />
+        )}
         {mode === "monthly" && (
           <input
             type="month"
@@ -205,7 +236,7 @@ function ReviewPage() {
         )}
       </div>
 
-      <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : monthLabel(month)}</h3>
+      <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
       <Card className="mb-4">
         <div className="flex items-center gap-3">
           <div className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-[color:var(--sage)]"><BookHeart className="size-5" /></div>
