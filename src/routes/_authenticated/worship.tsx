@@ -58,10 +58,24 @@ function WorshipHub() {
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: date, ...patch } as any }),
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: ["worship", date] });
+      const previous = qc.getQueryData(["worship", date]);
+      qc.setQueryData(["worship", date], (current: Record<string, unknown> | null | undefined) => ({ ...current, ...patch }));
+      return { previous };
+    },
+    onError: (_error, _patch, context) => {
+      qc.setQueryData(["worship", date], context?.previous);
+      toast.error("Could not save your Salah log");
+    },
     onSuccess: (row: any) => {
-      qc.invalidateQueries({ queryKey: ["worship", date] });
       qc.invalidateQueries({ queryKey: ["qada"] });
       if (row?.qadaAdded) toast(`${row.qadaAdded} added to your Qada list`, { description: "Make it up when you can. Allah is Most Merciful." });
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["worship", date] });
+      qc.invalidateQueries({ queryKey: ["worship-history"] });
+      qc.invalidateQueries({ queryKey: ["worship-history-all"] });
     },
   });
 
