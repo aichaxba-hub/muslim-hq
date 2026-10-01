@@ -1,8 +1,8 @@
 import { hijriDay } from "@/lib/hijri";
 
 type QuranEntry = { log_date: string; pages?: number | null };
-type QadaEntry = { completed: boolean; made_up_date?: string | null };
-type DhikrEntry = { log_date: string; category: string };
+type QadaEntry = { completed: boolean | null; made_up_date?: string | null };
+type DhikrEntry = { log_date: string; category: string | null };
 
 export function pagesLeftToday(logs: QuranEntry[], target: string | null, start: string | null, now: Date): number {
   if (!target || !start) return 0;
@@ -33,7 +33,7 @@ export function localISO(date: Date): string {
 }
 
 export function morningAdhkarStreak(rows: DhikrEntry[], now: Date): number {
-  const dates = new Set(rows.filter(row => row.category.toLowerCase() === "morning adhkar").map(row => row.log_date));
+  const dates = new Set(rows.filter(row => row.category?.toLowerCase() === "morning adhkar").map(row => row.log_date));
   const day = new Date(now); day.setHours(12, 0, 0, 0);
   if (!dates.has(localISO(day))) return 0;
   let count = 0;

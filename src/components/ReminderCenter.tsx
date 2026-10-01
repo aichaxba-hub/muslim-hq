@@ -25,7 +25,7 @@ export function ReminderCenter() {
   const quran = useQuery({ queryKey: ["quran"], queryFn: () => quranFn({ data: undefined as any }) });
   const qada = useQuery({ queryKey: ["qada"], queryFn: () => qadaFn({ data: undefined as any }) });
   const dhikr = useQuery({ queryKey: ["dhikr"], queryFn: () => dhikrFn({ data: undefined as any }) });
-  const worship = useQuery({ queryKey: ["worship-history-all"], queryFn: () => worshipFn({ data: { limit: 200 } }) });
+  const worship = useQuery({ queryKey: ["worship-history-all"], queryFn: () => worshipFn({ data: { limit: 90 } }) });
   const [settings, setSettings] = useState<ReminderSettings | null>(null);
 
   useEffect(() => {
