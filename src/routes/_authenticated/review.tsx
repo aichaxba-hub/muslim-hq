@@ -136,7 +136,6 @@ function ReviewPage() {
       fastsCompleted: f.filter((x: any) => x.completed).length,
       jummahRate: eligible.length ? Math.round((jummah / eligible.length) * 100) : 0,
       sadaqahTotal: s.filter((x: any) => x.kind !== "zakat").reduce((a: number, x: any) => a + (+x.amount || 0), 0),
-      givingTotal: s.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
       reflectionsCount: r.length,
       jamaahCount: jamaah,
       jamaahPct: done ? Math.round((jamaah / done) * 100) : 0,
@@ -257,7 +256,7 @@ function ReviewPage() {
         <Stat label="Fasts" value={stats.fastsCompleted} />
         <Stat label="Dhikr total" value={stats.dhikrTotal} />
         <Stat label="Sadaqah" value={`$${stats.sadaqahTotal.toLocaleString()}`} />
-        <Stat label="Logged giving (Zakat + Sadaqah)" value={`$${stats.givingTotal.toLocaleString()}`} />
+
         <Stat label="Zakat due" value={zakat.isLoading ? "…" : zakatTotals.due.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Zakat paid" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Zakat remaining" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
