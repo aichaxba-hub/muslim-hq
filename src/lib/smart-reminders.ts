@@ -1,4 +1,4 @@
-import { hijriDay, todayISO } from "@/lib/hijri";
+import { hijriDay } from "@/lib/hijri";
 
 type QuranEntry = { log_date: string; pages?: number | null };
 type QadaEntry = { completed: boolean; made_up_date?: string | null };
