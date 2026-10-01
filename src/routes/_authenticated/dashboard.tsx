@@ -241,14 +241,14 @@ function Dashboard() {
 
 function computeStreaks(logs: any[]) {
   const sorted = [...logs].sort((a, b) => (a.log_date < b.log_date ? 1 : -1));
-  const dayComplete = (l: any) => l.excused || PRAYERS.every(p => {
+  const dayComplete = (l: any) => PRAYERS.every(p => {
     const s = l[`${p}_status`];
-    return s && s !== "qada" && s !== "missed";
+    return s === "on_time" || s === "late";
   });
   const dayQuran = (l: any) => (l.quran_pages ?? 0) > 0 || (l.quran_minutes ?? 0) > 0;
   const dayDhikr = (l: any) => (l.dhikr_count ?? 0) > 0;
 
-  const streakOf = (pred: (l: any) => boolean) => {
+  const streakOf = (pred: (l: any) => boolean, skipExcused = false) => {
     let count = 0;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     for (let i = 0; i < 365; i++) {
@@ -256,11 +256,11 @@ function computeStreaks(logs: any[]) {
       const iso = d.toISOString().slice(0, 10);
       const l = sorted.find(x => x.log_date === iso);
       if (!l) { if (i === 0) continue; break; }
-      if (l.excused) continue;
+      if (skipExcused && l.excused) continue;
       if (pred(l)) count++;
       else if (i > 0) break;
     }
     return count;
   };
-  return { salah: streakOf(dayComplete), quran: streakOf(dayQuran), dhikr: streakOf(dayDhikr) };
+  return { salah: streakOf(dayComplete, true), quran: streakOf(dayQuran), dhikr: streakOf(dayDhikr) };
 }

@@ -78,16 +78,16 @@ function ReviewPage() {
     let done = 0, onTime = 0, qada = 0;
     eligible.forEach((l: any) => PRAYERS.forEach(p => {
       const st = l[`${p}_status`];
-      if (st && st !== "qada" && st !== "missed") done++;
+      if (st === "on_time" || st === "late") done++;
       if (st === "on_time") onTime++;
       if (st === "qada" || st === "missed") qada++;
     }));
-    const jummah = w.filter((l: any) => l.jummah).length;
+    const jummah = eligible.filter((l: any) => l.jummah).length;
 
     // Congregation / masjid tallies — the two are tracked independently.
     let jamaah = 0, masjid = 0;
     const perPrayer: Record<string, { jamaah: number; masjid: number }> = {};
-    w.forEach((l: any) => PRAYERS.forEach(p => {
+    eligible.forEach((l: any) => PRAYERS.forEach(p => {
       perPrayer[p] ??= { jamaah: 0, masjid: 0 };
       if (l[`${p}_congregation`]) { jamaah++; perPrayer[p].jamaah++; }
       if (l[`${p}_masjid`]) { masjid++; perPrayer[p].masjid++; }

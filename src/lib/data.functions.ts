@@ -107,21 +107,30 @@ export const upsertWorshipLog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: Record<string, unknown> & { log_date: string }) => d)
   .handler(async ({ data, context }) => {
-    const payload = { ...data, user_id: context.userId };
+    const { data: existing, error: readError } = await context.supabase.from("worship_logs")
+      .select("*").eq("user_id", context.userId).eq("log_date", data.log_date).maybeSingle();
+    if (readError) throw readError;
+    const payload = { ...existing, ...data, user_id: context.userId };
+    if (payload.excused && ["Menstruation", "Postpartum"].includes(String(payload.excuse_type ?? ""))) {
+      for (const prayer of ["fajr", "dhuhr", "asr", "maghrib", "isha"]) payload[`${prayer}_status`] = "excused";
+    }
     const { data: row, error } = await context.supabase
       .from("worship_logs").upsert(payload, { onConflict: "user_id,log_date" }).select().single();
     if (error) throw error;
-    // Keep Qada in sync: "missed" adds a pending make-up prayer; changing away removes an unfinished auto entry.
+    // Excused days never generate makeup obligations, even if an older status was marked missed.
     const labels: Record<string, string> = { fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha" };
     let qadaAdded: string | null = null;
     for (const p of Object.keys(labels)) {
       const key = `${p}_status`;
-      if (!(key in data)) continue;
-      if (data[key] === "missed") {
+      if (!row.excused && !(key in data)) continue;
+      if (!row.excused && row[key] === "missed") {
         const { error: qErr } = await context.supabase.from("qada_prayers").insert({ user_id: context.userId, prayer: labels[p], missed_date: data.log_date, auto_logged: true, notes: "Added from Salah log" });
         if (!qErr) qadaAdded = labels[p];
       } else {
-        await context.supabase.from("qada_prayers").delete().eq("user_id", context.userId).eq("prayer", labels[p]).eq("missed_date", data.log_date).eq("auto_logged", true).eq("completed", false);
+        let q = context.supabase.from("qada_prayers").delete().eq("user_id", context.userId).eq("prayer", labels[p]).eq("missed_date", data.log_date).eq("auto_logged", true);
+        if (!row.excused) q = q.eq("completed", false);
+        const { error: qErr } = await q;
+        if (qErr) throw qErr;
       }
     }
     return { ...row, qadaAdded };
@@ -139,6 +148,14 @@ export const createQada = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { prayer: string; missed_date?: string; notes?: string }) => d)
   .handler(async ({ data, context }) => {
+    if (data.missed_date) {
+      const { data: log, error: readError } = await context.supabase.from("worship_logs")
+        .select("excused,excuse_type").eq("user_id", context.userId).eq("log_date", data.missed_date).maybeSingle();
+      if (readError) throw readError;
+      if (log?.excused && ["Menstruation", "Postpartum"].includes(log.excuse_type ?? "")) {
+        throw new Error("No Qada is due for prayers excused by menstruation or postpartum recovery.");
+      }
+    }
     const { data: row, error } = await context.supabase.from("qada_prayers")
       .insert({ ...data, user_id: context.userId }).select().single();
     if (error) throw error;
