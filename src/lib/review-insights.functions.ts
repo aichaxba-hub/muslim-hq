@@ -12,10 +12,10 @@ export const getReviewInsights = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ insights: ReviewInsights; error?: string }> => {
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) return { insights: EMPTY, error: "Insights aren't configured yet." };
-    const statsJson = JSON.stringify(data.stats).slice(0, 6000);
+    const statsJson = JSON.stringify(data.stats).slice(0, 9000);
 
     const prompt = `You are a warm, gentle Muslim companion inside the "Muslim HQ" app. Its motto: "your deen, your pace". Review the user's worship numbers for ${data.period} and respond with care.
-Rules: never guilt, shame, threaten or compare to others. Excused days (menstruation, postpartum, illness, travel) are never a shortcoming — never mention them negatively. Celebrate real effort specifically, citing numbers. Recommendations must be small, concrete and doable (e.g. "pair one Qada with Fajr"). You may briefly reference a well-known authentic hadith or ayah meaning, without inventing sources. If data is sparse, encourage a gentle beginning.
+Rules: never guilt, shame, threaten or compare to others. Excused days (menstruation, postpartum, illness, travel) are never a shortcoming — never mention them negatively. Celebrate real effort specifically, citing numbers. Recommendations must be small, concrete and doable (e.g. "pair one Qada with Fajr"). You may briefly reference a well-known authentic hadith or ayah meaning, without inventing sources. Personalise deeply: the "journey" object is this person's real long-term habit profile (strongest prayer, prayer needing care, weekday rhythm, favourite dhikr, current streak, last 30 vs previous 30 days, active goals, Quran/Khatm targets). Ground every point in it or the period stats — name their actual prayers, phrases, goals and trends; never give generic advice that ignores their data. Compare to their own past only. If data is sparse, encourage a gentle beginning.
 Reply ONLY with JSON: {"praise":["..."],"insights":["..."],"recommendations":["..."],"encouragement":"..."} — 1-3 items each, each under 35 words; encouragement one or two sentences.
 
 Stats: ${statsJson}`;
