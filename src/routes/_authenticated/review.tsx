@@ -300,43 +300,70 @@ function ReviewPage() {
             className="rounded-full border border-[color:var(--sand)] bg-transparent px-4 py-2 text-sm"
           />
         )}
+        {mode !== "lifetime" && (
+          <div className="flex gap-1">
+            <button aria-label="Previous period" onClick={() => shift(-1)} className="grid size-9 place-items-center rounded-full border border-[color:var(--sand)] hover:bg-[color:var(--sand-soft)]"><ChevronLeft size={16} /></button>
+            <button aria-label="Next period" onClick={() => shift(1)} className="grid size-9 place-items-center rounded-full border border-[color:var(--sand)] hover:bg-[color:var(--sand-soft)]"><ChevronRight size={16} /></button>
+          </div>
+        )}
       </div>
       <ReviewInsightsCard
         ready={!worship.isLoading && !quran.isLoading}
         period={mode === "weekly" ? `week of ${weekStart}` : mode === "monthly" ? `month ${month}` : mode === "annual" ? `year ${year}` : "lifetime"}
-        stats={{ ...stats, answeredDuas: answeredDuaCounts.total, topDuaCategory: topDuaCategory?.[0] ?? null, zakat: zakatTotals }}
+        stats={{ ...stats, perPrayer: undefined, answeredDuas: answeredDuaCounts.total, topDuaCategory: topDuaCategory?.[0] ?? null, zakat: zakatTotals }}
       />
 
-      <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
-      <Card className="mb-4">
-        <div className="flex items-center gap-3">
-          <div className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-[color:var(--sage)]"><BookHeart className="size-5" /></div>
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Top dua category</p>
-            <p className="mt-1 font-serif text-2xl">{topDuaCategory?.[0] ?? "No duas saved"}</p>
-            <p className="text-xs text-muted-foreground">{topDuaCategory ? `${topDuaCategory[1]} saved ${topDuaCategory[1] === 1 ? "dua" : "duas"} in this period` : "Your most-saved category will appear here."}</p>
-          </div>
-        </div>
-      </Card>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <h3 className="font-serif text-3xl mb-6">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
+
+      <Section title="Salah" note="Excused days are honoured, never counted against you.">
         <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
         <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
-        <Stat label="Qada" value={stats.qada} />
-        <Stat label="Jummah rate" value={`${stats.jummahRate}%`} />
-        <Stat label="Quran pages" value={stats.quranPages} />
-        <Stat label="Juz progressed" value={stats.quranJuz.toFixed(1)} />
-        <Stat label="Fasts" value={stats.fastsCompleted} />
-        <Stat label="Dhikr total" value={stats.dhikrTotal} />
-        <Stat label="Sadaqah" value={`$${stats.sadaqahTotal.toLocaleString()}`} />
+        <Stat label="Days logged" value={stats.loggedDays} />
+        <Stat label="Excused days" value={stats.excusedDays} sub={breakdown(stats.excuseBreakdown)} />
+        <Stat label="Jummah" value={`${stats.jummahCount} · ${stats.jummahRate}%`} />
+        <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
+        <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
+        <Stat label="Missed prayers" value={stats.missedPrayers} />
+      </Section>
 
+      <Section title="Qada" note="Every makeup is a return.">
+        <Stat label="Made up" value={qadaQ.isLoading ? "…" : stats.qadaMadeUp} sub={breakdown(stats.qadaMadeUpByPrayer)} />
+        <Stat label="Outstanding now" value={qadaQ.isLoading ? "…" : stats.qadaOutstanding} />
+      </Section>
+
+      <Section title="Quran">
+        <Stat label="Pages" value={stats.quranPages} />
+        <Stat label="Juz progressed" value={stats.quranJuz.toFixed(1)} />
+        <Stat label="Sessions" value={stats.quranSessions} sub={stats.quranMinutes ? `${stats.quranMinutes} min` : undefined} />
+        <Stat label="Surahs read" value={stats.surahsRead} />
+        <Stat label="Study ayat" value={stats.studyAyat} />
+        <Stat label="Study goals" value={`${stats.studyGoalsCompleted} / ${stats.studyGoalsTotal}`} />
+      </Section>
+
+      <Section title="Fasting">
+        <Stat label="Fasts" value={stats.fastsCompleted} sub={breakdown(stats.fastsByType)} />
+        <Stat label="Ramadan fasts owed" value={stats.ramadanFastsOwed} />
+      </Section>
+
+      <Section title="Dhikr">
+        <Stat label="Dhikr total" value={stats.dhikrTotal.toLocaleString()} />
+        <Stat label="Sessions" value={stats.dhikrSessions} sub={breakdown(stats.dhikrByPhrase)} />
+      </Section>
+
+      <Section title="Heart" note="Duas, reflections and intentions.">
+        <Stat label="Duas saved" value={stats.duasSaved} sub={`${stats.duasFavorited} favourited`} />
+        <Stat label="Answered duas" value={answeredDuaCounts.total} />
+        <Stat label="Top dua category" value={topDuaCategory?.[0] ?? "—"} sub={topDuaCategory ? `${topDuaCategory[1]} saved` : undefined} small />
+        <Stat label="Reflections" value={stats.reflectionsCount} sub={breakdown(stats.moods)} />
+        <Stat label="Goals completed" value={goals.isLoading ? "…" : `${stats.goalsCompleted} / ${stats.goalsTotal}`} sub={`${stats.goalsInProgress} in progress`} />
+      </Section>
+
+      <Section title="Giving">
+        <Stat label="Sadaqah" value={`$${stats.sadaqahTotal.toLocaleString()}`} sub={`${stats.sadaqahGifts} ${stats.sadaqahGifts === 1 ? "gift" : "gifts"}`} />
         <Stat label="Zakat due" value={zakat.isLoading ? "…" : zakatTotals.due.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Zakat paid" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Zakat remaining" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
-        <Stat label="Reflections" value={stats.reflectionsCount} />
-        <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
-        <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
-        <Stat label="Goals completed" value={goals.isLoading ? "…" : `${stats.goalsCompleted}${stats.goalsTotal ? ` · of ${stats.goalsTotal}` : ""}`} />
-      </div>
+      </Section>
 
       <Card className="mb-8">
         <h3 className="font-serif text-2xl mb-1">Jama'ah & Masjid by prayer</h3>
