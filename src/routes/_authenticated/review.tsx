@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
+import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments, listQada, listQuranStudyGoals, getProfile } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
+import { BookHeart, ChevronLeft, ChevronRight, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { weekStartISO } from "@/lib/hijri";
 import { ReviewInsightsCard } from "@/components/ReviewInsightsCard";
@@ -75,6 +75,12 @@ function ReviewPage() {
   const paymentsFn = useServerFn(listZakatPayments);
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
   const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
+  const qadaFn = useServerFn(listQada);
+  const qadaQ = useQuery({ queryKey: ["qada"], queryFn: () => qadaFn({ data: undefined as any }) });
+  const studyFn = useServerFn(listQuranStudyGoals);
+  const studyQ = useQuery({ queryKey: ["review", "study"], queryFn: () => studyFn({ data: undefined as any }) });
+  const profileFn = useServerFn(getProfile);
+  const profileQ = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
 
 
   const [mode, setMode] = useState<"lifetime" | "annual" | "monthly" | "weekly">("annual");
