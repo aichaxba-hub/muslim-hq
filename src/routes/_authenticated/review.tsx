@@ -150,6 +150,10 @@ function ReviewPage() {
     // Quran study goals in range (by goal_date).
     const study = ((studyQ.data ?? []) as any[]).filter(g => inRange(g.goal_date));
     const studyAyat = study.reduce((a, g) => a + Math.max(0, Math.min(g.last_completed_ayah, g.end_ayah) - g.start_ayah + 1), 0);
+    const recitedAyat = q.reduce((a: number, x: any) => {
+      const m = String(x.verses_completed ?? "").match(/^\d+:(\d+)(?:[–-](\d+))?$/);
+      return a + (m ? (m[2] ? Math.max(1, +m[2] - +m[1] + 1) : 1) : 0);
+    }, 0);
     const surahsRead = new Set(q.map((x: any) => x.surah).filter(Boolean)).size;
     // Goals
     const goalsInProgress = goalsInRange.filter((g: any) => g.status === "In Progress").length;
@@ -175,6 +179,7 @@ function ReviewPage() {
       quranMinutes: q.reduce((a: number, x: any) => a + (x.minutes ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_minutes ?? 0), 0),
       surahsRead,
       studyAyat,
+      recitedAyat,
       studyGoalsCompleted: study.filter(g => g.completed).length,
       studyGoalsTotal: study.length,
       dhikrTotal: d.reduce((a: number, x: any) => a + (x.count ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.dhikr_count ?? 0), 0),
@@ -203,6 +208,68 @@ function ReviewPage() {
       goalsByCategory: countBy(goalsInRange, (g: any) => g.category),
     };
   }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data, goals.data, qadaQ.data, studyQ.data, profileQ.data, duas.data]);
+
+  // Personal habit profile across ALL history — grounds the AI in this user's real patterns.
+  const journey = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const daysAgo = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+    const recent = (date: string | null | undefined, from: number, to: number) => !!date && date.slice(0, 10) > daysAgo(from) && date.slice(0, 10) <= daysAgo(to);
+    const logs = (worship.data ?? []) as any[];
+    const perPrayer: Record<string, { onTimePct: number; logged: number }> = {};
+    PRAYERS.forEach(p => {
+      const rows = logs.filter(l => !l.excused && l[`${p}_status`]);
+      perPrayer[PRAYER_LABEL[p]] = { logged: rows.length, onTimePct: rows.length ? Math.round(rows.filter(l => l[`${p}_status`] === "on_time").length / rows.length * 100) : 0 };
+    });
+    const ranked = Object.entries(perPrayer).filter(([, v]) => v.logged >= 3).sort((a, b) => b[1].onTimePct - a[1].onTimePct);
+    const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const wd: Record<string, number> = {};
+    logs.filter(l => !l.excused).forEach(l => {
+      const done = PRAYERS.filter(p => l[`${p}_status`] === "on_time").length;
+      const k = weekday[new Date(`${l.log_date}T12:00:00`).getDay()];
+      wd[k] = (wd[k] ?? 0) + done;
+    });
+    // Current full-five streak (excused days preserve it).
+    let streak = 0;
+    const byDate = new Map(logs.map(l => [l.log_date, l]));
+    for (let i = 0; i < 400; i++) {
+      const l = byDate.get(daysAgo(i));
+      if (!l) { if (i === 0) continue; break; }
+      if (l.excused) continue;
+      if (PRAYERS.every(p => l[`${p}_status`] === "on_time")) streak++; else if (i === 0) continue; else break;
+    }
+    const window = (from: number, to: number) => {
+      const w = logs.filter(l => !l.excused && recent(l.log_date, from, to));
+      const slots = w.length * 5;
+      const on = w.reduce((a, l) => a + PRAYERS.filter(p => l[`${p}_status`] === "on_time").length, 0);
+      const quranRows = ((quran.data ?? []) as any[]).filter(x => recent(x.log_date, from, to));
+      const dh = ((dhikr.data ?? []) as any[]).filter(x => recent(x.log_date, from, to));
+      return {
+        onTimePct: slots ? Math.round(on / slots * 100) : null,
+        quranSessions: quranRows.length,
+        dhikr: dh.reduce((a, x) => a + (x.count ?? 0), 0),
+        qadaMadeUp: ((qadaQ.data ?? []) as any[]).filter(x => x.completed && recent(x.made_up_date, from, to)).length,
+        fasts: ((fasting.data ?? []) as any[]).filter(x => x.completed && recent(x.log_date, from, to)).length,
+      };
+    };
+    const dhikrFav: Record<string, number> = {};
+    ((dhikr.data ?? []) as any[]).forEach(x => { if (x.category) dhikrFav[x.category] = (dhikrFav[x.category] ?? 0) + (x.count ?? 0); });
+    const first = logs.map(l => l.log_date).sort()[0];
+    return {
+      today,
+      trackingSince: first ?? null,
+      currentFullFiveStreak: streak,
+      strongestPrayer: ranked[0]?.[0] ?? null,
+      prayerNeedingCare: ranked.length > 1 ? ranked[ranked.length - 1][0] : null,
+      perPrayerOnTime: perPrayer,
+      onTimeByWeekday: wd,
+      favouriteDhikr: Object.entries(dhikrFav).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k),
+      last30Days: window(30, 0),
+      previous30Days: window(60, 30),
+      quranDailyGoal: (profileQ.data as any)?.quran_daily_goal ?? null,
+      khatmTarget: (profileQ.data as any)?.khatm_target ?? null,
+      activeGoals: ((goals.data ?? []) as any[]).filter(g => g.status !== "Completed").slice(0, 5).map(g => g.title),
+    };
+  }, [worship.data, quran.data, dhikr.data, qadaQ.data, fasting.data, profileQ.data, goals.data]);
 
   const shift = (dir: -1 | 1) => {
     if (mode === "weekly") setWeekStart(addDays(weekStart, 7 * dir));
@@ -310,7 +377,7 @@ function ReviewPage() {
       <ReviewInsightsCard
         ready={!worship.isLoading && !quran.isLoading}
         period={mode === "weekly" ? `week of ${weekStart}` : mode === "monthly" ? `month ${month}` : mode === "annual" ? `year ${year}` : "lifetime"}
-        stats={{ ...stats, perPrayer: undefined, answeredDuas: answeredDuaCounts.total, topDuaCategory: topDuaCategory?.[0] ?? null, zakat: zakatTotals }}
+        stats={{ ...stats, perPrayer: undefined, journey, answeredDuas: answeredDuaCounts.total, topDuaCategory: topDuaCategory?.[0] ?? null, zakat: zakatTotals }}
       />
 
       <h3 className="font-serif text-3xl mb-6">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
@@ -336,7 +403,7 @@ function ReviewPage() {
         <Stat label="Juz progressed" value={stats.quranJuz.toFixed(1)} />
         <Stat label="Sessions" value={stats.quranSessions} sub={stats.quranMinutes ? `${stats.quranMinutes} min` : undefined} />
         <Stat label="Surahs read" value={stats.surahsRead} />
-        <Stat label="Study ayat" value={stats.studyAyat} />
+        <Stat label="Ayat recited" value={stats.recitedAyat} sub={`${stats.studyAyat} via study goals`} />
         <Stat label="Study goals" value={`${stats.studyGoalsCompleted} / ${stats.studyGoalsTotal}`} />
       </Section>
 
