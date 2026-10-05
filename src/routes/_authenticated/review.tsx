@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments, listQada, listQuranStudyGoals, getProfile } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { BookHeart, ChevronLeft, ChevronRight, Landmark, MoonStar, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { weekStartISO } from "@/lib/hijri";
 import { ReviewInsightsCard } from "@/components/ReviewInsightsCard";
 
@@ -412,11 +412,29 @@ function ReviewPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function breakdown(m: Record<string, number>) {
+  const e = Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return e.length ? e.map(([k, v]) => `${k} ${v}`).join(" · ") : undefined;
+}
+
+function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
+  return (
+    <section className="mb-8">
+      <div className="mb-3 flex items-baseline gap-3 border-b border-[color:var(--sand)] pb-2">
+        <h4 className="font-serif text-xl">{title}</h4>
+        {note && <p className="text-xs text-muted-foreground">{note}</p>}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{children}</div>
+    </section>
+  );
+}
+
+function Stat({ label, value, sub, small }: { label: string; value: string | number; sub?: string; small?: boolean }) {
   return (
     <Card>
       <p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">{label}</p>
-      <p className="text-3xl font-serif mt-1">{value}</p>
+      <p className={`${small ? "text-xl" : "text-3xl"} font-serif mt-1 truncate`}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{sub}</p>}
     </Card>
   );
 }
