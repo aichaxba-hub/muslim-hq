@@ -138,17 +138,59 @@ function ReviewPage() {
     const goalsInRange = (goals.data ?? []).filter((g: any) => inRange(g.created_at));
     const goalsCompleted = goalsInRange.filter((g: any) => g.status === "Completed").length;
 
+    const countBy = <T,>(rows: T[], key: (r: T) => string | null | undefined) => {
+      const m: Record<string, number> = {};
+      rows.forEach(r => { const k = key(r)?.toString().trim() || "Other"; m[k] = (m[k] ?? 0) + 1; });
+      return m;
+    };
+    // Qada: makeups by made_up_date, outstanding as current balance.
+    const allQada = (qadaQ.data ?? []) as any[];
+    const qadaMadeUp = allQada.filter(x => x.completed && inRange(x.made_up_date));
+    const qadaOutstanding = allQada.filter(x => !x.completed).length;
+    // Quran study goals in range (by goal_date).
+    const study = ((studyQ.data ?? []) as any[]).filter(g => inRange(g.goal_date));
+    const studyAyat = study.reduce((a, g) => a + Math.max(0, Math.min(g.last_completed_ayah, g.end_ayah) - g.start_ayah + 1), 0);
+    const surahsRead = new Set(q.map((x: any) => x.surah).filter(Boolean)).size;
+    // Goals
+    const goalsInProgress = goalsInRange.filter((g: any) => g.status === "In Progress").length;
+    // Duas
+    const duasInRange = ((duas.data ?? []) as any[]).filter(x => mode === "lifetime" || inRange(x.created_at));
+    const giftRows = s.filter((x: any) => x.kind !== "zakat");
+    const dhikrSessions = d.length;
+    const excusedDays = w.filter((l: any) => l.excused).length;
+
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
       onTimePct: totalSlots ? Math.round((onTime / totalSlots) * 100) : 0,
-      qada,
+      missedPrayers: qada,
+      loggedDays: w.length,
+      excusedDays,
+      excuseBreakdown: countBy(w.filter((l: any) => l.excused), (l: any) => l.excuse_type),
+      qadaMadeUp: qadaMadeUp.length,
+      qadaMadeUpByPrayer: countBy(qadaMadeUp, x => PRAYER_LABEL[x.prayer as keyof typeof PRAYER_LABEL] ?? x.prayer),
+      qadaOutstanding,
       quranPages: q.reduce((a: number, x: any) => a + (x.pages ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_pages ?? 0), 0),
       quranJuz: q.reduce((a: number, x: any) => a + (Number(x.juz) || 0), 0),
+      quranSessions: q.length,
+      quranMinutes: q.reduce((a: number, x: any) => a + (x.minutes ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_minutes ?? 0), 0),
+      surahsRead,
+      studyAyat,
+      studyGoalsCompleted: study.filter(g => g.completed).length,
+      studyGoalsTotal: study.length,
       dhikrTotal: d.reduce((a: number, x: any) => a + (x.count ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.dhikr_count ?? 0), 0),
+      dhikrSessions,
+      dhikrByPhrase: countBy(d, (x: any) => x.category),
       fastsCompleted: f.filter((x: any) => x.completed).length,
+      fastsByType: countBy(f.filter((x: any) => x.completed), (x: any) => x.fast_type),
+      ramadanFastsOwed: (profileQ.data as any)?.ramadan_fasts_owed ?? 0,
       jummahRate: eligible.length ? Math.round((jummah / eligible.length) * 100) : 0,
-      sadaqahTotal: s.filter((x: any) => x.kind !== "zakat").reduce((a: number, x: any) => a + (+x.amount || 0), 0),
+      jummahCount: jummah,
+      sadaqahTotal: giftRows.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
+      sadaqahGifts: giftRows.length,
       reflectionsCount: r.length,
+      moods: countBy(r.filter((x: any) => x.mood), (x: any) => x.mood),
+      duasSaved: duasInRange.length,
+      duasFavorited: duasInRange.filter(x => x.favorited).length,
       jamaahCount: jamaah,
       jamaahPct: done ? Math.round((jamaah / done) * 100) : 0,
       masjidCount: masjid,
@@ -156,9 +198,20 @@ function ReviewPage() {
       perPrayer,
       naflCounts,
       goalsCompleted,
+      goalsInProgress,
       goalsTotal: goalsInRange.length,
+      goalsByCategory: countBy(goalsInRange, (g: any) => g.category),
     };
-  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data, goals.data]);
+  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data, goals.data, qadaQ.data, studyQ.data, profileQ.data, duas.data]);
+
+  const shift = (dir: -1 | 1) => {
+    if (mode === "weekly") setWeekStart(addDays(weekStart, 7 * dir));
+    else if (mode === "monthly") {
+      const [y, m] = month.split("-").map(Number);
+      const d = new Date(y, m - 1 + dir, 1);
+      setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    } else if (mode === "annual") setYear(String(Number(year) + dir));
+  };
 
   const answeredDuaCounts = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
