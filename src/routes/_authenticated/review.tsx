@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments } from "@/lib/data.functions";
+import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments, listQada, listQuranStudyGoals, getProfile } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { BookHeart, Landmark, MoonStar, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Landmark, MoonStar, Users } from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
 import { weekStartISO } from "@/lib/hijri";
 import { ReviewInsightsCard } from "@/components/ReviewInsightsCard";
 
@@ -75,6 +75,12 @@ function ReviewPage() {
   const paymentsFn = useServerFn(listZakatPayments);
   const zakat = useQuery({ queryKey: ["zakat"], queryFn: () => zakatFn({ data: undefined as any }) });
   const payments = useQuery({ queryKey: ["zakat-payments"], queryFn: () => paymentsFn({ data: undefined as any }) });
+  const qadaFn = useServerFn(listQada);
+  const qadaQ = useQuery({ queryKey: ["qada"], queryFn: () => qadaFn({ data: undefined as any }) });
+  const studyFn = useServerFn(listQuranStudyGoals);
+  const studyQ = useQuery({ queryKey: ["review", "study"], queryFn: () => studyFn({ data: undefined as any }) });
+  const profileFn = useServerFn(getProfile);
+  const profileQ = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
 
 
   const [mode, setMode] = useState<"lifetime" | "annual" | "monthly" | "weekly">("annual");
@@ -132,17 +138,59 @@ function ReviewPage() {
     const goalsInRange = (goals.data ?? []).filter((g: any) => inRange(g.created_at));
     const goalsCompleted = goalsInRange.filter((g: any) => g.status === "Completed").length;
 
+    const countBy = <T,>(rows: T[], key: (r: T) => string | null | undefined) => {
+      const m: Record<string, number> = {};
+      rows.forEach(r => { const k = key(r)?.toString().trim() || "Other"; m[k] = (m[k] ?? 0) + 1; });
+      return m;
+    };
+    // Qada: makeups by made_up_date, outstanding as current balance.
+    const allQada = (qadaQ.data ?? []) as any[];
+    const qadaMadeUp = allQada.filter(x => x.completed && inRange(x.made_up_date));
+    const qadaOutstanding = allQada.filter(x => !x.completed).length;
+    // Quran study goals in range (by goal_date).
+    const study = ((studyQ.data ?? []) as any[]).filter(g => inRange(g.goal_date));
+    const studyAyat = study.reduce((a, g) => a + Math.max(0, Math.min(g.last_completed_ayah, g.end_ayah) - g.start_ayah + 1), 0);
+    const surahsRead = new Set(q.map((x: any) => x.surah).filter(Boolean)).size;
+    // Goals
+    const goalsInProgress = goalsInRange.filter((g: any) => g.status === "In Progress").length;
+    // Duas
+    const duasInRange = ((duas.data ?? []) as any[]).filter(x => mode === "lifetime" || inRange(x.created_at));
+    const giftRows = s.filter((x: any) => x.kind !== "zakat");
+    const dhikrSessions = d.length;
+    const excusedDays = w.filter((l: any) => l.excused).length;
+
     return {
       completionPct: totalSlots ? Math.round((done / totalSlots) * 100) : 0,
       onTimePct: totalSlots ? Math.round((onTime / totalSlots) * 100) : 0,
-      qada,
+      missedPrayers: qada,
+      loggedDays: w.length,
+      excusedDays,
+      excuseBreakdown: countBy(w.filter((l: any) => l.excused), (l: any) => l.excuse_type),
+      qadaMadeUp: qadaMadeUp.length,
+      qadaMadeUpByPrayer: countBy(qadaMadeUp, x => PRAYER_LABEL[x.prayer as keyof typeof PRAYER_LABEL] ?? x.prayer),
+      qadaOutstanding,
       quranPages: q.reduce((a: number, x: any) => a + (x.pages ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_pages ?? 0), 0),
       quranJuz: q.reduce((a: number, x: any) => a + (Number(x.juz) || 0), 0),
+      quranSessions: q.length,
+      quranMinutes: q.reduce((a: number, x: any) => a + (x.minutes ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_minutes ?? 0), 0),
+      surahsRead,
+      studyAyat,
+      studyGoalsCompleted: study.filter(g => g.completed).length,
+      studyGoalsTotal: study.length,
       dhikrTotal: d.reduce((a: number, x: any) => a + (x.count ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.dhikr_count ?? 0), 0),
+      dhikrSessions,
+      dhikrByPhrase: countBy(d, (x: any) => x.category),
       fastsCompleted: f.filter((x: any) => x.completed).length,
+      fastsByType: countBy(f.filter((x: any) => x.completed), (x: any) => x.fast_type),
+      ramadanFastsOwed: (profileQ.data as any)?.ramadan_fasts_owed ?? 0,
       jummahRate: eligible.length ? Math.round((jummah / eligible.length) * 100) : 0,
-      sadaqahTotal: s.filter((x: any) => x.kind !== "zakat").reduce((a: number, x: any) => a + (+x.amount || 0), 0),
+      jummahCount: jummah,
+      sadaqahTotal: giftRows.reduce((a: number, x: any) => a + (+x.amount || 0), 0),
+      sadaqahGifts: giftRows.length,
       reflectionsCount: r.length,
+      moods: countBy(r.filter((x: any) => x.mood), (x: any) => x.mood),
+      duasSaved: duasInRange.length,
+      duasFavorited: duasInRange.filter(x => x.favorited).length,
       jamaahCount: jamaah,
       jamaahPct: done ? Math.round((jamaah / done) * 100) : 0,
       masjidCount: masjid,
@@ -150,9 +198,20 @@ function ReviewPage() {
       perPrayer,
       naflCounts,
       goalsCompleted,
+      goalsInProgress,
       goalsTotal: goalsInRange.length,
+      goalsByCategory: countBy(goalsInRange, (g: any) => g.category),
     };
-  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data, goals.data]);
+  }, [mode, month, year, weekStart, worship.data, quran.data, fasting.data, dhikr.data, reflections.data, sadaqah.data, goals.data, qadaQ.data, studyQ.data, profileQ.data, duas.data]);
+
+  const shift = (dir: -1 | 1) => {
+    if (mode === "weekly") setWeekStart(addDays(weekStart, 7 * dir));
+    else if (mode === "monthly") {
+      const [y, m] = month.split("-").map(Number);
+      const d = new Date(y, m - 1 + dir, 1);
+      setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    } else if (mode === "annual") setYear(String(Number(year) + dir));
+  };
 
   const answeredDuaCounts = useMemo(() => {
     const inRange = (date: string | null | undefined) => {
@@ -241,43 +300,70 @@ function ReviewPage() {
             className="rounded-full border border-[color:var(--sand)] bg-transparent px-4 py-2 text-sm"
           />
         )}
+        {mode !== "lifetime" && (
+          <div className="flex gap-1">
+            <button aria-label="Previous period" onClick={() => shift(-1)} className="grid size-9 place-items-center rounded-full border border-[color:var(--sand)] hover:bg-[color:var(--sand-soft)]"><ChevronLeft size={16} /></button>
+            <button aria-label="Next period" onClick={() => shift(1)} className="grid size-9 place-items-center rounded-full border border-[color:var(--sand)] hover:bg-[color:var(--sand-soft)]"><ChevronRight size={16} /></button>
+          </div>
+        )}
       </div>
       <ReviewInsightsCard
         ready={!worship.isLoading && !quran.isLoading}
         period={mode === "weekly" ? `week of ${weekStart}` : mode === "monthly" ? `month ${month}` : mode === "annual" ? `year ${year}` : "lifetime"}
-        stats={{ ...stats, answeredDuas: answeredDuaCounts.total, topDuaCategory: topDuaCategory?.[0] ?? null, zakat: zakatTotals }}
+        stats={{ ...stats, perPrayer: undefined, answeredDuas: answeredDuaCounts.total, topDuaCategory: topDuaCategory?.[0] ?? null, zakat: zakatTotals }}
       />
 
-      <h3 className="font-serif text-2xl mb-4">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
-      <Card className="mb-4">
-        <div className="flex items-center gap-3">
-          <div className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-[color:var(--sage)]"><BookHeart className="size-5" /></div>
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Top dua category</p>
-            <p className="mt-1 font-serif text-2xl">{topDuaCategory?.[0] ?? "No duas saved"}</p>
-            <p className="text-xs text-muted-foreground">{topDuaCategory ? `${topDuaCategory[1]} saved ${topDuaCategory[1] === 1 ? "dua" : "duas"} in this period` : "Your most-saved category will appear here."}</p>
-          </div>
-        </div>
-      </Card>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <h3 className="font-serif text-3xl mb-6">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
+
+      <Section title="Salah" note="Excused days are honoured, never counted against you.">
         <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
         <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
-        <Stat label="Qada" value={stats.qada} />
-        <Stat label="Jummah rate" value={`${stats.jummahRate}%`} />
-        <Stat label="Quran pages" value={stats.quranPages} />
-        <Stat label="Juz progressed" value={stats.quranJuz.toFixed(1)} />
-        <Stat label="Fasts" value={stats.fastsCompleted} />
-        <Stat label="Dhikr total" value={stats.dhikrTotal} />
-        <Stat label="Sadaqah" value={`$${stats.sadaqahTotal.toLocaleString()}`} />
+        <Stat label="Days logged" value={stats.loggedDays} />
+        <Stat label="Excused days" value={stats.excusedDays} sub={breakdown(stats.excuseBreakdown)} />
+        <Stat label="Jummah" value={`${stats.jummahCount} · ${stats.jummahRate}%`} />
+        <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
+        <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
+        <Stat label="Missed prayers" value={stats.missedPrayers} />
+      </Section>
 
+      <Section title="Qada" note="Every makeup is a return.">
+        <Stat label="Made up" value={qadaQ.isLoading ? "…" : stats.qadaMadeUp} sub={breakdown(stats.qadaMadeUpByPrayer)} />
+        <Stat label="Outstanding now" value={qadaQ.isLoading ? "…" : stats.qadaOutstanding} />
+      </Section>
+
+      <Section title="Quran">
+        <Stat label="Pages" value={stats.quranPages} />
+        <Stat label="Juz progressed" value={stats.quranJuz.toFixed(1)} />
+        <Stat label="Sessions" value={stats.quranSessions} sub={stats.quranMinutes ? `${stats.quranMinutes} min` : undefined} />
+        <Stat label="Surahs read" value={stats.surahsRead} />
+        <Stat label="Study ayat" value={stats.studyAyat} />
+        <Stat label="Study goals" value={`${stats.studyGoalsCompleted} / ${stats.studyGoalsTotal}`} />
+      </Section>
+
+      <Section title="Fasting">
+        <Stat label="Fasts" value={stats.fastsCompleted} sub={breakdown(stats.fastsByType)} />
+        <Stat label="Ramadan fasts owed" value={stats.ramadanFastsOwed} />
+      </Section>
+
+      <Section title="Dhikr">
+        <Stat label="Dhikr total" value={stats.dhikrTotal.toLocaleString()} />
+        <Stat label="Sessions" value={stats.dhikrSessions} sub={breakdown(stats.dhikrByPhrase)} />
+      </Section>
+
+      <Section title="Heart" note="Duas, reflections and intentions.">
+        <Stat label="Duas saved" value={stats.duasSaved} sub={`${stats.duasFavorited} favourited`} />
+        <Stat label="Answered duas" value={answeredDuaCounts.total} />
+        <Stat label="Top dua category" value={topDuaCategory?.[0] ?? "—"} sub={topDuaCategory ? `${topDuaCategory[1]} saved` : undefined} small />
+        <Stat label="Reflections" value={stats.reflectionsCount} sub={breakdown(stats.moods)} />
+        <Stat label="Goals completed" value={goals.isLoading ? "…" : `${stats.goalsCompleted} / ${stats.goalsTotal}`} sub={`${stats.goalsInProgress} in progress`} />
+      </Section>
+
+      <Section title="Giving">
+        <Stat label="Sadaqah" value={`$${stats.sadaqahTotal.toLocaleString()}`} sub={`${stats.sadaqahGifts} ${stats.sadaqahGifts === 1 ? "gift" : "gifts"}`} />
         <Stat label="Zakat due" value={zakat.isLoading ? "…" : zakatTotals.due.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Zakat paid" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
         <Stat label="Zakat remaining" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
-        <Stat label="Reflections" value={stats.reflectionsCount} />
-        <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
-        <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
-        <Stat label="Goals completed" value={goals.isLoading ? "…" : `${stats.goalsCompleted}${stats.goalsTotal ? ` · of ${stats.goalsTotal}` : ""}`} />
-      </div>
+      </Section>
 
       <Card className="mb-8">
         <h3 className="font-serif text-2xl mb-1">Jama'ah & Masjid by prayer</h3>
@@ -326,11 +412,29 @@ function ReviewPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function breakdown(m: Record<string, number>) {
+  const e = Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return e.length ? e.map(([k, v]) => `${k} ${v}`).join(" · ") : undefined;
+}
+
+function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
+  return (
+    <section className="mb-8">
+      <div className="mb-3 flex items-baseline gap-3 border-b border-[color:var(--sand)] pb-2">
+        <h4 className="font-serif text-xl">{title}</h4>
+        {note && <p className="text-xs text-muted-foreground">{note}</p>}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{children}</div>
+    </section>
+  );
+}
+
+function Stat({ label, value, sub, small }: { label: string; value: string | number; sub?: string; small?: boolean }) {
   return (
     <Card>
       <p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">{label}</p>
-      <p className="text-3xl font-serif mt-1">{value}</p>
+      <p className={`${small ? "text-xl" : "text-3xl"} font-serif mt-1 truncate`}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{sub}</p>}
     </Card>
   );
 }
