@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments, listQada, listQuranStudyGoals, getProfile } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
-import { BookHeart, ChevronLeft, ChevronRight, Landmark, MoonStar, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Landmark, MoonStar, Users } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { weekStartISO } from "@/lib/hijri";
 import { ReviewInsightsCard } from "@/components/ReviewInsightsCard";
