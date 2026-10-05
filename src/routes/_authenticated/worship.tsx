@@ -187,22 +187,6 @@ function WorshipHub() {
           <label className="flex items-center gap-2"><input type="checkbox" checked={!!(l as any).jummah} onChange={e => upsert.mutate({ jummah: e.target.checked })} /> Jummah attended</label>
         </Card>
       </div>
-
-      <PageHeader eyebrow="History" title="Recent days" />
-      <div className="grid gap-2">
-        {(history.data ?? []).slice(0, 30).map((r: any) => {
-          const done = PRAYERS.filter(p => r[`${p}_status`] && !["qada","missed"].includes(r[`${p}_status`])).length;
-          return (
-            <button key={r.id} onClick={() => setDate(r.log_date)} className="text-left flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:bg-muted transition">
-              <div>
-                <p className="text-sm font-medium">{r.log_date}</p>
-                <p className="text-xs text-muted-foreground">{r.excused ? "Excused" : `${done}/5 prayers`} · {r.quran_pages ?? 0}pp Quran · {r.dhikr_count ?? 0} dhikr</p>
-              </div>
-              <span className="text-xs text-muted-foreground">Open</span>
-            </button>
-          );
-        })}
-      </div>
     </AppShell>
   );
 }
