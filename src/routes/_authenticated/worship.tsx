@@ -76,6 +76,8 @@ function WorshipHub() {
   });
 
   const l = log.data ?? {};
+  const [y, m, d] = date.split("-").map(Number);
+  const isFriday = new Date(y, (m ?? 1) - 1, d ?? 1).getDay() === 5;
 
   return (
     <AppShell>
