@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getProfile, getWorshipLog, listWorshipLogs, upsertWorshipLog } from "@/lib/data.functions";
+import { getProfile, getWorshipLog, upsertWorshipLog } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL, DEFAULT_COORDS } from "@/lib/prayer-times";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";
 import { todayISO } from "@/lib/hijri";
@@ -44,7 +44,6 @@ function WorshipHub() {
   const qc = useQueryClient();
   const getFn = useServerFn(getWorshipLog);
   const upsertFn = useServerFn(upsertWorshipLog);
-  const listFn = useServerFn(listWorshipLogs);
   const profileFn = useServerFn(getProfile);
 
   const profile = useQuery({ queryKey: ["profile"], queryFn: () => profileFn({ data: undefined as any }) });
@@ -52,7 +51,6 @@ function WorshipHub() {
     ? { latitude: profile.data.latitude, longitude: profile.data.longitude! }
     : { latitude: DEFAULT_COORDS.latitude, longitude: DEFAULT_COORDS.longitude };
   const log = useQuery({ queryKey: ["worship", date], queryFn: () => getFn({ data: { date } }) });
-  const history = useQuery({ queryKey: ["worship-history-all"], queryFn: () => listFn({ data: { limit: 90 } }) });
 
   const upsert = useMutation({
     mutationFn: (patch: Record<string, unknown>) => upsertFn({ data: { log_date: date, ...patch } as any }),
@@ -74,7 +72,6 @@ function WorshipHub() {
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["worship", date] });
       qc.invalidateQueries({ queryKey: ["worship-history"] });
-      qc.invalidateQueries({ queryKey: ["worship-history-all"] });
     },
   });
 
