@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/worship")({
 });
 
 const STATUSES = [
-  { v: "on_time", l: "On time" },
+  { v: "on_time", l: "Completed" },
   { v: "missed", l: "Missed" },
   { v: "excused", l: "Excused" },
 ];
@@ -112,7 +112,7 @@ function WorshipHub() {
                     {STATUSES.map(s => <option key={s.v} value={s.v}>{s.l}</option>)}
                   </select>
                 </div>
-                <div className="mt-2">
+                <div className="mt-3 pt-2.5 border-t border-border/60">
                   <PrayerPlaceToggles
                     congregation={!!(l as any)[`${p}_congregation`]}
                     masjid={!!(l as any)[`${p}_masjid`]}
@@ -145,29 +145,38 @@ function WorshipHub() {
           <p className="text-xs text-muted-foreground mt-3">Optional prayers — a bonus, never a burden.</p>
         </Card>
 
-        <Card>
-          <h3 className="font-serif text-2xl mb-4">Excused today</h3>
-          <label className="flex items-center gap-3 mb-3">
-            <input type="checkbox" checked={!!(l as any).excused} onChange={e => {
-              const patch: Record<string, unknown> = { excused: e.target.checked };
-              for (const p of PRAYERS) patch[`${p}_status`] = e.target.checked ? "excused" : null;
-              if (!e.target.checked) patch.excuse_type = null;
-              upsert.mutate(patch);
-            }} />
-            <span className="text-sm">Mark today as excused</span>
-          </label>
-          {(l as any).excused && (
+        <Card className="p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold">Excused today</h3>
+              <p className="text-xs text-muted-foreground">Protects your streaks and percentages.</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!!(l as any).excused}
+              onClick={() => {
+                const patch: Record<string, unknown> = { excused: !(l as any).excused };
+                for (const p of PRAYERS) patch[`${p}_status`] = !(l as any).excused ? "excused" : null;
+                if ((l as any).excused) patch.excuse_type = null;
+                upsert.mutate(patch);
+              }}
+              className={`size-12 shrink-0 rounded-full ring-1 ring-border grid place-items-center transition-colors ${!!(l as any).excused ? "bg-[color:var(--gold)]" : "bg-background"}`}
+            >
+              <div className={`size-2.5 rounded-full ${!!(l as any).excused ? "bg-white" : "bg-[color:var(--gold)]"}`} />
+            </button>
+          </div>
+          {!!(l as any).excused && (
             <select
               value={(l as any).excuse_type ?? ""}
               onChange={e => upsert.mutate({ excuse_type: e.target.value || null })}
-              className="w-full px-4 py-2.5 rounded-xl bg-background ring-1 ring-border"
+              className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border text-sm mt-3"
             >
               <option value="">Reason...</option>
               {EXCUSE_TYPES.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
           )}
-          <p className="text-xs text-muted-foreground mt-3">Excused days do not count against your streaks or percentages.</p>
-          {(l as any).excused && ["Menstruation", "Postpartum"].includes((l as any).excuse_type) && <p className="text-xs text-muted-foreground mt-2">No missed prayers or Qada are recorded for this day.</p>}
+          {!!(l as any).excused && ["Menstruation", "Postpartum"].includes((l as any).excuse_type) && <p className="text-xs text-muted-foreground mt-2">No missed prayers or Qada are recorded for this day.</p>}
         </Card>
       </div>
 
