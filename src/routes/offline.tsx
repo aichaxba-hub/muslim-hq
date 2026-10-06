@@ -72,7 +72,7 @@ function OfflinePage() {
             <button onClick={() => bump(-1)} className="rounded-full px-4 py-1.5 ring-1 ring-border">−1</button>
             <button onClick={() => bump(-(counts[phrase] ?? 0))} className="rounded-full px-4 py-1.5 ring-1 ring-border">Reset</button>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">Saved on this device.</p>
+          <p className="mt-3 text-xs text-muted-foreground">Saved on this device, then added to your account next time you open Dhikr online.</p>
         </section>
       </div>
     </main>
