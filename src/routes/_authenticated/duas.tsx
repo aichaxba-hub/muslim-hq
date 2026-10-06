@@ -153,7 +153,7 @@ function DuasPage() {
           </Card>
         )}
 
-        {answeredDuas.length === 0 ? (
+        {!showAnswered ? null : answeredDuas.length === 0 ? (
           <p className="py-5 text-sm text-muted-foreground">Your answered duas will appear here.</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
