@@ -73,7 +73,7 @@ function DuasPage() {
     <AppShell>
       <div className="flex flex-wrap justify-between items-end gap-4 mb-6">
         <PageHeader eyebrow="Dua Vault" title="Supplications" subtitle="A private library of the heart." />
-        <Button onClick={() => setShowForm(v => !v)} variant="gold"><Plus className="inline size-4 -mt-0.5" /> Add dua</Button>
+        <Button onClick={() => setShowForm(v => !v)} variant="gold"><Plus className="inline size-4 -mt-0.5" /> Add Your Own Dua</Button>
       </div>
 
       <DuaFinder duas={data} />
