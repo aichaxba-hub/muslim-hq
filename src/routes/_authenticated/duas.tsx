@@ -110,7 +110,7 @@ function DuasPage() {
               <input placeholder="e.g. After Fajr, when anxious" value={form.when_to_recite} onChange={e => setForm({ ...form, when_to_recite: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
             </label>
           </div>
-          {(form.arabic.trim() || form.transliteration.trim()) && (
+          {form.transliteration.trim() && (
             <div className="mt-4 rounded-xl bg-muted/50 px-4 py-3">
               <p className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">Listen before saving</p>
               <DuaAudio arabic={form.arabic} transliteration={form.transliteration} translation={form.translation} />
