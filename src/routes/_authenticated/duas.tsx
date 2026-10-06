@@ -94,10 +94,6 @@ function DuasPage() {
               </select>
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
-              Arabic
-              <textarea placeholder="Write the dua in Arabic…" value={form.arabic} onChange={e => setForm({ ...form, arabic: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" dir="rtl" rows={3} />
-            </label>
-            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
               Transliteration
               <textarea placeholder="e.g. Allahumma ashfi ummi…" value={form.transliteration} onChange={e => setForm({ ...form, transliteration: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" rows={2} />
             </label>
