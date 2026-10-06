@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listFasting, upsertFasting, getProfile, updateProfile } from "@/lib/data.functions";
+import { listFasting, upsertFasting, getProfile } from "@/lib/data.functions";
 import { FAST_TYPES } from "@/lib/fasting";
 import { todayISO, ramadanRange } from "@/lib/hijri";
 import { useMemo, useState, useEffect } from "react";
