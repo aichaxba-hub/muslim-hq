@@ -80,18 +80,52 @@ function DuasPage() {
 
       {showForm && (
         <Card className="mb-6">
-          <div className="grid md:grid-cols-2 gap-3">
-            <input placeholder="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
-              {["My Duas", ...DUA_CATEGORIES].map(c => <option key={c}>{c}</option>)}
-            </select>
-            <textarea placeholder="Arabic" value={form.arabic} onChange={e => setForm({ ...form, arabic: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border md:col-span-2" dir="rtl" rows={2} />
-            <input placeholder="Transliteration" value={form.transliteration} onChange={e => setForm({ ...form, transliteration: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border md:col-span-2" />
-            <input placeholder="Translation" value={form.translation} onChange={e => setForm({ ...form, translation: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border md:col-span-2" />
-            <input placeholder="Source" value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <input placeholder="When to recite" value={form.when_to_recite} onChange={e => setForm({ ...form, when_to_recite: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">Your own dua</p>
+          <h2 className="mb-4 font-serif text-2xl">Add a dua to your vault</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+              Title <span className="text-[color:var(--gold)]">*</span>
+              <input placeholder="e.g. Dua for my mother's health" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
+            </label>
+            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+              Category
+              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border">
+                {["My Duas", ...DUA_CATEGORIES].map(c => <option key={c}>{c}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
+              Arabic
+              <textarea placeholder="Write the dua in Arabic…" value={form.arabic} onChange={e => setForm({ ...form, arabic: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" dir="rtl" rows={3} />
+            </label>
+            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
+              Transliteration
+              <textarea placeholder="e.g. Allahumma ashfi ummi…" value={form.transliteration} onChange={e => setForm({ ...form, transliteration: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" rows={2} />
+            </label>
+            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
+              Translation
+              <textarea placeholder="What the dua means in English…" value={form.translation} onChange={e => setForm({ ...form, translation: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" rows={2} />
+            </label>
+            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+              Source <span className="font-normal">(optional)</span>
+              <input placeholder="e.g. Qur'an 21:83, personal" value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
+            </label>
+            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+              When to recite <span className="font-normal">(optional)</span>
+              <input placeholder="e.g. After Fajr, when anxious" value={form.when_to_recite} onChange={e => setForm({ ...form, when_to_recite: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
+            </label>
           </div>
-          <div className="mt-4"><Button onClick={() => upsert.mutate(form)}>Save dua</Button></div>
+          {(form.arabic.trim() || form.transliteration.trim()) && (
+            <div className="mt-4 rounded-xl bg-muted/50 px-4 py-3">
+              <p className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">Listen before saving</p>
+              <DuaAudio arabic={form.arabic} transliteration={form.transliteration} translation={form.translation} />
+            </div>
+          )}
+          <div className="mt-4 flex items-center gap-3">
+            <Button disabled={!form.title.trim() || upsert.isPending} onClick={() => upsert.mutate(form)}>
+              {upsert.isPending ? "Saving…" : "Save dua"}
+            </Button>
+            <Button variant="ghost" onClick={() => { setShowForm(false); setForm(emptyForm); }}>Cancel</Button>
+          </div>
         </Card>
       )}
 
