@@ -7,6 +7,8 @@ import { todayISO } from "@/lib/hijri";
 import { useState } from "react";
 import { VoiceDhikrCounter } from "@/components/VoiceDhikrCounter";
 import { VOICE_DHIKR_CATEGORIES } from "@/lib/dhikr-voice";
+import { ChevronDown } from "lucide-react";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/dhikr")({
   head: () => ({
@@ -30,6 +32,8 @@ function DhikrPage() {
   const { data = [] } = useQuery({ queryKey: ["dhikr"], queryFn: () => listFn({ data: undefined as any }) });
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["dhikr"] }) });
   const [form, setForm] = useState({ log_date: todayISO(), category: CATS[0], count: 33, notes: "" });
+  const [showTotals, setShowTotals] = useState(false);
+  useEffect(() => { if (data.length > 0) setShowTotals(true); }, [data.length]);
 
   const totals: Record<string, number> = {};
   data.forEach((d: any) => { totals[d.category] = (totals[d.category] ?? 0) + (d.count ?? 0); });
