@@ -87,6 +87,7 @@ export type Database = {
           created_at: string | null
           favorited: boolean | null
           id: string
+          is_custom: boolean
           personal_note: string | null
           source: string | null
           title: string
@@ -102,6 +103,7 @@ export type Database = {
           created_at?: string | null
           favorited?: boolean | null
           id?: string
+          is_custom?: boolean
           personal_note?: string | null
           source?: string | null
           title: string
@@ -117,6 +119,7 @@ export type Database = {
           created_at?: string | null
           favorited?: boolean | null
           id?: string
+          is_custom?: boolean
           personal_note?: string | null
           source?: string | null
           title?: string
