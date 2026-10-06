@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createAnsweredDua, listAnsweredDuas, listDuas, syncDuaLibrary, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
 import { DUA_CATEGORIES } from "@/lib/dua-seed";
-import { CalendarCheck, Heart, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { CalendarCheck, ChevronDown, Heart, Plus, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 import { DuaFinder } from "@/components/DuaFinder";
 import { DuaAudio } from "@/components/DuaAudio";
 import { todayISO } from "@/lib/hijri";
@@ -56,6 +56,8 @@ function DuasPage() {
   const [form, setForm] = useState(emptyForm);
   const [showAnsweredForm, setShowAnsweredForm] = useState(false);
   const [answeredForm, setAnsweredForm] = useState({ title: "", category: "My Duas", dua_text: "", answered_date: todayISO(), reflection: "" });
+  const [showAnswered, setShowAnswered] = useState(answeredDuas.length > 0);
+  useEffect(() => { if (answeredDuas.length > 0) setShowAnswered(true); }, [answeredDuas.length]);
 
   const q = search.trim().toLowerCase();
   const filtered = data.filter((d: any) => {
