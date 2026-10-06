@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 import { Button, Card } from "@/components/AppShell";
 import { findDuas } from "@/lib/dua-finder.functions";
+import { DuaAudio } from "@/components/DuaAudio";
 
 export function DuaFinder({ duas }: { duas: any[] }) {
   const findFn = useServerFn(findDuas);
@@ -35,7 +36,11 @@ export function DuaFinder({ duas }: { duas: any[] }) {
                 <p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">{d.category}</p>
                 <p className="font-serif text-lg">{d.title}</p>
                 {d.arabic && <p dir="rtl" className="text-xl mt-1">{d.arabic}</p>}
+                 {d.transliteration && <p className="text-sm mt-2 italic text-muted-foreground">{d.transliteration}</p>}
                 {d.translation && <p className="text-sm mt-1">{d.translation}</p>}
+                 <div className="mt-3">
+                   <DuaAudio arabic={d.arabic} transliteration={d.transliteration} translation={d.translation} />
+                 </div>
                 <p className="text-xs text-muted-foreground mt-2 italic">{m.reason}</p>
               </li>
             );
