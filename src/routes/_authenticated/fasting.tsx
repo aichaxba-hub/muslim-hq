@@ -29,7 +29,13 @@ function FastingPage() {
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["fasting"] }) });
   const [form, setForm] = useState({ log_date: todayISO(), fast_type: "Shawwal", completed: true, notes: "" });
   const [showLog, setShowLog] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   useEffect(() => { if (data.length > 0) setShowLog(true); }, [data.length]);
+  const toggleExpand = (id: string) => setExpandedIds(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
 
   const done = (t: string) => data.filter((f: any) => f.fast_type === t && f.completed).length;
   const sunnahCount = data.filter((f: any) => (f.fast_type === "Monday Sunnah" || f.fast_type === "Thursday Sunnah") && f.completed).length;
