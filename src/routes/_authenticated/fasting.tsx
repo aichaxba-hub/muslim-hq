@@ -127,6 +127,9 @@ function FastingPage() {
               <Button onClick={() => upsert.mutate(form)}>Save</Button>
             </div>
             <input placeholder="Notes..." value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-3 w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+            {form.fast_type === "Ramadan Makeup" && form.completed && (
+              <p className="mt-2 text-xs text-[color:var(--sage-deep)]">This will count toward your Ramadan makeup balance above — {remaining} still to go.</p>
+            )}
           </>
         )}
       </Card>
