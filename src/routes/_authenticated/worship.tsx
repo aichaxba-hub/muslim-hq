@@ -36,6 +36,13 @@ const NAFL_PRAYERS = [
   { v: "istikhara", l: "Istikhara" },
 ];
 
+const SUNNAH_PRAYERS = [
+  { prayer: "Fajr", items: [{ v: "fajr_sunnah_before", l: "2 before" }] },
+  { prayer: "Dhuhr", items: [{ v: "dhuhr_sunnah_before", l: "4 before" }, { v: "dhuhr_sunnah_after", l: "2 after" }] },
+  { prayer: "Maghrib", items: [{ v: "maghrib_sunnah_after", l: "2 after" }] },
+  { prayer: "Isha", items: [{ v: "isha_sunnah_after", l: "2 after" }] },
+];
+
 const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel"];
 
 
