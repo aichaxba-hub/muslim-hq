@@ -5,7 +5,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { listFasting, upsertFasting, getProfile, updateProfile } from "@/lib/data.functions";
 import { FAST_TYPES } from "@/lib/fasting";
 import { todayISO, ramadanRange } from "@/lib/hijri";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/fasting")({
