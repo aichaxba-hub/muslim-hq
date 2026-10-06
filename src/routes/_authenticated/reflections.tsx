@@ -47,7 +47,7 @@ function ReflectionsPage() {
         <div className="flex flex-wrap gap-3 mb-4">
           <input type="date" value={form.entry_date} onChange={e => set("entry_date", e.target.value)} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
           <select value={form.mood} onChange={e => set("mood", e.target.value)} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
-            <option value="">Mood (optional)</option>
+            <option value="">—</option>
             {MOODS.map(m => <option key={m}>{m}</option>)}
           </select>
         </div>
