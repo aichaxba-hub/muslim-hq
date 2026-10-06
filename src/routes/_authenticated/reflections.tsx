@@ -31,7 +31,7 @@ function ReflectionsPage() {
   });
 
   const empty = {
-    entry_date: todayISO(), week_start: weekStartISO(), mood: "grateful",
+    entry_date: todayISO(), week_start: weekStartISO(), mood: "",
     closest_to_allah: "", fell_short: "", distraction: "", sincere_dua: "", one_change: "",
     wins: "", struggles: "", gratitude: "", next_intention: "",
   };
@@ -47,6 +47,7 @@ function ReflectionsPage() {
         <div className="flex flex-wrap gap-3 mb-4">
           <input type="date" value={form.entry_date} onChange={e => set("entry_date", e.target.value)} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
           <select value={form.mood} onChange={e => set("mood", e.target.value)} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
+            <option value="">Mood (optional)</option>
             {MOODS.map(m => <option key={m}>{m}</option>)}
           </select>
         </div>
@@ -67,7 +68,7 @@ function ReflectionsPage() {
             <textarea rows={2} value={(form as any)[k]} onChange={e => set(k, e.target.value)} className="mt-1 w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
           </div>
         ))}
-        <Button onClick={() => create.mutate(form)}>Save reflection</Button>
+        <Button onClick={() => create.mutate({ ...form, mood: form.mood || null })}>Save reflection</Button>
       </Card>
 
       <div className="grid gap-3">
@@ -77,7 +78,7 @@ function ReflectionsPage() {
             className="cursor-pointer transition-shadow hover:shadow-md"
             onClick={() => setSelected(r)}
           >
-            <p className="text-xs text-muted-foreground">{r.entry_date} · <span className="text-[color:var(--gold)]">{r.mood}</span></p>
+            <p className="text-xs text-muted-foreground">{r.entry_date}{r.mood ? <> · <span className="text-[color:var(--gold)]">{r.mood}</span></> : null}</p>
             {r.closest_to_allah && <p className="mt-2 text-sm"><strong>Closest:</strong> {r.closest_to_allah}</p>}
             {r.fell_short && <p className="text-sm"><strong>Short:</strong> {r.fell_short}</p>}
             {r.next_intention && <p className="text-sm italic mt-2">→ {r.next_intention}</p>}
@@ -90,7 +91,7 @@ function ReflectionsPage() {
         <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {selected?.entry_date} · <span className="text-[color:var(--gold)] font-normal">{selected?.mood}</span>
+              {selected?.entry_date}{selected?.mood ? <> · <span className="text-[color:var(--gold)] font-normal">{selected.mood}</span></> : null}
             </DialogTitle>
           </DialogHeader>
           {selected && (
