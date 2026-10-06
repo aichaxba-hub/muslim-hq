@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listFasting, upsertFasting, getProfile, updateProfile } from "@/lib/data.functions";
+import { listFasting, upsertFasting, getProfile } from "@/lib/data.functions";
 import { FAST_TYPES } from "@/lib/fasting";
 import { todayISO, ramadanRange } from "@/lib/hijri";
 import { useMemo, useState, useEffect } from "react";
@@ -35,14 +35,8 @@ function FastingPage() {
   const sunnahCount = data.filter((f: any) => (f.fast_type === "Monday Sunnah" || f.fast_type === "Thursday Sunnah") && f.completed).length;
 
   const profileFn = useServerFn(getProfile);
-  const updateProfileFn = useServerFn(updateProfile);
   const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: () => profileFn() });
   const owed = Number((profile as any)?.ramadan_fasts_owed ?? 0);
-  const saveOwed = useMutation({
-    mutationFn: (n: number) => updateProfileFn({ data: { ramadan_fasts_owed: Math.max(0, n) } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
-    onError: () => toast.error("Couldn't save your target"),
-  });
   const madeUp = done("Ramadan Makeup");
   const remaining = Math.max(0, owed - madeUp);
   const nextRamadan = useMemo(() => {
@@ -70,12 +64,6 @@ function FastingPage() {
             {owed > 0 && <div className="mt-3 h-2 w-full md:w-64 rounded-full bg-muted overflow-hidden"><div className="h-full bg-primary" style={{ width: `${Math.min(100, (madeUp / owed) * 100)}%` }} /></div>}
           </div>
           <div className="flex flex-col gap-3 md:items-end">
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">Days owed</span>
-              <button aria-label="Decrease days owed" onClick={() => saveOwed.mutate(owed - 1)} disabled={owed <= 0} className="h-8 w-8 rounded-full ring-1 ring-border disabled:opacity-40">−</button>
-              <span className="w-8 text-center font-semibold">{owed}</span>
-              <button aria-label="Increase days owed" onClick={() => saveOwed.mutate(owed + 1)} className="h-8 w-8 rounded-full ring-1 ring-border">+</button>
-            </div>
             <Button onClick={logMakeup} disabled={remaining === 0}>+1 made up today</Button>
           </div>
         </div>
