@@ -371,6 +371,7 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
           Arabic text, word timings, and Saheeh International English translation provided by Quran.com. The Clear Quran® opens on its official reader and is credited to Dr. Mustafa Khattab.
         </p>
+        </>}
       </section>
     </Card>
   );
