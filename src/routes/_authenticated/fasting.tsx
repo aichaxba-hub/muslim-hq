@@ -29,7 +29,13 @@ function FastingPage() {
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["fasting"] }) });
   const [form, setForm] = useState({ log_date: todayISO(), fast_type: "Shawwal", completed: true, notes: "" });
   const [showLog, setShowLog] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   useEffect(() => { if (data.length > 0) setShowLog(true); }, [data.length]);
+  const toggleExpand = (id: string) => setExpandedIds(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
 
   const done = (t: string) => data.filter((f: any) => f.fast_type === t && f.completed).length;
   const sunnahCount = data.filter((f: any) => (f.fast_type === "Monday Sunnah" || f.fast_type === "Thursday Sunnah") && f.completed).length;
@@ -118,21 +124,37 @@ function FastingPage() {
             {form.fast_type === "Ramadan Makeup" && form.completed && (
               <p className="mt-2 text-xs text-[color:var(--sage-deep)]">This will count toward your Ramadan makeup balance above — {remaining} still to go.</p>
             )}
+            <div className="mt-5 pt-4 border-t border-border grid gap-2">
+              {data.map((f: any) => {
+                const open = expandedIds.has(f.id);
+                return (
+                  <div key={f.id} className="rounded-2xl ring-1 ring-border overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(f.id)}
+                      aria-expanded={open}
+                      className="w-full flex items-center justify-between gap-3 p-4 text-left"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "" : "-rotate-90"}`} />
+                        <p className="font-medium truncate">{f.log_date} <span className="text-xs text-muted-foreground">· {f.fast_type}</span></p>
+                      </div>
+                      <span className={`shrink-0 text-xs px-3 py-1 rounded-full ${f.completed ? "bg-[color:var(--sage-deep)] text-[color:var(--sand)]" : "ring-1 ring-border"}`}>{f.completed ? "Completed" : "Missed"}</span>
+                    </button>
+                    {open && (
+                      <div className="px-4 pb-4 pl-11 text-sm text-muted-foreground space-y-1.5">
+                        <p><span className="text-foreground font-medium">Type:</span> {f.fast_type}</p>
+                        <p><span className="text-foreground font-medium">Status:</span> {f.completed ? "Completed" : "Missed"}</p>
+                        {f.notes && <p><span className="text-foreground font-medium">Notes:</span> {f.notes}</p>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
       </Card>
-
-      <div className="grid gap-2">
-        {data.map((f: any) => (
-          <div key={f.id} className="flex items-center justify-between p-4 rounded-2xl ring-1 ring-border">
-            <div>
-              <p className="font-medium">{f.log_date} <span className="text-xs text-muted-foreground">· {f.fast_type}</span></p>
-              {f.notes && <p className="text-xs text-muted-foreground">{f.notes}</p>}
-            </div>
-            <span className={`text-xs px-3 py-1 rounded-full ${f.completed ? "bg-[color:var(--sage-deep)] text-[color:var(--sand)]" : "ring-1 ring-border"}`}>{f.completed ? "Completed" : "Missed"}</span>
-          </div>
-        ))}
-      </div>
     </AppShell>
   );
 }
