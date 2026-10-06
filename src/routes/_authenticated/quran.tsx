@@ -299,13 +299,17 @@ function QuranPage() {
         <p className="text-sm text-muted-foreground">Every logged session, collapsed. Tap one to see the details.</p>
         {data.length === 0 && <p className="py-4 text-sm text-muted-foreground">No sessions logged yet — your first one will appear here.</p>}
         {data.map((r: any) => {
-          const expanded = expandedSessionId === r.id;
+          const expanded = expandedSessionIds.has(r.id);
           return (
             <div key={r.id} className="rounded-2xl ring-1 ring-border">
               <button
                 type="button"
                 aria-expanded={expanded}
-                onClick={() => setExpandedSessionId(expanded ? null : r.id)}
+                onClick={() => setExpandedSessionIds(previous => {
+                  const next = new Set(previous);
+                  if (next.has(r.id)) next.delete(r.id); else next.add(r.id);
+                  return next;
+                })}
                 className="flex w-full items-center justify-between gap-3 p-4 text-left"
               >
                 <p className="font-medium truncate">{r.surah || "Session"} <span className="text-muted-foreground text-sm">· {r.log_date}</span></p>
