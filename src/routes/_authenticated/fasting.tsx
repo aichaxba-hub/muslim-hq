@@ -35,14 +35,7 @@ function FastingPage() {
   const sunnahCount = data.filter((f: any) => (f.fast_type === "Monday Sunnah" || f.fast_type === "Thursday Sunnah") && f.completed).length;
 
   const profileFn = useServerFn(getProfile);
-  const updateProfileFn = useServerFn(updateProfile);
   const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: () => profileFn() });
-  const owed = Number((profile as any)?.ramadan_fasts_owed ?? 0);
-  const saveOwed = useMutation({
-    mutationFn: (n: number) => updateProfileFn({ data: { ramadan_fasts_owed: Math.max(0, n) } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
-    onError: () => toast.error("Couldn't save your target"),
-  });
   const madeUp = done("Ramadan Makeup");
   const remaining = Math.max(0, owed - madeUp);
   const nextRamadan = useMemo(() => {
