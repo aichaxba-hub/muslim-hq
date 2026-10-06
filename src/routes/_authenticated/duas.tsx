@@ -52,7 +52,7 @@ function DuasPage() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: "", arabic: "", transliteration: "", translation: "", source: "", category: "My Duas", when_to_recite: "" };
+  const emptyForm = { title: "", translation: "", source: "", category: "My Duas", when_to_recite: "" };
   const [form, setForm] = useState(emptyForm);
   const [showAnsweredForm, setShowAnsweredForm] = useState(false);
   const [answeredForm, setAnsweredForm] = useState({ title: "", category: "My Duas", dua_text: "", answered_date: todayISO(), reflection: "" });
@@ -94,12 +94,8 @@ function DuasPage() {
               </select>
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
-              Transliteration
-              <textarea placeholder="e.g. Allahumma ashfi ummi…" value={form.transliteration} onChange={e => setForm({ ...form, transliteration: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" rows={2} />
-            </label>
-            <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
-              Translation
-              <textarea placeholder="What the dua means in English…" value={form.translation} onChange={e => setForm({ ...form, translation: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" rows={2} />
+              English
+              <textarea placeholder="Write your dua in English…" value={form.translation} onChange={e => setForm({ ...form, translation: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" rows={2} />
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
               Source <span className="font-normal">(optional)</span>
@@ -110,10 +106,10 @@ function DuasPage() {
               <input placeholder="e.g. After Fajr, when anxious" value={form.when_to_recite} onChange={e => setForm({ ...form, when_to_recite: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border" />
             </label>
           </div>
-          {form.transliteration.trim() && (
+          {form.translation.trim() && (
             <div className="mt-4 rounded-xl bg-muted/50 px-4 py-3">
               <p className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">Listen before saving</p>
-              <DuaAudio arabic={form.arabic} transliteration={form.transliteration} translation={form.translation} />
+              <DuaAudio translation={form.translation} />
             </div>
           )}
           <div className="mt-4 flex items-center gap-3">
