@@ -74,7 +74,7 @@ function QuranPage() {
   const completeGoal = useMutation({ mutationFn: (p: { id: string; completed: boolean }) => completeGoalFn({ data: p }), onSuccess: refreshGoals });
   const removeGoal = useMutation({ mutationFn: (id: string) => deleteGoalFn({ data: { id } }), onSuccess: () => { refreshGoals(); toast.success("Study goal removed"); } });
 
-  const [form, setForm] = useState({ log_date: todayISO(), surah_number: 1, whole: true, from_ayah: "1", to_ayah: "", pages: "", minutes: "", juz: "", tafsir: false, reflection: "" });
+  const [form, setForm] = useState({ log_date: todayISO(), surah_number: 1, whole: true, from_ayah: "1", to_ayah: "", pages: "", juz: "", tafsir: false, reflection: "" });
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalForm, setGoalForm] = useState({ goal_date: todayISO(), surah_number: 1, start_ayah: 1, end_ayah: 7, note: "" });
   const [activeGoalId, setActiveGoalId] = useState<string | null>(null);
@@ -263,10 +263,9 @@ function QuranPage() {
               log_date: form.log_date, surah: `${ch.id}. ${ch.name_simple}`,
               verses_completed: from === to ? `${ch.id}:${from}` : `${ch.id}:${from}–${to}`,
               pages: Math.max(0, Math.round(Number(form.pages) || 0)),
-              minutes: Math.max(0, Math.round(Number(form.minutes) || 0)),
               juz: Math.max(0, Number(form.juz) || 0) || undefined,
               tafsir: form.tafsir, reflection: form.reflection.trim() || undefined,
-            }, { onSuccess: () => { toast.success(`Logged ${ch.name_simple} ${from}–${to}`); setForm(f => ({ ...f, from_ayah: "1", to_ayah: "", pages: "", minutes: "", juz: "", tafsir: false, reflection: "", whole: true })); } });
+            }, { onSuccess: () => { toast.success(`Logged ${ch.name_simple} ${from}–${to}`); setForm(f => ({ ...f, from_ayah: "1", to_ayah: "", pages: "", juz: "", tafsir: false, reflection: "", whole: true })); } });
           };
           return <>
             <div className="grid gap-3 md:grid-cols-4">
@@ -276,13 +275,12 @@ function QuranPage() {
               </select></label>
             </div>
             <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.whole} onChange={e => setForm({ ...form, whole: e.target.checked, from_ayah: "1" })} /> I read the whole surah</label>
-            <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-5">
+            <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
               {!form.whole && <>
                 <label className="grid gap-1.5 text-xs text-muted-foreground">From ayah<input aria-label="From ayah" type="number" min={1} max={max} value={form.from_ayah} onChange={e => setForm({ ...form, from_ayah: e.target.value })} className={inputCls} /></label>
                 <label className="grid gap-1.5 text-xs text-muted-foreground">To ayah<input aria-label="To ayah" type="number" min={1} max={max} placeholder={String(max)} value={form.to_ayah} onChange={e => setForm({ ...form, to_ayah: e.target.value })} className={inputCls} /></label>
               </>}
               <label className="grid gap-1.5 text-xs text-muted-foreground">Pages (optional)<input aria-label="Pages read" type="number" min={0} value={form.pages} onChange={e => setForm({ ...form, pages: e.target.value })} className={inputCls} /></label>
-              <label className="grid gap-1.5 text-xs text-muted-foreground">Minutes (optional)<input aria-label="Minutes" type="number" min={0} value={form.minutes} onChange={e => setForm({ ...form, minutes: e.target.value })} className={inputCls} /></label>
               <label className="grid gap-1.5 text-xs text-muted-foreground">Juz (optional)<input aria-label="Juz progressed" type="number" min={0} step={0.25} value={form.juz} onChange={e => setForm({ ...form, juz: e.target.value })} className={inputCls} /></label>
             </div>
             <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.tafsir} onChange={e => setForm({ ...form, tafsir: e.target.checked })} /> Included tafsir / study</label>
@@ -300,7 +298,7 @@ function QuranPage() {
           <div key={r.id} className="p-4 rounded-2xl ring-1 ring-border">
             <div className="flex justify-between items-baseline">
               <p className="font-medium">{r.surah || "Session"} <span className="text-muted-foreground text-sm">· {r.log_date}</span></p>
-              <p className="text-xs text-muted-foreground">{r.verses_completed ? `Ayat ${r.verses_completed} · ` : ""}{r.pages}pp · {r.minutes}m {r.tafsir && "· tafsir"}{r.completed_at ? ` · ${new Date(r.completed_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</p>
+              <p className="text-xs text-muted-foreground">{r.verses_completed ? `Ayat ${r.verses_completed} · ` : ""}{r.pages}pp {r.tafsir && "· tafsir"}{r.completed_at ? ` · ${new Date(r.completed_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</p>
             </div>
             {r.reflection && <p className="text-sm text-muted-foreground mt-2 italic">"{r.reflection}"</p>}
           </div>
