@@ -214,17 +214,20 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
     <Card className="mb-8" >
       <section id="quran-reader" aria-labelledby="quran-reader-title" className="scroll-mt-28">
         <div className="flex flex-col gap-4 border-b border-border pb-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">
-              <BookOpen className="size-4" /> Read the Quran
-            </p>
-            <h2 id="quran-reader-title" className="font-serif text-3xl">{chapter?.name_simple ?? "Choose a surah"}</h2>
-            {chapter && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                {chapter.translated_name.name} · {chapter.verses_count} ayat · {chapter.revelation_place === "makkah" ? "Makki" : "Madani"}
+          <button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)} className="flex w-full items-center justify-between gap-3 text-left md:w-auto">
+            <div>
+              <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">
+                <BookOpen className="size-4" /> Read the Quran
               </p>
-            )}
-          </div>
+              <h2 id="quran-reader-title" className="font-serif text-3xl">{chapter?.name_simple ?? "Choose a surah"}</h2>
+              {chapter && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {chapter.translated_name.name} · {chapter.verses_count} ayat · {chapter.revelation_place === "makkah" ? "Makki" : "Madani"}
+                </p>
+              )}
+            </div>
+            <ChevronDown className={`size-5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
           <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:min-w-72">
             Surah
             <select
