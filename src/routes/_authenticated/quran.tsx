@@ -78,7 +78,7 @@ function QuranPage() {
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalForm, setGoalForm] = useState({ goal_date: todayISO(), surah_number: 1, start_ayah: 1, end_ayah: 7, note: "" });
   const [activeGoalId, setActiveGoalId] = useState<string | null>(null);
-  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
+  const [expandedSessionIds, setExpandedSessionIds] = useState<Set<string>>(new Set());
   const [resumeRequest, setResumeRequest] = useState(0);
   const selectedChapter = chapters.find(chapter => chapter.id === goalForm.surah_number);
   const activeGoal = (studyGoals as StudyGoal[]).find(goal => goal.id === activeGoalId) ?? null;
