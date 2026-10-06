@@ -242,7 +242,7 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
             </select>
           </label>
         </div>
-
+        {open && <>
         <div className="flex flex-wrap items-center gap-2 border-b border-border py-4">
           <Button
             variant="ghost"
