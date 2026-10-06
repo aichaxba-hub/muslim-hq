@@ -327,7 +327,7 @@ export const listDuas = createServerFn({ method: "GET" })
 
 export const upsertDua = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { id?: string; title: string; arabic?: string; transliteration?: string; translation?: string; source?: string; category?: string; when_to_recite?: string; favorited?: boolean; personal_note?: string }) => d)
+  .inputValidator((d: { id?: string; title: string; arabic?: string; transliteration?: string; translation?: string; source?: string; category?: string; when_to_recite?: string; favorited?: boolean; personal_note?: string; is_custom?: boolean }) => d)
   .handler(async ({ data, context }) => {
     const payload = { ...data, user_id: context.userId };
     if (data.id) {

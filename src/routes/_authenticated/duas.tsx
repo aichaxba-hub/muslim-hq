@@ -61,7 +61,7 @@ function DuasPage() {
 
   const q = search.trim().toLowerCase();
   const filtered = data.filter((d: any) => {
-    const inCategory = filter === "All" ? true : filter === "Favorites" ? d.favorited : d.category === filter;
+    const inCategory = filter === "All" ? true : filter === "Favorites" ? d.favorited : filter === "My Duas" ? d.is_custom || d.category === "My Duas" : d.category === filter;
     if (!inCategory) return false;
     if (!q) return true;
     return [d.title, d.transliteration, d.translation, d.source, d.when_to_recite, d.category]
@@ -92,6 +92,7 @@ function DuasPage() {
               <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border">
                 {["My Duas", ...DUA_CATEGORIES].map(c => <option key={c}>{c}</option>)}
               </select>
+              <span className="text-[11px] font-normal text-muted-foreground">Always kept in My Duas — pick another category to also file it there.</span>
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-muted-foreground md:col-span-2">
               English
@@ -113,7 +114,7 @@ function DuasPage() {
             </div>
           )}
           <div className="mt-4 flex items-center gap-3">
-            <Button disabled={!form.title.trim() || upsert.isPending} onClick={() => upsert.mutate(form)}>
+            <Button disabled={!form.title.trim() || upsert.isPending} onClick={() => upsert.mutate({ ...form, is_custom: true })}>
               {upsert.isPending ? "Saving…" : "Save dua"}
             </Button>
             <Button variant="ghost" onClick={() => { setShowForm(false); setForm(emptyForm); }}>Cancel</Button>
@@ -225,7 +226,10 @@ function DuasPage() {
           <Card key={d.id}>
             <div className="flex justify-between items-start mb-3">
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-[color:var(--gold)]">{d.category}</p>
+                <p className="text-[10px] uppercase tracking-widest text-[color:var(--gold)]">
+                  {d.is_custom && <span className="mr-2 rounded-full bg-[color:var(--sage)]/15 px-2 py-0.5 tracking-normal text-[color:var(--sage)]">My Duas</span>}
+                  {d.category}
+                </p>
                 <h3 className="font-serif text-2xl">{d.title}</h3>
               </div>
               <button onClick={() => fav.mutate({ id: d.id, favorited: !d.favorited })} className="p-2">
