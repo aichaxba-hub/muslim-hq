@@ -28,6 +28,18 @@ function DhikrPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listDhikr);
   const createFn = useServerFn(createDhikr);
+  // Sync any counts made on the offline page into the account, then clear the device copy.
+  useEffect(() => {
+    let pending: Record<string, number> = {};
+    try { pending = JSON.parse(localStorage.getItem("mhq-offline-dhikr") ?? "{}"); } catch { return; }
+    const entries = Object.entries(pending).filter(([, n]) => Number(n) > 0);
+    if (!entries.length) return;
+    localStorage.removeItem("mhq-offline-dhikr");
+    Promise.all(entries.map(([category, count]) =>
+      createFn({ data: { log_date: todayISO(), category, count: Number(count), notes: "Counted offline" } })))
+      .then(() => qc.invalidateQueries())
+      .catch(() => localStorage.setItem("mhq-offline-dhikr", JSON.stringify(pending)));
+  }, []);
   const { data = [] } = useQuery({ queryKey: ["dhikr"], queryFn: () => listFn({ data: undefined as any }) });
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["dhikr"] }) });
   const [form, setForm] = useState({ log_date: todayISO(), category: CATS[0], count: 33, notes: "" });
