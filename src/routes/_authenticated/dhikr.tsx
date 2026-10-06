@@ -4,9 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createDhikr, listDhikr } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VoiceDhikrCounter } from "@/components/VoiceDhikrCounter";
 import { VOICE_DHIKR_CATEGORIES } from "@/lib/dhikr-voice";
+import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dhikr")({
   head: () => ({
@@ -30,6 +31,8 @@ function DhikrPage() {
   const { data = [] } = useQuery({ queryKey: ["dhikr"], queryFn: () => listFn({ data: undefined as any }) });
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["dhikr"] }) });
   const [form, setForm] = useState({ log_date: todayISO(), category: CATS[0], count: 33, notes: "" });
+  const [showTotals, setShowTotals] = useState(false);
+  useEffect(() => { if (data.length > 0) setShowTotals(true); }, [data.length]);
 
   const totals: Record<string, number> = {};
   data.forEach((d: any) => { totals[d.category] = (totals[d.category] ?? 0) + (d.count ?? 0); });
@@ -79,22 +82,42 @@ function DhikrPage() {
         }}
       />
 
-      <PageHeader title="Running totals" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        {Object.entries(totals).map(([k, v]) => (
-          <Card key={k}><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">{k}</p><p className="text-2xl font-serif">{v}</p></Card>
-        ))}
-        {Object.keys(totals).length === 0 && <p className="text-muted-foreground text-sm">No sessions yet.</p>}
-      </div>
-
-      <div className="grid gap-2">
-        {data.slice(0, 30).map((r: any) => (
-          <div key={r.id} className="flex justify-between p-3 rounded-2xl ring-1 ring-border text-sm">
-            <span>{r.log_date} · {r.category}</span>
-            <span className="text-muted-foreground">{r.count}</span>
+      <Card>
+        <button
+          type="button"
+          onClick={() => setShowTotals(s => !s)}
+          aria-expanded={showTotals}
+          className="w-full flex items-center justify-between gap-3 text-left"
+        >
+          <div className="flex items-center gap-3">
+            <h3 className="font-serif text-2xl">Running totals</h3>
+            <span className="text-xs uppercase tracking-widest text-[color:var(--sage)] ring-1 ring-border rounded-full px-2.5 py-0.5">
+              {data.length} {data.length === 1 ? "session" : "sessions"}
+            </span>
           </div>
-        ))}
-      </div>
+          <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${showTotals ? "rotate-180" : ""}`} />
+        </button>
+
+        {showTotals && (
+          <div className="mt-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              {Object.entries(totals).map(([k, v]) => (
+                <Card key={k}><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">{k}</p><p className="text-2xl font-serif">{v}</p></Card>
+              ))}
+              {Object.keys(totals).length === 0 && <p className="text-muted-foreground text-sm">No sessions yet.</p>}
+            </div>
+
+            <div className="grid gap-2">
+              {data.slice(0, 30).map((r: any) => (
+                <div key={r.id} className="flex justify-between p-3 rounded-2xl ring-1 ring-border text-sm">
+                  <span>{r.log_date} · {r.category}</span>
+                  <span className="text-muted-foreground">{r.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
     </AppShell>
   );
 }
