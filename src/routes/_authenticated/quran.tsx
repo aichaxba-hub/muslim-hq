@@ -6,7 +6,7 @@ import { createQuranLog, createQuranStudyGoal, deleteQuranStudyGoal, getProfile,
 import { todayISO } from "@/lib/hijri";
 import { useEffect, useMemo, useState } from "react";
 import { QuranReader, type QuranSessionMilestone, type QuranStudySelection } from "@/components/QuranReader";
-import { BookOpenCheck, Check, Play, Plus, Trash2 } from "lucide-react";
+import { BookOpenCheck, Check, ChevronDown, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Chapter = { id: number; name_simple: string; verses_count: number; translated_name: { name: string } };
@@ -294,15 +294,42 @@ function QuranPage() {
       </Card>
 
       <div className="grid gap-2">
-        {data.map((r: any) => (
-          <div key={r.id} className="p-4 rounded-2xl ring-1 ring-border">
-            <div className="flex justify-between items-baseline">
-              <p className="font-medium">{r.surah || "Session"} <span className="text-muted-foreground text-sm">· {r.log_date}</span></p>
-              <p className="text-xs text-muted-foreground">{r.verses_completed ? `Ayat ${r.verses_completed} · ` : ""}{r.pages}pp {r.tafsir && "· tafsir"}{r.completed_at ? ` · ${new Date(r.completed_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : ""}</p>
+        <h3 className="font-serif text-xl">Session log</h3>
+        <p className="text-sm text-muted-foreground">Every logged session, collapsed. Tap one to see the details.</p>
+        {data.length === 0 && <p className="py-4 text-sm text-muted-foreground">No sessions logged yet — your first one will appear here.</p>}
+        {data.map((r: any) => {
+          const expanded = expandedSessionId === r.id;
+          return (
+            <div key={r.id} className="rounded-2xl ring-1 ring-border">
+              <button
+                type="button"
+                aria-expanded={expanded}
+                onClick={() => setExpandedSessionId(expanded ? null : r.id)}
+                className="flex w-full items-center justify-between gap-3 p-4 text-left"
+              >
+                <p className="font-medium truncate">{r.surah || "Session"} <span className="text-muted-foreground text-sm">· {r.log_date}</span></p>
+                <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                  {r.verses_completed ? `Ayat ${r.verses_completed}` : `${r.pages ?? 0}pp`}
+                  <ChevronDown className={`size-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+                </span>
+              </button>
+              {expanded && (
+                <div className="border-t border-border px-4 pb-4 pt-3">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    {r.verses_completed && <span>Ayat {r.verses_completed}</span>}
+                    <span>{r.pages ?? 0} pages</span>
+                    {r.juz ? <span>{Number(r.juz).toFixed(2).replace(/\.00$/, "")} juz</span> : null}
+                    {r.minutes ? <span>{r.minutes} min</span> : null}
+                    {r.tafsir && <span>Tafsir / study</span>}
+                    {r.auto_logged && <span>Logged from the reader</span>}
+                    {r.completed_at && <span>{new Date(r.completed_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span>}
+                  </div>
+                  {r.reflection && <p className="text-sm text-muted-foreground mt-2 italic">"{r.reflection}"</p>}
+                </div>
+              )}
             </div>
-            {r.reflection && <p className="text-sm text-muted-foreground mt-2 italic">"{r.reflection}"</p>}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </AppShell>
   );
