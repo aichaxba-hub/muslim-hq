@@ -28,6 +28,7 @@ function FastingPage() {
   const { data = [] } = useQuery({ queryKey: ["fasting"], queryFn: () => listFn({ data: undefined as any }) });
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["fasting"] }) });
   const [form, setForm] = useState({ log_date: todayISO(), fast_type: "Shawwal", completed: true, notes: "" });
+  const [showLog, setShowLog] = useState(false);
 
   const done = (t: string) => data.filter((f: any) => f.fast_type === t && f.completed).length;
   const sunnahCount = data.filter((f: any) => (f.fast_type === "Monday Sunnah" || f.fast_type === "Thursday Sunnah") && f.completed).length;
