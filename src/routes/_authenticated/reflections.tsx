@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createReflection, listReflections } from "@/lib/data.functions";
 import { todayISO, weekStartISO } from "@/lib/hijri";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/reflections")({
@@ -38,6 +39,11 @@ function ReflectionsPage() {
   const [form, setForm] = useState(empty);
   const set = (k: string, v: string) => setForm({ ...form, [k]: v });
   const [selected, setSelected] = useState<any>(null);
+  const [showSaved, setShowSaved] = useState(false);
+
+  useEffect(() => {
+    if (data.length > 0) setShowSaved(true);
+  }, [data.length]);
 
   return (
     <AppShell>
@@ -71,21 +77,37 @@ function ReflectionsPage() {
         <Button onClick={() => create.mutate({ ...form, mood: form.mood || null })}>Save reflection</Button>
       </Card>
 
-      <div className="grid gap-3">
-        {data.map((r: any) => (
-          <Card
-            key={r.id}
-            className="cursor-pointer transition-shadow hover:shadow-md"
-            onClick={() => setSelected(r)}
-          >
-            <p className="text-xs text-muted-foreground">{r.entry_date}{r.mood ? <> · <span className="text-[color:var(--gold)]">{r.mood}</span></> : null}</p>
-            {r.closest_to_allah && <p className="mt-2 text-sm"><strong>Closest:</strong> {r.closest_to_allah}</p>}
-            {r.fell_short && <p className="text-sm"><strong>Short:</strong> {r.fell_short}</p>}
-            {r.next_intention && <p className="text-sm italic mt-2">→ {r.next_intention}</p>}
-          </Card>
-        ))}
-        {!data.length && <p className="text-sm text-muted-foreground">No reflections saved yet. Your first one can start right below.</p>}
-      </div>
+      <Card className="mb-6 p-0 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowSaved(!showSaved)}
+          aria-expanded={showSaved}
+          className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors"
+        >
+          <span className="flex items-center gap-2 text-sm font-medium">
+            Your saved reflections
+            <span className="text-xs text-muted-foreground">({data.length} saved)</span>
+          </span>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showSaved ? "rotate-180" : ""}`} />
+        </button>
+        {showSaved && (
+          <div className="grid gap-3 px-5 pb-5">
+            {data.map((r: any) => (
+              <Card
+                key={r.id}
+                className="cursor-pointer transition-shadow hover:shadow-md"
+                onClick={() => setSelected(r)}
+              >
+                <p className="text-xs text-muted-foreground">{r.entry_date}{r.mood ? <> · <span className="text-[color:var(--gold)]">{r.mood}</span></> : null}</p>
+                {r.closest_to_allah && <p className="mt-2 text-sm"><strong>Closest:</strong> {r.closest_to_allah}</p>}
+                {r.fell_short && <p className="text-sm"><strong>Short:</strong> {r.fell_short}</p>}
+                {r.next_intention && <p className="text-sm italic mt-2">→ {r.next_intention}</p>}
+              </Card>
+            ))}
+            {!data.length && <p className="text-sm text-muted-foreground">No reflections saved yet. Your first one can start right below.</p>}
+          </div>
+        )}
+      </Card>
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-h-[85vh] overflow-y-auto">
