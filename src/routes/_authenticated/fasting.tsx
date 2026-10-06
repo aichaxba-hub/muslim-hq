@@ -5,7 +5,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { listFasting, upsertFasting, getProfile, updateProfile } from "@/lib/data.functions";
 import { FAST_TYPES } from "@/lib/fasting";
 import { todayISO, ramadanRange } from "@/lib/hijri";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/fasting")({
@@ -27,6 +28,8 @@ function FastingPage() {
   const { data = [] } = useQuery({ queryKey: ["fasting"], queryFn: () => listFn({ data: undefined as any }) });
   const upsert = useMutation({ mutationFn: (p: any) => upsertFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["fasting"] }) });
   const [form, setForm] = useState({ log_date: todayISO(), fast_type: "Shawwal", completed: true, notes: "" });
+  const [showLog, setShowLog] = useState(false);
+  useEffect(() => { if (data.length > 0) setShowLog(true); }, [data.length]);
 
   const done = (t: string) => data.filter((f: any) => f.fast_type === t && f.completed).length;
   const sunnahCount = data.filter((f: any) => (f.fast_type === "Monday Sunnah" || f.fast_type === "Thursday Sunnah") && f.completed).length;
@@ -97,16 +100,35 @@ function FastingPage() {
       </div>
 
       <Card className="mb-6">
-        <h3 className="font-serif text-2xl mb-4">Log a fast</h3>
-        <div className="grid md:grid-cols-4 gap-3 items-end">
-          <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <select value={form.fast_type} onChange={e => setForm({ ...form, fast_type: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
-            {FAST_TYPES.map(t => <option key={t}>{t}</option>)}
-          </select>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.completed} onChange={e => setForm({ ...form, completed: e.target.checked })} /> Completed</label>
-          <Button onClick={() => upsert.mutate(form)}>Save</Button>
-        </div>
-        <input placeholder="Notes..." value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-3 w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+        <button
+          type="button"
+          onClick={() => setShowLog(v => !v)}
+          aria-expanded={showLog}
+          className="w-full flex items-center justify-between gap-3 text-left"
+        >
+          <div className="flex items-center gap-2">
+            <h3 className="font-serif text-2xl">Log a fast</h3>
+            {data.length > 0 && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                {data.length} logged
+              </span>
+            )}
+          </div>
+          <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${showLog ? "" : "-rotate-90"}`} />
+        </button>
+        {showLog && (
+          <>
+            <div className="grid md:grid-cols-4 gap-3 items-end mt-4">
+              <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+              <select value={form.fast_type} onChange={e => setForm({ ...form, fast_type: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
+                {FAST_TYPES.map(t => <option key={t}>{t}</option>)}
+              </select>
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.completed} onChange={e => setForm({ ...form, completed: e.target.checked })} /> Completed</label>
+              <Button onClick={() => upsert.mutate(form)}>Save</Button>
+            </div>
+            <input placeholder="Notes..." value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-3 w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+          </>
+        )}
       </Card>
 
       <div className="grid gap-2">
