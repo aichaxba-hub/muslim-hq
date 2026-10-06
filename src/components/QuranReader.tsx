@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, ChevronLeft, ChevronRight, ExternalLink, LoaderCircle, Pause, Play, RotateCcw, Square } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, LoaderCircle, Pause, Play, RotateCcw, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button, Card } from "@/components/AppShell";
 
