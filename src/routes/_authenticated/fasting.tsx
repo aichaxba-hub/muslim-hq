@@ -36,6 +36,7 @@ function FastingPage() {
 
   const profileFn = useServerFn(getProfile);
   const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: () => profileFn() });
+  const owed = Number((profile as any)?.ramadan_fasts_owed ?? 0);
   const madeUp = done("Ramadan Makeup");
   const remaining = Math.max(0, owed - madeUp);
   const nextRamadan = useMemo(() => {
@@ -63,12 +64,6 @@ function FastingPage() {
             {owed > 0 && <div className="mt-3 h-2 w-full md:w-64 rounded-full bg-muted overflow-hidden"><div className="h-full bg-primary" style={{ width: `${Math.min(100, (madeUp / owed) * 100)}%` }} /></div>}
           </div>
           <div className="flex flex-col gap-3 md:items-end">
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">Days owed</span>
-              <button aria-label="Decrease days owed" onClick={() => saveOwed.mutate(owed - 1)} disabled={owed <= 0} className="h-8 w-8 rounded-full ring-1 ring-border disabled:opacity-40">−</button>
-              <span className="w-8 text-center font-semibold">{owed}</span>
-              <button aria-label="Increase days owed" onClick={() => saveOwed.mutate(owed + 1)} className="h-8 w-8 rounded-full ring-1 ring-border">+</button>
-            </div>
             <Button onClick={logMakeup} disabled={remaining === 0}>+1 made up today</Button>
           </div>
         </div>
