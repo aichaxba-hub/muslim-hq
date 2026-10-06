@@ -597,12 +597,15 @@ export type Database = {
           dhuhr_congregation: boolean | null
           dhuhr_masjid: boolean | null
           dhuhr_status: string | null
+          dhuhr_sunnah_after: boolean
+          dhuhr_sunnah_before: boolean
           duha: boolean
           excuse_type: string | null
           excused: boolean | null
           fajr_congregation: boolean | null
           fajr_masjid: boolean | null
           fajr_status: string | null
+          fajr_sunnah_before: boolean
           fast_type: string | null
           fasted: boolean | null
           id: string
@@ -610,12 +613,14 @@ export type Database = {
           isha_congregation: boolean | null
           isha_masjid: boolean | null
           isha_status: string | null
+          isha_sunnah_after: boolean
           istikhara: boolean
           jummah: boolean | null
           log_date: string
           maghrib_congregation: boolean | null
           maghrib_masjid: boolean | null
           maghrib_status: string | null
+          maghrib_sunnah_after: boolean
           nafl: boolean | null
           notes: string | null
           quran_juz: number | null
@@ -639,12 +644,15 @@ export type Database = {
           dhuhr_congregation?: boolean | null
           dhuhr_masjid?: boolean | null
           dhuhr_status?: string | null
+          dhuhr_sunnah_after?: boolean
+          dhuhr_sunnah_before?: boolean
           duha?: boolean
           excuse_type?: string | null
           excused?: boolean | null
           fajr_congregation?: boolean | null
           fajr_masjid?: boolean | null
           fajr_status?: string | null
+          fajr_sunnah_before?: boolean
           fast_type?: string | null
           fasted?: boolean | null
           id?: string
@@ -652,12 +660,14 @@ export type Database = {
           isha_congregation?: boolean | null
           isha_masjid?: boolean | null
           isha_status?: string | null
+          isha_sunnah_after?: boolean
           istikhara?: boolean
           jummah?: boolean | null
           log_date: string
           maghrib_congregation?: boolean | null
           maghrib_masjid?: boolean | null
           maghrib_status?: string | null
+          maghrib_sunnah_after?: boolean
           nafl?: boolean | null
           notes?: string | null
           quran_juz?: number | null
@@ -681,12 +691,15 @@ export type Database = {
           dhuhr_congregation?: boolean | null
           dhuhr_masjid?: boolean | null
           dhuhr_status?: string | null
+          dhuhr_sunnah_after?: boolean
+          dhuhr_sunnah_before?: boolean
           duha?: boolean
           excuse_type?: string | null
           excused?: boolean | null
           fajr_congregation?: boolean | null
           fajr_masjid?: boolean | null
           fajr_status?: string | null
+          fajr_sunnah_before?: boolean
           fast_type?: string | null
           fasted?: boolean | null
           id?: string
@@ -694,12 +707,14 @@ export type Database = {
           isha_congregation?: boolean | null
           isha_masjid?: boolean | null
           isha_status?: string | null
+          isha_sunnah_after?: boolean
           istikhara?: boolean
           jummah?: boolean | null
           log_date?: string
           maghrib_congregation?: boolean | null
           maghrib_masjid?: boolean | null
           maghrib_status?: string | null
+          maghrib_sunnah_after?: boolean
           nafl?: boolean | null
           notes?: string | null
           quran_juz?: number | null

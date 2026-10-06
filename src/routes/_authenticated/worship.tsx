@@ -36,6 +36,13 @@ const NAFL_PRAYERS = [
   { v: "istikhara", l: "Istikhara" },
 ];
 
+const SUNNAH_PRAYERS = [
+  { prayer: "Fajr", items: [{ v: "fajr_sunnah_before", l: "2 before" }] },
+  { prayer: "Dhuhr", items: [{ v: "dhuhr_sunnah_before", l: "4 before" }, { v: "dhuhr_sunnah_after", l: "2 after" }] },
+  { prayer: "Maghrib", items: [{ v: "maghrib_sunnah_after", l: "2 after" }] },
+  { prayer: "Isha", items: [{ v: "isha_sunnah_after", l: "2 after" }] },
+];
+
 const EXCUSE_TYPES = ["Menstruation", "Postpartum", "Illness", "Travel"];
 
 
@@ -125,6 +132,30 @@ function WorshipHub() {
         </Card>
 
         <Card>
+          <h3 className="font-serif text-2xl mb-4">The Sunnahs</h3>
+          <div className="space-y-2">
+            {SUNNAH_PRAYERS.map(s => (
+              <div key={s.prayer} className="p-3 rounded-2xl ring-1 ring-border">
+                <span className="font-medium text-sm">{s.prayer}</span>
+                <div className="mt-2 space-y-1.5">
+                  {s.items.map(item => (
+                    <label key={item.v} className="flex items-center justify-between gap-2 text-sm text-muted-foreground cursor-pointer">
+                      <span>{item.l}</span>
+                      <input
+                        type="checkbox"
+                        checked={!!(l as any)[item.v]}
+                        onChange={e => upsert.mutate({ [item.v]: e.target.checked })}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">The confirmed sunnahs around each fard prayer.</p>
+        </Card>
+
+        <Card>
           <h3 className="font-serif text-2xl mb-4">The Nafl</h3>
           <div className="space-y-2">
             {NAFL_PRAYERS.map(n => (
@@ -144,6 +175,9 @@ function WorshipHub() {
           <p className="text-xs text-muted-foreground mt-3">Optional prayers — a bonus, never a burden.</p>
         </Card>
 
+      </div>
+
+      <div className="mb-6">
         <Card className="p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -177,31 +211,22 @@ function WorshipHub() {
           )}
           {!!(l as any).excused && ["Menstruation", "Postpartum"].includes((l as any).excuse_type) && <p className="text-xs text-muted-foreground mt-2">No missed prayers or Qada are recorded for this day.</p>}
           {isFriday && (
-            <>
-              <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold">Jummah attended</h3>
-                  <p className="text-xs text-muted-foreground">Jumu'ah Mubarakah.</p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={!!(l as any).jummah}
-                  onClick={() => upsert.mutate({ jummah: !(l as any).jummah })}
-                  className={`size-12 shrink-0 rounded-full ring-1 ring-border grid place-items-center transition-colors ${!!(l as any).jummah ? "bg-[color:var(--gold)]" : "bg-background"}`}
-                >
-                  <div className={`size-2.5 rounded-full ${!!(l as any).jummah ? "bg-white" : "bg-[color:var(--gold)]"}`} />
-                </button>
+            <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold">Jummah attended</h3>
+                <p className="text-xs text-muted-foreground">Jumu'ah Mubarakah.</p>
               </div>
-            </>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={!!(l as any).jummah}
+                onClick={() => upsert.mutate({ jummah: !(l as any).jummah })}
+                className={`size-12 shrink-0 rounded-full ring-1 ring-border grid place-items-center transition-colors ${!!(l as any).jummah ? "bg-[color:var(--gold)]" : "bg-background"}`}
+              >
+                <div className={`size-2.5 rounded-full ${!!(l as any).jummah ? "bg-white" : "bg-[color:var(--gold)]"}`} />
+              </button>
+            </div>
           )}
-        </Card>
-      </div>
-
-      <div className="mb-6">
-        <Card>
-          <h4 className="text-sm font-semibold uppercase tracking-wide mb-3">Optional Prayers</h4>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={!!(l as any).sunnah} onChange={e => upsert.mutate({ sunnah: e.target.checked })} /> Sunnah completed</label>
         </Card>
       </div>
     </AppShell>
