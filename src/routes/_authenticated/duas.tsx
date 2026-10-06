@@ -97,19 +97,29 @@ function DuasPage() {
 
       <section aria-labelledby="answered-duas-title" className="mb-8 border-y border-border py-7">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">
-              <CalendarCheck className="size-4" /> Gratitude journal
-            </p>
-            <h2 id="answered-duas-title" className="font-serif text-3xl">Answered Duas</h2>
-            <p className="mt-1 text-sm text-muted-foreground">A private record of the duas Allah answered in your life.</p>
-          </div>
-          <Button variant="ghost" onClick={() => setShowAnsweredForm(value => !value)}>
-            <Plus className="mr-1.5 inline size-4" /> Add answered dua
-          </Button>
+          <button type="button" aria-expanded={showAnswered} onClick={() => setShowAnswered(v => !v)} className="flex flex-1 items-start gap-3 text-left">
+            <div>
+              <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">
+                <CalendarCheck className="size-4" /> Gratitude journal
+              </p>
+              <h2 id="answered-duas-title" className="font-serif text-3xl">
+                Answered Duas
+                {answeredDuas.length > 0 && (
+                  <span className="ml-3 align-middle rounded-full bg-muted px-2.5 py-0.5 text-xs font-normal tracking-normal text-muted-foreground">{answeredDuas.length}</span>
+                )}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">A private record of the duas Allah answered in your life.</p>
+            </div>
+            <ChevronDown className={`ml-auto mt-2 size-5 shrink-0 text-muted-foreground transition-transform ${showAnswered ? "rotate-180" : ""}`} />
+          </button>
+          {showAnswered && (
+            <Button variant="ghost" onClick={() => setShowAnsweredForm(value => !value)}>
+              <Plus className="mr-1.5 inline size-4" /> Add answered dua
+            </Button>
+          )}
         </div>
 
-        {showAnsweredForm && (
+        {showAnswered && showAnsweredForm && (
           <Card className="mb-5">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
