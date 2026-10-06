@@ -88,7 +88,10 @@ function ReflectionsPage() {
             Your saved reflections
             <span className="text-xs text-muted-foreground">({data.length} saved)</span>
           </span>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showSaved ? "rotate-180" : ""}`} />
+          <span className="flex items-center gap-2">
+            <span className="hidden sm:inline text-xs text-muted-foreground italic">Tap any entry to read the full reflection</span>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showSaved ? "rotate-180" : ""}`} />
+          </span>
         </button>
         {showSaved && (
           <div className="grid gap-3 px-5 pb-5">
