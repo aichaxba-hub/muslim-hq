@@ -52,7 +52,7 @@ function DuasPage() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: "", arabic: "", transliteration: "", translation: "", source: "", category: "My Duas", when_to_recite: "" };
+  const emptyForm = { title: "", translation: "", source: "", category: "My Duas", when_to_recite: "" };
   const [form, setForm] = useState(emptyForm);
   const [showAnsweredForm, setShowAnsweredForm] = useState(false);
   const [answeredForm, setAnsweredForm] = useState({ title: "", category: "My Duas", dua_text: "", answered_date: todayISO(), reflection: "" });
