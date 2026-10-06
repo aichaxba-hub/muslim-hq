@@ -61,7 +61,7 @@ function DuasPage() {
 
   const q = search.trim().toLowerCase();
   const filtered = data.filter((d: any) => {
-    const inCategory = filter === "All" ? true : filter === "Favorites" ? d.favorited : d.category === filter;
+    const inCategory = filter === "All" ? true : filter === "Favorites" ? d.favorited : filter === "My Duas" ? d.is_custom || d.category === "My Duas" : d.category === filter;
     if (!inCategory) return false;
     if (!q) return true;
     return [d.title, d.transliteration, d.translation, d.source, d.when_to_recite, d.category]
