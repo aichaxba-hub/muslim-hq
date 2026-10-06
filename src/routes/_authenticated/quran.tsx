@@ -8,7 +8,6 @@ import { useEffect, useMemo, useState } from "react";
 import { QuranReader, type QuranSessionMilestone, type QuranStudySelection } from "@/components/QuranReader";
 import { BookOpenCheck, Check, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { KhatmPlanner } from "@/components/KhatmPlanner";
 
 type Chapter = { id: number; name_simple: string; verses_count: number; translated_name: { name: string } };
 type StudyGoal = { id: string; goal_date: string; surah_number: number; surah_name: string; start_ayah: number; end_ayah: number; last_completed_ayah: number; completed: boolean; note: string | null };
@@ -75,7 +74,7 @@ function QuranPage() {
   const completeGoal = useMutation({ mutationFn: (p: { id: string; completed: boolean }) => completeGoalFn({ data: p }), onSuccess: refreshGoals });
   const removeGoal = useMutation({ mutationFn: (id: string) => deleteGoalFn({ data: { id } }), onSuccess: () => { refreshGoals(); toast.success("Study goal removed"); } });
 
-  const [form, setForm] = useState({ log_date: todayISO(), surah: "1. Al-Fatihah", reflection: "" });
+  const [form, setForm] = useState({ log_date: todayISO(), surah_number: 1, whole: true, from_ayah: "1", to_ayah: "", pages: "", minutes: "", juz: "", tafsir: false, reflection: "" });
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalForm, setGoalForm] = useState({ goal_date: todayISO(), surah_number: 1, start_ayah: 1, end_ayah: 7, note: "" });
   const [activeGoalId, setActiveGoalId] = useState<string | null>(null);
@@ -155,7 +154,6 @@ function QuranPage() {
     <AppShell>
       <PageHeader eyebrow="Quran" title="Reading & reflection" subtitle="Even a single page turns into light on Yawm al-Qiyamah." />
 
-      <KhatmPlanner profile={profile} logs={data as any[]} />
 
       <Card className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -250,17 +248,51 @@ function QuranPage() {
       </div>
 
       <Card className="mb-6">
-        <h3 className="font-serif text-2xl mb-4">Log a session</h3>
-        <div className="grid md:grid-cols-2 gap-3 mb-3">
-          <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-          <select aria-label="Surah" value={form.surah} onChange={e => setForm({ ...form, surah: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
-            {(chapters.length > 0 ? chapters : [{ id: 1, name_simple: "Al-Fatihah" } as Chapter]).map(chapter => (
-              <option key={chapter.id} value={`${chapter.id}. ${chapter.name_simple}`}>{chapter.id}. {chapter.name_simple}</option>
-            ))}
-          </select>
-        </div>
-        <textarea placeholder="Reflection..." rows={3} value={form.reflection} onChange={e => setForm({ ...form, reflection: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border mb-3" />
-        <Button onClick={() => { create.mutate(form); setForm({ ...form, reflection: "" }); }}>Add session</Button>
+        <h3 className="font-serif text-2xl">Log a reading session</h3>
+        <p className="mt-1 mb-4 text-sm text-muted-foreground">Read from a mushaf, another app or at the masjid? Add it here so every reading counts toward your goals and Review.</p>
+        {(() => {
+          const ch = chapters.find(c => c.id === form.surah_number);
+          const max = ch?.verses_count ?? 286;
+          const from = Math.max(1, Math.min(max, Number(form.from_ayah) || 1));
+          const to = form.whole ? max : Math.max(from, Math.min(max, Number(form.to_ayah) || from));
+          const ayatCount = to - from + 1;
+          const inputCls = "h-11 w-full rounded-lg bg-background px-3 text-foreground ring-1 ring-border";
+          const submit = () => {
+            if (!ch) return toast.error("Surahs are still loading");
+            create.mutate({
+              log_date: form.log_date, surah: `${ch.id}. ${ch.name_simple}`,
+              verses_completed: from === to ? `${ch.id}:${from}` : `${ch.id}:${from}–${to}`,
+              pages: Math.max(0, Math.round(Number(form.pages) || 0)),
+              minutes: Math.max(0, Math.round(Number(form.minutes) || 0)),
+              juz: Math.max(0, Number(form.juz) || 0) || undefined,
+              tafsir: form.tafsir, reflection: form.reflection.trim() || undefined,
+            }, { onSuccess: () => { toast.success(`Logged ${ch.name_simple} ${from}–${to}`); setForm(f => ({ ...f, from_ayah: "1", to_ayah: "", pages: "", minutes: "", juz: "", tafsir: false, reflection: "", whole: true })); } });
+          };
+          return <>
+            <div className="grid gap-3 md:grid-cols-4">
+              <label className="grid gap-1.5 text-xs text-muted-foreground">Date<input aria-label="Session date" type="date" max={todayISO()} value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className={inputCls} /></label>
+              <label className="grid gap-1.5 text-xs text-muted-foreground md:col-span-3">Surah<select aria-label="Surah" value={form.surah_number} onChange={e => setForm({ ...form, surah_number: Number(e.target.value), from_ayah: "1", to_ayah: "" })} className={inputCls}>
+                {chapters.map(c => <option key={c.id} value={c.id}>{c.id}. {c.name_simple} · {c.verses_count} ayat</option>)}
+              </select></label>
+            </div>
+            <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.whole} onChange={e => setForm({ ...form, whole: e.target.checked, from_ayah: "1" })} /> I read the whole surah</label>
+            <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-5">
+              {!form.whole && <>
+                <label className="grid gap-1.5 text-xs text-muted-foreground">From ayah<input aria-label="From ayah" type="number" min={1} max={max} value={form.from_ayah} onChange={e => setForm({ ...form, from_ayah: e.target.value })} className={inputCls} /></label>
+                <label className="grid gap-1.5 text-xs text-muted-foreground">To ayah<input aria-label="To ayah" type="number" min={1} max={max} placeholder={String(max)} value={form.to_ayah} onChange={e => setForm({ ...form, to_ayah: e.target.value })} className={inputCls} /></label>
+              </>}
+              <label className="grid gap-1.5 text-xs text-muted-foreground">Pages (optional)<input aria-label="Pages read" type="number" min={0} value={form.pages} onChange={e => setForm({ ...form, pages: e.target.value })} className={inputCls} /></label>
+              <label className="grid gap-1.5 text-xs text-muted-foreground">Minutes (optional)<input aria-label="Minutes" type="number" min={0} value={form.minutes} onChange={e => setForm({ ...form, minutes: e.target.value })} className={inputCls} /></label>
+              <label className="grid gap-1.5 text-xs text-muted-foreground">Juz (optional)<input aria-label="Juz progressed" type="number" min={0} step={0.25} value={form.juz} onChange={e => setForm({ ...form, juz: e.target.value })} className={inputCls} /></label>
+            </div>
+            <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.tafsir} onChange={e => setForm({ ...form, tafsir: e.target.checked })} /> Included tafsir / study</label>
+            <textarea placeholder="Reflection (optional)" rows={2} value={form.reflection} onChange={e => setForm({ ...form, reflection: e.target.value })} className="mt-3 w-full rounded-lg bg-background px-3 py-2 ring-1 ring-border" />
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Button onClick={submit} disabled={create.isPending || !ch}>{create.isPending ? "Saving…" : "Add session"}</Button>
+              {ch && <span className="text-sm text-muted-foreground">{ayatCount} ayat · {ch.name_simple} {from}–{to}</span>}
+            </div>
+          </>;
+        })()}
       </Card>
 
       <div className="grid gap-2">
