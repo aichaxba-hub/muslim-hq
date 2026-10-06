@@ -91,6 +91,7 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
   onVerseCompleted?: (goalId: string, ayah: number) => void;
   onSessionComplete?: (session: QuranSessionMilestone) => void;
 }) {
+  const [open, setOpen] = useState(true);
   const sessionRef = useRef<{ chapterId: number; surahName: string; verses: number[]; startedAt: number } | null>(null);
   function flushSession() {
     const session = sessionRef.current;
