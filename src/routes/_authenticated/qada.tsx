@@ -82,10 +82,10 @@ function QadaPage() {
     PRAYERS.map(p => [PRAYER_LABEL[p], pending.filter((q: any) => q.prayer === PRAYER_LABEL[p]).length]),
   ) as Record<string, number>;
   const completedCount = data.length - pending.length;
-  const oldestPending = pending.slice().sort(byDate);
-  const nextUp = oldestPending[0];
+  const sortedPending = pending.slice().sort(byDate);
+  const nextUp = sort === "oldest" ? sortedPending[0] : sortedPending[sortedPending.length - 1];
   const complete = (q: any) => update.mutate({ id: q.id, completed: true, made_up_date: todayISO() });
-  const oldestOf = (label: string) => oldestPending.find((q: any) => q.prayer === label);
+  const oldestOf = (label: string) => sortedPending.find((q: any) => q.prayer === label);
 
   return (
     <AppShell>
@@ -96,7 +96,7 @@ function QadaPage() {
         {nextUp && (
           <div className="rounded-3xl bg-primary text-primary-foreground p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-wider opacity-60">Next to make up · oldest first</p>
+              <p className="text-xs uppercase tracking-wider opacity-60">Next to make up · {sort === "oldest" ? "oldest first" : "newest first"}</p>
               <p className="font-serif text-3xl mt-1">{nextUp.prayer}</p>
               <p className="text-sm opacity-70 mt-0.5">Missed {nextUp.missed_date ?? "—"}</p>
             </div>
