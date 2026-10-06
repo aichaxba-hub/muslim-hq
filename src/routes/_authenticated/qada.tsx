@@ -82,8 +82,8 @@ function QadaPage() {
     PRAYERS.map(p => [PRAYER_LABEL[p], pending.filter((q: any) => q.prayer === PRAYER_LABEL[p]).length]),
   ) as Record<string, number>;
   const completedCount = data.length - pending.length;
-  const oldestPending = pending.slice().sort(byDate);
-  const nextUp = oldestPending[0];
+  const sortedPending = pending.slice().sort(byDate);
+  const nextUp = sort === "oldest" ? sortedPending[0] : sortedPending[sortedPending.length - 1];
   const complete = (q: any) => update.mutate({ id: q.id, completed: true, made_up_date: todayISO() });
   const oldestOf = (label: string) => oldestPending.find((q: any) => q.prayer === label);
 
