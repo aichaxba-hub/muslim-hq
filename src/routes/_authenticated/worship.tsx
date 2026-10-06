@@ -132,6 +132,30 @@ function WorshipHub() {
         </Card>
 
         <Card>
+          <h3 className="font-serif text-2xl mb-4">The Sunnahs</h3>
+          <div className="space-y-2">
+            {SUNNAH_PRAYERS.map(s => (
+              <div key={s.prayer} className="p-3 rounded-2xl ring-1 ring-border">
+                <span className="font-medium text-sm">{s.prayer}</span>
+                <div className="mt-2 space-y-1.5">
+                  {s.items.map(item => (
+                    <label key={item.v} className="flex items-center justify-between gap-2 text-sm text-muted-foreground cursor-pointer">
+                      <span>{item.l}</span>
+                      <input
+                        type="checkbox"
+                        checked={!!(l as any)[item.v]}
+                        onChange={e => upsert.mutate({ [item.v]: e.target.checked })}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">The confirmed sunnahs around each fard prayer.</p>
+        </Card>
+
+        <Card>
           <h3 className="font-serif text-2xl mb-4">The Nafl</h3>
           <div className="space-y-2">
             {NAFL_PRAYERS.map(n => (
