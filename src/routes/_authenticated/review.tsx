@@ -176,7 +176,6 @@ function ReviewPage() {
       quranPages: q.reduce((a: number, x: any) => a + (x.pages ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_pages ?? 0), 0),
       quranJuz: q.reduce((a: number, x: any) => a + (Number(x.juz) || 0), 0),
       quranSessions: q.length,
-      quranMinutes: q.reduce((a: number, x: any) => a + (x.minutes ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_minutes ?? 0), 0),
       surahsRead,
       studyAyat,
       recitedAyat,
@@ -401,7 +400,7 @@ function ReviewPage() {
       <Section title="Quran">
         <Stat label="Pages" value={stats.quranPages} />
         <Stat label="Juz progressed" value={stats.quranJuz.toFixed(1)} />
-        <Stat label="Sessions" value={stats.quranSessions} sub={stats.quranMinutes ? `${stats.quranMinutes} min` : undefined} />
+        <Stat label="Sessions" value={stats.quranSessions} />
         <Stat label="Surahs read" value={stats.surahsRead} />
         <Stat label="Ayat recited" value={stats.recitedAyat} sub={`${stats.studyAyat} via study goals`} />
         <Stat label="Study goals" value={`${stats.studyGoalsCompleted} / ${stats.studyGoalsTotal}`} />

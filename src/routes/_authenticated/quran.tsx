@@ -54,7 +54,7 @@ function QuranPage() {
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["quran"] }); setShowYourSessions(true); } });
   const autoLog = useMutation({
     mutationFn: (m: QuranSessionMilestone) => createFn({ data: {
-      log_date: todayISO(), surah: m.surahName, minutes: m.minutes, auto_logged: true, completed_at: m.completedAt,
+      log_date: todayISO(), surah: m.surahName, auto_logged: true, completed_at: m.completedAt,
       verses_completed: m.fromAyah === m.toAyah ? `${m.surahNumber}:${m.fromAyah}` : `${m.surahNumber}:${m.fromAyah}–${m.toAyah}`,
       reflection: m.mode === "read" ? "Marked as read" : `Listened to ${m.versesCount} ayat`,
     } }),
@@ -68,9 +68,6 @@ function QuranPage() {
   const [showYourSessions, setShowYourSessions] = useState(false);
   useEffect(() => { if (data.length > 0) setShowSessionLog(true); }, [data.length === 0]);
 
-  const totalPages = data.reduce((s: number, r: any) => s + (r.pages ?? 0), 0);
-  const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
-  const totalJuz = data.reduce((s: number, r: any) => s + (Number(r.juz) || 0), 0);
 
   const profileFn = useServerFn(getProfile);
   const saveProfileFn = useServerFn(updateProfile);
@@ -201,7 +198,7 @@ function QuranPage() {
                 <label className="grid gap-1.5 text-xs text-muted-foreground">To ayah<input aria-label="To ayah" type="number" min={1} max={max} placeholder={String(max)} value={form.to_ayah} onChange={e => setForm({ ...form, to_ayah: e.target.value })} className={inputCls} /></label>
               </>}
               <label className="grid gap-1.5 text-xs text-muted-foreground">Pages (optional)<input aria-label="Pages read" type="number" min={0} value={form.pages} onChange={e => setForm({ ...form, pages: e.target.value })} className={inputCls} /></label>
-              <label className="grid gap-1.5 text-xs text-muted-foreground">Juz (optional)<input aria-label="Juz progressed" type="number" min={0} step={0.25} value={form.juz} onChange={e => setForm({ ...form, juz: e.target.value })} className={inputCls} /></label>
+              <label className="grid gap-1.5 text-xs text-muted-foreground">Juz (optional)<input aria-label="Juz" type="number" min={0} step={0.25} value={form.juz} onChange={e => setForm({ ...form, juz: e.target.value })} className={inputCls} /></label>
             </div>
             <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.tafsir} onChange={e => setForm({ ...form, tafsir: e.target.checked })} /> Included tafsir / study</label>
             <textarea placeholder="Reflection (optional)" rows={2} value={form.reflection} onChange={e => setForm({ ...form, reflection: e.target.value })} className="mt-3 w-full rounded-lg bg-background px-3 py-2 ring-1 ring-border" />
@@ -251,7 +248,6 @@ function QuranPage() {
                     {r.verses_completed && <span>Ayat {r.verses_completed}</span>}
                     <span>{r.pages ?? 0} pages</span>
                     {r.juz ? <span>{Number(r.juz).toFixed(2).replace(/\.00$/, "")} juz</span> : null}
-                    {r.minutes ? <span>{r.minutes} min</span> : null}
                     {r.tafsir && <span>Tafsir / study</span>}
                     {r.auto_logged && <span>Logged from the reader</span>}
                     {r.completed_at && <span>{new Date(r.completed_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span>}
@@ -271,11 +267,6 @@ function QuranPage() {
 
       <QuranReader onSessionComplete={m => autoLog.mutate(m)} />
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Juz progressed</p><p className="text-3xl font-serif">{totalJuz.toFixed(1)}</p></Card>
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Minutes</p><p className="text-3xl font-serif">{totalMinutes}</p></Card>
-      </div>
 
     </AppShell>
   );

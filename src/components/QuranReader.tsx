@@ -35,7 +35,7 @@ type Verse = {
   };
 };
 
-export type QuranSessionMilestone = { surahNumber: number; surahName: string; fromAyah: number; toAyah: number; versesCount: number; minutes: number; completedAt: string; mode: "listened" | "read" };
+export type QuranSessionMilestone = { surahNumber: number; surahName: string; fromAyah: number; toAyah: number; versesCount: number; completedAt: string; mode: "listened" | "read" };
 
 export type QuranStudySelection = {
   id: string;
@@ -98,7 +98,7 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
     sessionRef.current = null;
     if (!session || session.verses.length === 0) return;
     const sorted = [...new Set(session.verses)].sort((a, b) => a - b);
-    onSessionComplete?.({ surahNumber: session.chapterId, surahName: session.surahName, fromAyah: sorted[0], toAyah: sorted[sorted.length - 1], versesCount: sorted.length, minutes: Math.max(1, Math.round((Date.now() - session.startedAt) / 60000)), completedAt: new Date().toISOString(), mode: "listened" });
+    onSessionComplete?.({ surahNumber: session.chapterId, surahName: session.surahName, fromAyah: sorted[0], toAyah: sorted[sorted.length - 1], versesCount: sorted.length, completedAt: new Date().toISOString(), mode: "listened" });
   }
   const [chapterId, setChapterId] = useState(studySelection?.surahNumber ?? 1);
   const chapters = useQuery({ queryKey: ["quran-reader", "chapters"], queryFn: fetchChapters, staleTime: 1000 * 60 * 60 * 24 });
@@ -362,7 +362,7 @@ export function QuranReader({ studySelection, resumeRequest = 0, onVerseComplete
             Read The Clear Quran translation <ExternalLink className="ml-2 size-4" />
           </a>
           {onSessionComplete && chapter && (
-            <button type="button" onClick={() => { stopAudio(); onSessionComplete({ surahNumber: chapter.id, surahName: chapter.name_simple, fromAyah: 1, toAyah: chapter.verses_count, versesCount: chapter.verses_count, minutes: 0, completedAt: new Date().toISOString(), mode: "read" }); }}
+            <button type="button" onClick={() => { stopAudio(); onSessionComplete({ surahNumber: chapter.id, surahName: chapter.name_simple, fromAyah: 1, toAyah: chapter.verses_count, versesCount: chapter.verses_count, completedAt: new Date().toISOString(), mode: "read" }); }}
               className="inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium ring-1 ring-border hover:bg-muted">
               Mark {chapter.name_simple} as read
             </button>
