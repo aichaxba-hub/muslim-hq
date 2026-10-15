@@ -1,7 +1,97 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/AppShell";
+import { autocompletePlaces } from "@/lib/places.functions";
 
 const foods = ["Wheat flour", "Rice", "Maize flour", "Barley", "Black beans"];
+
+type Suggestion = { placeId: string; text: string };
+
+function LocationField({ location, setLocation, fields }: { location: string; setLocation: (value: string) => void; fields: string }) {
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const sessionToken = useRef(crypto.randomUUID());
+  const requestId = useRef(0);
+  const skipNextSearch = useRef(false);
+
+  useEffect(() => {
+    const query = location.trim();
+    if (skipNextSearch.current) {
+      skipNextSearch.current = false;
+      return;
+    }
+    if (query.length < 2) {
+      setSuggestions([]);
+      setOpen(false);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const id = ++requestId.current;
+    const timer = setTimeout(async () => {
+      try {
+        const { suggestions: results } = await autocompletePlaces({ data: { input: query, sessionToken: sessionToken.current } });
+        if (id !== requestId.current) return;
+        setSuggestions(results);
+        setOpen(results.length > 0);
+      } catch {
+        if (id !== requestId.current) return;
+        setSuggestions([]);
+        setOpen(false);
+      } finally {
+        if (id === requestId.current) setSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [location]);
+
+  const pick = (suggestion: Suggestion) => {
+    skipNextSearch.current = true;
+    setLocation(suggestion.text);
+    setSuggestions([]);
+    setOpen(false);
+    sessionToken.current = crypto.randomUUID();
+  };
+
+  return (
+    <div className="relative grid gap-2 text-sm">
+      <label htmlFor="fitr-location">City, country, region or zip code</label>
+      <input
+        id="fitr-location"
+        className={fields}
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Start typing your city or region"
+        autoComplete="off"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls="fitr-location-suggestions"
+        aria-autocomplete="list"
+      />
+      {searching && <p className="text-xs text-muted-foreground">Searching places…</p>}
+      {open && (
+        <ul id="fitr-location-suggestions" role="listbox" className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-lg bg-popover ring-1 ring-border shadow-lg">
+          {suggestions.map((suggestion) => (
+            <li key={suggestion.placeId}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={location === suggestion.text}
+                className="block w-full px-3 py-2.5 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pick(suggestion)}
+              >
+                {suggestion.text}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export function FitrCalculator() {
   const [step, setStep] = useState(0);
