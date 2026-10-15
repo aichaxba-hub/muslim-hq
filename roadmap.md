@@ -57,3 +57,5 @@
 - [x] Label the Fitr household count "People you are giving for (including yourself)"
 - [x] Replace the Fitr currency note with "Note: Prices are researched from government and market data sources and updated annually before Ramadan."
 - [x] Remove the Fitr location hint "Suggestions appear as you type — pick yours, or keep typing freely. Use retail prices from shops in your area; prices are not fetched automatically."
+- [x] Replace the Fitr "Local food prices" step with a "Saa Weight" choice (3.0 kg Conservative / 2.2 kg Standard) plus the scholarly-estimate note
+- [ ] Fitr: supply staple prices so "Price per kg" and "Estimated amount" are no longer blank (price inputs were removed)
