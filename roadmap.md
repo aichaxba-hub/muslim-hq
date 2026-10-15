@@ -59,3 +59,4 @@
 - [x] Remove the Fitr location hint "Suggestions appear as you type — pick yours, or keep typing freely. Use retail prices from shops in your area; prices are not fetched automatically."
 - [x] Replace the Fitr "Local food prices" step with a "Saa Weight" choice (3.0 kg Conservative / 2.2 kg Standard) plus the scholarly-estimate note
 - [x] Fitr: staple prices researched and stored in src/lib/fitr-prices.ts (BLS CPI Sep 2026: wheat flour $1.20/kg, black beans $3.68/kg; pearled barley ~$5.05/kg from typical store-brand retail) so "Price per kg" and "Estimated amount" fill automatically — refresh annually before Ramadan
+- [x] Yearly Ramadan refresh of Zakat al-Fitr prices from BLS

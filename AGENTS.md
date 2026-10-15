@@ -22,3 +22,4 @@
 - Profile exports generate JSON, CSV, or Excel after a private fetch.
 - Qada completion optimistically updates the shared cache, then reconciles after save.
 - Worship snapshots stay private per account; restore adds missing records only and reset clears backups.
+- Zakat al-Fitr prices live in the fitr_prices table; a weekly cron hits /api/public/hooks/refresh-fitr-prices, which refreshes from BLS once per Hijri year, 30 days before Ramadan — why: Ramadan moves ~11 days yearly, so the window is computed, not fixed.
