@@ -27,6 +27,7 @@ import { Route as AuthenticatedReflectionsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedWorshipRouteImport } from './routes/_authenticated/worship'
 import { Route as AuthenticatedZakatRouteImport } from './routes/_authenticated/zakat'
+import { Route as ApiPublicHooksRefreshFitrPricesRouteImport } from './routes/api/public/hooks/refresh-fitr-prices'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +119,12 @@ const AuthenticatedZakatRoute = AuthenticatedZakatRouteImport.update({
   path: '/zakat',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksRefreshFitrPricesRoute =
+  ApiPublicHooksRefreshFitrPricesRouteImport.update({
+    id: '/api/public/hooks/refresh-fitr-prices',
+    path: '/api/public/hooks/refresh-fitr-prices',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/review': typeof AuthenticatedReviewRoute
   '/worship': typeof AuthenticatedWorshipRoute
   '/zakat': typeof AuthenticatedZakatRoute
+  '/api/public/hooks/refresh-fitr-prices': typeof ApiPublicHooksRefreshFitrPricesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/review': typeof AuthenticatedReviewRoute
   '/worship': typeof AuthenticatedWorshipRoute
   '/zakat': typeof AuthenticatedZakatRoute
+  '/api/public/hooks/refresh-fitr-prices': typeof ApiPublicHooksRefreshFitrPricesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,6 +186,7 @@ export interface FileRoutesById {
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/worship': typeof AuthenticatedWorshipRoute
   '/_authenticated/zakat': typeof AuthenticatedZakatRoute
+  '/api/public/hooks/refresh-fitr-prices': typeof ApiPublicHooksRefreshFitrPricesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/worship'
     | '/zakat'
+    | '/api/public/hooks/refresh-fitr-prices'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/worship'
     | '/zakat'
+    | '/api/public/hooks/refresh-fitr-prices'
   id:
     | '__root__'
     | '/'
@@ -237,6 +249,7 @@ export interface FileRouteTypes {
     | '/_authenticated/review'
     | '/_authenticated/worship'
     | '/_authenticated/zakat'
+    | '/api/public/hooks/refresh-fitr-prices'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -246,6 +259,7 @@ export interface RootRouteChildren {
   OfflineRoute: typeof OfflineRoute
   StartRoute: typeof StartRoute
   TutorialRoute: typeof TutorialRoute
+  ApiPublicHooksRefreshFitrPricesRoute: typeof ApiPublicHooksRefreshFitrPricesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -376,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedZakatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/refresh-fitr-prices': {
+      id: '/api/public/hooks/refresh-fitr-prices'
+      path: '/api/public/hooks/refresh-fitr-prices'
+      fullPath: '/api/public/hooks/refresh-fitr-prices'
+      preLoaderRoute: typeof ApiPublicHooksRefreshFitrPricesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -419,6 +440,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfflineRoute: OfflineRoute,
   StartRoute: StartRoute,
   TutorialRoute: TutorialRoute,
+  ApiPublicHooksRefreshFitrPricesRoute: ApiPublicHooksRefreshFitrPricesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
