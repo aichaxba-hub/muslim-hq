@@ -49,7 +49,7 @@ function DuasPage() {
     },
   });
 
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState<string>(DUA_CATEGORIES[0]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const emptyForm = { title: "", translation: "", source: "", category: "My Duas", when_to_recite: "" };
@@ -61,9 +61,7 @@ function DuasPage() {
 
   const q = search.trim().toLowerCase();
   const filtered = data.filter((d: any) => {
-    const inCategory = filter === "All" ? true : filter === "Favorites" ? d.favorited : filter === "My Duas" ? d.is_custom || d.category === "My Duas" : d.category === filter;
-    if (!inCategory) return false;
-    if (!q) return true;
+    if (!q) return filter === "Favorites" ? d.favorited : filter === "My Duas" ? d.is_custom || d.category === "My Duas" : d.category === filter;
     return [d.title, d.transliteration, d.translation, d.source, d.when_to_recite, d.category]
       .filter(Boolean)
       .some((v: string) => v.toLowerCase().includes(q));
@@ -211,11 +209,13 @@ function DuasPage() {
         />
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6 text-xs">
-        {["All", "Favorites", "My Duas", ...DUA_CATEGORIES].map(c => (
-          <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full ring-1 ring-border ${filter === c ? "bg-primary text-primary-foreground" : ""}`}>{c}</button>
-        ))}
-      </div>
+      <label className="mb-6 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        Category
+        <select aria-label="Dua category" value={filter} onChange={e => setFilter(e.target.value)} className="rounded-full bg-card px-4 py-2 text-sm text-foreground ring-1 ring-border">
+          {["Favorites", "My Duas", ...DUA_CATEGORIES].map(c => <option key={c}>{c}</option>)}
+        </select>
+        {q && <span className="text-xs">Searching all categories</span>}
+      </label>
 
       {filtered.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-12">No duas match your search. Try a different word or category.</p>

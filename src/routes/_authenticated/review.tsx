@@ -155,7 +155,7 @@ function ReviewPage() {
       const m = String(x.verses_completed ?? "").match(/^\d+:(\d+)(?:[–-](\d+))?$/);
       return a + (m ? (m[2] ? Math.max(1, +m[2] - +m[1] + 1) : 1) : 0);
     }, 0);
-    const surahsRead = new Set(q.map((x: any) => x.surah).filter(Boolean)).size;
+    const surahsRead = new Set(q.map((x: any) => surahKey(x.surah)).filter(Boolean)).size;
     // Goals
     const goalsInProgress = goalsInRange.filter((g: any) => g.status === "In Progress").length;
     // Duas

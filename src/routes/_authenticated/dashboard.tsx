@@ -80,7 +80,8 @@ function Dashboard() {
     const last = Number(match[2] ?? match[1]);
     return total + Math.max(0, last - first + 1);
   }, 0);
-  const dhikrToday = (dhikr.data ?? []).filter(entry => entry.log_date === today).reduce((total, entry) => total + (entry.count ?? 0), 0) + (log.data?.dhikr_count ?? 0);
+  // Logged sessions only — the same source Review totals use.
+  const dhikrToday = (dhikr.data ?? []).filter(entry => entry.log_date === today).reduce((total, entry) => total + (entry.count ?? 0), 0);
   const qadaRemaining = (qada.data ?? []).filter(entry => !entry.completed).length;
 
   const anniversary = profile.data?.zakat_anniversary;
