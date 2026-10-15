@@ -56,3 +56,4 @@
 - [x] Remove the "Kilograms per person" field from the Zakat al-Fitr household step (fixed one saa ≈ 3 kg used internally)
 - [x] Label the Fitr household count "People you are giving for (including yourself)"
 - [x] Replace the Fitr currency note with "Note: Prices are researched from government and market data sources and updated annually before Ramadan."
+- [x] Remove the Fitr location hint "Suggestions appear as you type — pick yours, or keep typing freely. Use retail prices from shops in your area; prices are not fetched automatically."
