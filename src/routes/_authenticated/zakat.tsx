@@ -4,12 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createSadaqah, createZakat, listSadaqah, listZakat, getProfile, updateProfile, listZakatPayments, recordZakatPayment } from "@/lib/data.functions";
 import { todayISO } from "@/lib/hijri";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ZakatCalculator, type ZakatCalculation } from "@/components/ZakatCalculator";
 import { toast } from "sonner";
 import { FitrCalculator } from "@/components/FitrCalculator";
 import { hawlProgress, hawlReminder } from "@/lib/hawl";
-import { CalendarDays, Plus } from "lucide-react";
+import { CalendarDays, ChevronDown, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/zakat")({
   head: () => ({ meta: [
@@ -62,6 +62,8 @@ function ZakatPage() {
   });
 
   const [s, setS] = useState(emptySadaqah);
+  const [showPayments, setShowPayments] = useState(false);
+  useEffect(() => { if ((sadaqah.data ?? []).length > 0) setShowPayments(true); }, [sadaqah.data]);
 
   const givingTotals = (sadaqah.data ?? []).reduce((a, r: any) => {
     const amt = +r.amount || 0;
