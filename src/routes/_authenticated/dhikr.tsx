@@ -66,7 +66,7 @@ function DhikrPage() {
 
       <Card className="mb-6">
         <h3 className="font-serif text-2xl mb-4">Log a session</h3>
-        <div className="grid md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 [&>*]:min-w-0 [&>*]:w-full">
           <input type="date" value={form.log_date} onChange={e => setForm({ ...form, log_date: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
           <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="px-3 py-2 rounded-xl bg-background ring-1 ring-border">
             {CATS.map(c => <option key={c}>{c}</option>)}
