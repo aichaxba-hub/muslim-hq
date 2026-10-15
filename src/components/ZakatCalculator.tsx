@@ -180,11 +180,12 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
   useEffect(() => {
     if (!restored || !metalPrices.data || !("gold" in metalPrices.data) || !("silver" in metalPrices.data)) return;
     // Spot feeds return many decimals; keep the filled-in values readable and still editable.
+    if (!("gold" in metalPrices.data)) return;
     const round = (value: number, places: number) => Math.round(value * 10 ** places) / 10 ** places;
     setCalc(current => ({
       ...current,
       goldPrice: metalPrices.data.gold != null ? round(metalPrices.data.gold, 2) : current.goldPrice,
-      silverPrice: metalPrices.data.silver != null ? round(metalPrices.data.silver, 4) : current.silverPrice,
+      silverPrice: "silver" in metalPrices.data && metalPrices.data.silver != null ? round(metalPrices.data.silver, 4) : current.silverPrice,
     }));
   }, [restored, metalPrices.data]);
 
