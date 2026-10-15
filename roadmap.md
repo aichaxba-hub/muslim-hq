@@ -67,3 +67,4 @@
 - [x] Match the Zakat al-Fitr calculator section's format to the Zakat calculator section above it
 
 - [x] Giving log entries live in a collapsible "Payments" section below the form (verified: expands to 3 rows, collapses)
+- [ ] Remove the individual answered duas section at the bottom of the Review tab
