@@ -2,7 +2,8 @@ import { expect, test } from "vitest";
 import { dhikrStreak } from "./dhikr-streak";
 
 const now = new Date(2026, 9, 15, 12);
-const iso = (daysAgo: number) => { const d = new Date(2026, 9, 15); d.setDate(d.getDate() - daysAgo); return d.toISOString().slice(0, 10); };
+const localISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const iso = (daysAgo: number) => { const d = new Date(2026, 9, 15); d.setDate(d.getDate() - daysAgo); return localISO(d); };
 
 test("counts consecutive days of logged dhikr sessions", () => {
   expect(dhikrStreak([{ log_date: iso(0), count: 33 }, { log_date: iso(1), count: 10 }, { log_date: iso(3), count: 5 }], now)).toBe(2);
