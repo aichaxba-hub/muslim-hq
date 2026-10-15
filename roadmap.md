@@ -74,3 +74,4 @@
 - [x] Reset in the Zakat al-Fitr calculator clears every selection (blank, not defaults) — verified: no income or weight selected, location blank, 1 person, step 1, amount —
 - [x] Move the "Jamaah & Masjid by prayer" and "The Nafl" cards into the Salah section on the Review tab (verified DOM order: Salah → Jamaah & Masjid → The Nafl → Qada)
 - [x] Change the Review tab section title back from "Duas" to "Heart"
+- [x] Remove the "Zakat entries & payments" heading from the Giving tab
