@@ -61,7 +61,7 @@ function ReviewPage() {
   const rl = useServerFn(listReflections);
   const sl = useServerFn(listSadaqah);
   const dul = useServerFn(listDuas);
-  const worship = useQuery({ queryKey: ["review", "w"], queryFn: () => wl({ data: { limit: 365 } }) });
+  const worship = useQuery({ queryKey: ["review", "w"], queryFn: () => wl({ data: { limit: 5000 } }) });
   const quran = useQuery({ queryKey: ["review", "q"], queryFn: () => ql({ data: undefined as any }) });
   const fasting = useQuery({ queryKey: ["review", "f"], queryFn: () => fl({ data: undefined as any }) });
   const dhikr = useQuery({ queryKey: ["review", "d"], queryFn: () => dl({ data: undefined as any }) });
