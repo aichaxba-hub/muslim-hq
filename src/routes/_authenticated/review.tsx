@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments, listQada, listQuranStudyGoals, getProfile } from "@/lib/data.functions";
@@ -173,7 +174,8 @@ function ReviewPage() {
       qadaMadeUp: qadaMadeUp.length,
       qadaMadeUpByPrayer: countBy(qadaMadeUp, x => PRAYER_LABEL[x.prayer as keyof typeof PRAYER_LABEL] ?? x.prayer),
       qadaOutstanding,
-      quranPages: q.reduce((a: number, x: any) => a + (x.pages ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_pages ?? 0), 0),
+      // Single source per metric: Quran sessions and dhikr logs only (legacy day-log fields would double count).
+      quranPages: q.reduce((a: number, x: any) => a + (x.pages ?? 0), 0),
       quranJuz: q.reduce((a: number, x: any) => a + (Number(x.juz) || 0), 0),
       quranSessions: q.length,
       surahsRead,
@@ -181,7 +183,7 @@ function ReviewPage() {
       recitedAyat,
       studyGoalsCompleted: study.filter(g => g.completed).length,
       studyGoalsTotal: study.length,
-      dhikrTotal: d.reduce((a: number, x: any) => a + (x.count ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.dhikr_count ?? 0), 0),
+      dhikrTotal: d.reduce((a: number, x: any) => a + (x.count ?? 0), 0),
       dhikrSessions,
       dhikrByPhrase: countBy(d, (x: any) => x.category),
       fastsCompleted: f.filter((x: any) => x.completed).length,
@@ -339,6 +341,14 @@ function ReviewPage() {
           ))}
         </div>
         {mode === "annual" && (
+          <button
+            onClick={() => exportIslamicYear(year, stats).catch(() => toast.error("Could not export your year — please try again"))}
+            className="rounded-full border border-[color:var(--sand)] px-4 py-2 text-sm hover:bg-[color:var(--sand-soft)]"
+          >
+            Export My Islamic Year
+          </button>
+        )}
+        {mode === "annual" && (
           <select
             value={year}
             onChange={e => setYear(e.target.value)}
@@ -465,6 +475,56 @@ function ReviewPage() {
 
     </AppShell>
   );
+}
+
+async function exportIslamicYear(year: string, s: any) {
+  const ExcelJS = await import("exceljs");
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "Muslim HQ";
+  const sheet = wb.addWorksheet("My Islamic Year");
+  const b = (m: Record<string, number>) => breakdown(m) ?? "—";
+  const rows: [string, string, string | number][] = [
+    ["Salah", "Completion", `${s.completionPct}%`],
+    ["Salah", "Completed on time", `${s.onTimePct}%`],
+    ["Salah", "Days logged", s.loggedDays],
+    ["Salah", "Excused days", s.excusedDays],
+    ["Salah", "Excuse reasons", b(s.excuseBreakdown)],
+    ["Salah", "Jama'ah prayers", s.jamaahCount],
+    ["Salah", "Masjid prayers", s.masjidCount],
+    ["Salah", "Jummah attended", s.jummahCount],
+    ["Qada", "Made up", s.qadaMadeUp],
+    ["Qada", "Made up by prayer", b(s.qadaMadeUpByPrayer)],
+    ["Qada", "Still outstanding (today)", s.qadaOutstanding],
+    ["Quran", "Sessions", s.quranSessions],
+    ["Quran", "Pages", s.quranPages],
+    ["Quran", "Juz", s.quranJuz],
+    ["Quran", "Ayat recited", s.recitedAyat],
+    ["Quran", "Surahs read", s.surahsRead],
+    ["Quran", "Study goals completed", `${s.studyGoalsCompleted} of ${s.studyGoalsTotal}`],
+    ["Fasting", "Fasts completed", s.fastsCompleted],
+    ["Fasting", "By type", b(s.fastsByType)],
+    ["Dhikr", "Total count", s.dhikrTotal],
+    ["Dhikr", "Sessions", s.dhikrSessions],
+    ["Dhikr", "Sessions by phrase", b(s.dhikrByPhrase)],
+    ["Heart", "Reflections", s.reflectionsCount],
+    ["Heart", "Moods", b(s.moods)],
+    ["Heart", "Duas saved", s.duasSaved],
+    ["Goals", "Completed", s.goalsCompleted],
+    ["Goals", "In progress", s.goalsInProgress],
+    ["Giving", "Sadaqah total", s.sadaqahTotal],
+    ["Giving", "Sadaqah gifts", s.sadaqahGifts],
+  ];
+  sheet.addRow([`My Islamic Year — ${year}`]).font = { bold: true, size: 14 };
+  sheet.addRow([]);
+  sheet.addRow(["Section", "Measure", "Value"]).font = { bold: true };
+  rows.forEach(r => sheet.addRow(r));
+  sheet.getColumn(1).width = 14; sheet.getColumn(2).width = 30; sheet.getColumn(3).width = 50;
+  const buf = await wb.xlsx.writeBuffer();
+  const url = URL.createObjectURL(new Blob([buf as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = `my-islamic-year-${year}.xlsx`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
 function breakdown(m: Record<string, number>) {
