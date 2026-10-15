@@ -65,7 +65,14 @@ function QuranPage() {
   const [form, setForm] = useState({ log_date: todayISO(), surah_number: 1, whole: true, from_ayah: "1", to_ayah: "", pages: "", juz: "", tafsir: false, reflection: "" });
   const [expandedSessionIds, setExpandedSessionIds] = useState<Set<string>>(new Set());
   const [showSessionLog, setShowSessionLog] = useState(false);
+  const [showYourSessions, setShowYourSessions] = useState(false);
+  const [knownSessionCount, setKnownSessionCount] = useState(0);
   useEffect(() => { if (data.length > 0) setShowSessionLog(true); }, [data.length === 0]);
+  useEffect(() => {
+    // Keep the list tucked away on arrival, but reveal it as soon as a session is added.
+    if (data.length > knownSessionCount) setShowYourSessions(true);
+    setKnownSessionCount(data.length);
+  }, [data.length, knownSessionCount]);
 
   const totalPages = data.reduce((s: number, r: any) => s + (r.pages ?? 0), 0);
   const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
