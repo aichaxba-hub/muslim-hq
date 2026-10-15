@@ -55,3 +55,4 @@
 - [x] Add "What is a Sa'a?" explainer under the Zakat al-Fitr calculator header
 - [x] Remove the "Kilograms per person" field from the Zakat al-Fitr household step (fixed one saa ≈ 3 kg used internally)
 - [x] Label the Fitr household count "People you are giving for (including yourself)"
+- [x] Replace the Fitr currency note with "Note: Prices are researched from government and market data sources and updated annually before Ramadan."
