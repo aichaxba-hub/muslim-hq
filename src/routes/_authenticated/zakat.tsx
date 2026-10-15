@@ -145,8 +145,6 @@ function ZakatPage() {
 
       </div>
 
-
-       <PageHeader title="Zakat entries & payments" />
       <div className="grid gap-2 mb-8">
          {(zakat.data ?? []).map((z: any) => {
            const entryPayments = (payments.data ?? []).filter(p => p.zakat_entry_id === z.id);
