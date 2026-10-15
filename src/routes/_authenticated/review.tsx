@@ -381,16 +381,47 @@ function ReviewPage() {
 
       <h3 className="font-serif text-3xl mb-6">{mode === "lifetime" ? "All time" : mode === "annual" ? year : mode === "weekly" ? weekLabel(weekStart) : monthLabel(month)}</h3>
 
-      <Section title="Salah" note="Excused days are honoured, never counted against you.">
-        <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
-        <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
-        <Stat label="Days logged" value={stats.loggedDays} />
-        <Stat label="Excused days" value={stats.excusedDays} sub={breakdown(stats.excuseBreakdown)} />
-        <Stat label="Jummah" value={`${stats.jummahCount} · ${stats.jummahRate}%`} />
-        <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
-        <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
-        <Stat label="Missed prayers" value={stats.missedPrayers} />
-      </Section>
+      <section className="mb-8">
+        <div className="mb-3 flex items-baseline gap-3 border-b border-[color:var(--sand)] pb-2">
+          <h4 className="font-serif text-xl">Salah</h4>
+          <p className="text-xs text-muted-foreground">Excused days are honoured, never counted against you.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
+          <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
+          <Stat label="Days logged" value={stats.loggedDays} />
+          <Stat label="Excused days" value={stats.excusedDays} sub={breakdown(stats.excuseBreakdown)} />
+          <Stat label="Jummah" value={`${stats.jummahCount} · ${stats.jummahRate}%`} />
+          <Stat label="In Jama'ah" value={`${stats.jamaahCount} · ${stats.jamaahPct}%`} />
+          <Stat label="At the Masjid" value={`${stats.masjidCount} · ${stats.masjidPct}%`} />
+          <Stat label="Missed prayers" value={stats.missedPrayers} />
+        </div>
+        <Card className="mt-4">
+          <h3 className="font-serif text-2xl mb-1">Jama'ah & Masjid by prayer</h3>
+          <p className="text-xs text-muted-foreground mb-4">Counted separately — a prayer can be one, both, or neither.</p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {PRAYERS.map(p => (
+              <div key={p} className="rounded-2xl ring-1 ring-border p-3">
+                <p className="text-sm font-medium mb-2">{PRAYER_LABEL[p]}</p>
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users size={12} /> Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Landmark size={12} /> Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="mt-4">
+          <h3 className="font-serif text-2xl mb-1">The Nafl</h3>
+          <p className="text-xs text-muted-foreground mb-4">Voluntary prayers, counted separately — excused days included.</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {NAFL_PRAYERS.map(n => (
+              <div key={n.v} className="rounded-2xl ring-1 ring-border p-3">
+                <p className="flex items-center gap-1.5 text-sm font-medium"><MoonStar size={12} className="text-[color:var(--sage)]" /> {n.l}</p>
+                <p className="text-2xl font-serif mt-1">{stats.naflCounts[n.v] ?? 0}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </section>
 
       <Section title="Qada" note="Every makeup is a return.">
         <Stat label="Made up" value={qadaQ.isLoading ? "…" : stats.qadaMadeUp} sub={breakdown(stats.qadaMadeUpByPrayer)} />
@@ -416,7 +447,7 @@ function ReviewPage() {
         <Stat label="Sessions" value={stats.dhikrSessions} sub={breakdown(stats.dhikrByPhrase)} />
       </Section>
 
-      <Section title="Duas" note="Duas, reflections and intentions.">
+      <Section title="Heart" note="Duas, reflections and intentions.">
         <Stat label="Duas saved" value={stats.duasSaved} sub={`${stats.duasFavorited} favourited`} />
         <Stat label="Answered duas" value={answeredDuaCounts.total} />
         <Stat label="Top dua category" value={topDuaCategory?.[0] ?? "—"} sub={topDuaCategory ? `${topDuaCategory[1]} saved` : undefined} small />
@@ -431,32 +462,6 @@ function ReviewPage() {
         <Stat label="Zakat remaining" value={zakat.isLoading || payments.isLoading ? "…" : zakatTotals.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
       </Section>
 
-      <Card className="mb-8">
-        <h3 className="font-serif text-2xl mb-1">Jama'ah & Masjid by prayer</h3>
-        <p className="text-xs text-muted-foreground mb-4">Counted separately — a prayer can be one, both, or neither.</p>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {PRAYERS.map(p => (
-            <div key={p} className="rounded-2xl ring-1 ring-border p-3">
-              <p className="text-sm font-medium mb-2">{PRAYER_LABEL[p]}</p>
-              <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users size={12} /> Jama'ah <span className="font-semibold text-foreground">{stats.perPrayer[p]?.jamaah ?? 0}</span></p>
-              <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Landmark size={12} /> Masjid <span className="font-semibold text-foreground">{stats.perPrayer[p]?.masjid ?? 0}</span></p>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="mb-8">
-        <h3 className="font-serif text-2xl mb-1">The Nafl</h3>
-        <p className="text-xs text-muted-foreground mb-4">Voluntary prayers, counted separately — excused days included.</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {NAFL_PRAYERS.map(n => (
-            <div key={n.v} className="rounded-2xl ring-1 ring-border p-3">
-              <p className="flex items-center gap-1.5 text-sm font-medium"><MoonStar size={12} className="text-[color:var(--sage)]" /> {n.l}</p>
-              <p className="text-2xl font-serif mt-1">{stats.naflCounts[n.v] ?? 0}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
 
     </AppShell>
   );
