@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as OfflineRouteImport } from './routes/offline'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as TutorialRouteImport } from './routes/tutorial'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -46,6 +47,11 @@ const AuthRoute = AuthRouteImport.update({
 const OfflineRoute = OfflineRouteImport.update({
   id: '/offline',
   path: '/offline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartRoute = StartRouteImport.update({
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/offline': typeof OfflineRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRoute
   '/tutorial': typeof TutorialRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/offline': typeof OfflineRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRoute
   '/tutorial': typeof TutorialRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/offline': typeof OfflineRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRoute
   '/tutorial': typeof TutorialRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/offline'
+    | '/reset-password'
     | '/start'
     | '/tutorial'
     | '/dashboard'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/offline'
+    | '/reset-password'
     | '/start'
     | '/tutorial'
     | '/dashboard'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/offline'
+    | '/reset-password'
     | '/start'
     | '/tutorial'
     | '/_authenticated/dashboard'
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   OfflineRoute: typeof OfflineRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   StartRoute: typeof StartRoute
   TutorialRoute: typeof TutorialRoute
   ApiPublicHooksRefreshFitrPricesRoute: typeof ApiPublicHooksRefreshFitrPricesRoute
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/offline'
       fullPath: '/offline'
       preLoaderRoute: typeof OfflineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start': {
@@ -438,6 +458,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   OfflineRoute: OfflineRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   StartRoute: StartRoute,
   TutorialRoute: TutorialRoute,
   ApiPublicHooksRefreshFitrPricesRoute: ApiPublicHooksRefreshFitrPricesRoute,
