@@ -4,8 +4,18 @@ import { useServerFn } from "@tanstack/react-start";
 import { LocateFixed } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/AppShell";
-import { updateProfile } from "@/lib/data.functions";
+import { updateProfile, upsertGoal } from "@/lib/data.functions";
 import { CALC_METHODS, MADHABS } from "@/lib/prayer-times";
+import { Check } from "lucide-react";
+
+const FOCUS_OPTIONS = [
+  { title: "Pray consistently", category: "Habit", why: "To keep all five prayers steady, at my own pace." },
+  { title: "Make up missed prayers", category: "Deen", why: "To gently work through my Qada prayers." },
+  { title: "Read more Qur'an", category: "Deen", why: "To grow closer to Allah through His words." },
+  { title: "Build dhikr habits", category: "Habit", why: "To keep my heart in remembrance of Allah." },
+  { title: "Fast more regularly", category: "Deen", why: "To build discipline and taqwa through fasting." },
+  { title: "Build better Islamic habits", category: "Character/Tazkiyah", why: "To make small, lasting improvements in my deen." },
+];
 
 export function OnboardingDialog({ initial }: { initial: { location_label?: string | null; latitude?: number | null; longitude?: number | null; calc_method?: string | null; madhab?: string | null; zakat_anniversary?: string | null } }) {
   const qc = useQueryClient();
@@ -15,13 +25,22 @@ export function OnboardingDialog({ initial }: { initial: { location_label?: stri
     calc_method: initial.calc_method ?? "MoonsightingCommittee", madhab: initial.madhab ?? "shafi", zakat_anniversary: initial.zakat_anniversary ?? "",
   });
   const [locating, setLocating] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [focus, setFocus] = useState<string[]>([]);
+  const goalFn = useServerFn(upsertGoal);
   const save = useMutation({
-    mutationFn: (skip: boolean) => updateFn({ data: skip ? { onboarding_complete: true } : {
-      onboarding_complete: true, calc_method: f.calc_method, madhab: f.madhab,
-      zakat_anniversary: f.zakat_anniversary || null,
-      ...(f.latitude != null && f.longitude != null ? { latitude: f.latitude, longitude: f.longitude, location_label: f.location_label || "Your location" } : {}),
-    } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("You're all set. Bismillah."); },
+    mutationFn: async (skip: boolean) => {
+      if (!skip && focus.length) {
+        await Promise.all(FOCUS_OPTIONS.filter(o => focus.includes(o.title)).map(o =>
+          goalFn({ data: { title: o.title, category: o.category, why: o.why, status: "In Progress", quarter: `Q${Math.floor(new Date().getMonth() / 3) + 1}` } })));
+      }
+      return updateFn({ data: skip ? { onboarding_complete: true } : {
+        onboarding_complete: true, calc_method: f.calc_method, madhab: f.madhab,
+        zakat_anniversary: f.zakat_anniversary || null,
+        ...(f.latitude != null && f.longitude != null ? { latitude: f.latitude, longitude: f.longitude, location_label: f.location_label || "Your location" } : {}),
+      } });
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); qc.invalidateQueries({ queryKey: ["goals"] }); toast.success("You're all set. Bismillah."); },
     onError: () => toast.error("Could not save your settings"),
   });
 
