@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/AppShell";
 import { autocompletePlaces } from "@/lib/places.functions";
 
@@ -105,13 +105,10 @@ export function FitrCalculator() {
   const [step, setStep] = useState(0);
   const [location, setLocation] = useState("");
   const [household, setHousehold] = useState(1);
-  const [method, setMethod] = useState<"food" | "income">("income");
   const [income, setIncome] = useState<"low" | "medium" | "high">("medium");
-  const [selectedFood, setSelectedFood] = useState(foods[0]);
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [weight, setWeight] = useState(3);
-  const priced = useMemo(() => foods.filter(food => (prices[food] ?? 0) > 0).sort((a,b) => (prices[b] ?? 0) - (prices[a] ?? 0)), [prices]);
-  const chosen = method === "food" ? selectedFood : income === "high" ? priced[0] : income === "low" ? priced[priced.length - 1] : priced[1] ?? priced[0];
+  const chosen = income === "low" ? "Wheat flour" : income === "medium" ? "Black beans" : "Barley";
   const total = (prices[chosen] ?? 0) * weight * household;
   const fields = "h-11 w-full rounded-lg bg-background px-3 ring-1 ring-border";
   return <section className="mb-8 border-t border-border pt-8" aria-label="Zakat al-Fitr calculator">
@@ -120,7 +117,7 @@ export function FitrCalculator() {
       <h3 className="font-serif text-lg text-foreground">What is a Sa'a?</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">A Sa'a (also spelled Sa' or Saa') is a traditional Arabian volume unit used to measure staple food items for Zakat al-Fitr.</p>
     </div>
-    <div className="mb-5 flex flex-wrap gap-2">{["Location", "Household", "Selection method", "Review"].map((label, index) => <Button key={label} variant="ghost" className={step === index ? "bg-muted" : ""} onClick={() => setStep(index)} aria-current={step === index ? "step" : undefined}>{index + 1}. {label}</Button>)}</div>
+    <div className="mb-5 flex flex-wrap gap-2">{["Location", "Household", "Income level", "Review"].map((label, index) => <Button key={label} variant="ghost" className={step === index ? "bg-muted" : ""} onClick={() => setStep(index)} aria-current={step === index ? "step" : undefined}>{index + 1}. {label}</Button>)}</div>
     <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_17rem]">
       <div className="space-y-4">
         {step === 0 && <><h3 className="font-serif text-2xl">Your location</h3><LocationField location={location} setLocation={setLocation} fields={fields} /><StepNote label="Why we ask:">Your location helps us determine the appropriate food staple and pricing for your Zakat al-Fitr calculation.</StepNote><p className="text-xs text-muted-foreground">Suggestions appear as you type — pick yours, or keep typing freely. Use retail prices from shops in your area; prices are not fetched automatically.</p></>}
