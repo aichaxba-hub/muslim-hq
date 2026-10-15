@@ -180,11 +180,13 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
   useEffect(() => {
     if (!restored || !metalPrices.data || !("gold" in metalPrices.data) || !("silver" in metalPrices.data)) return;
     // Spot feeds return many decimals; keep the filled-in values readable and still editable.
+    if (!("gold" in metalPrices.data)) return;
+    const { gold, silver } = metalPrices.data;
     const round = (value: number, places: number) => Math.round(value * 10 ** places) / 10 ** places;
     setCalc(current => ({
       ...current,
-      goldPrice: metalPrices.data.gold != null ? round(metalPrices.data.gold, 2) : current.goldPrice,
-      silverPrice: metalPrices.data.silver != null ? round(metalPrices.data.silver, 4) : current.silverPrice,
+      goldPrice: gold != null ? round(gold, 2) : current.goldPrice,
+      silverPrice: silver != null ? round(silver, 4) : current.silverPrice,
     }));
   }, [restored, metalPrices.data]);
 
@@ -263,14 +265,14 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
 
           {step === 0 && (
             <section className="space-y-5" aria-labelledby="zakat-step-title">
-               <div><h3 id="zakat-step-title" className="font-serif text-2xl">Choose your nisab</h3><p className="mt-1 text-sm text-muted-foreground">Nisab is the minimum zakatable wealth threshold. Metal prices refresh from GoldAPI when available and remain editable.</p></div>
+               <div><h3 id="zakat-step-title" className="font-serif text-2xl">Choose your nisab</h3><p className="mt-1 text-sm text-muted-foreground">Nisab is the minimum zakatable wealth threshold. Metal prices refresh from live market sources when available and remain editable.</p></div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1.5 text-sm font-medium">Currency<select value={calc.currency} onChange={event => setCalc({ ...calc, currency: event.target.value })} className="h-11 rounded-lg bg-background px-3 ring-1 ring-border">{CURRENCIES.map(item => <option key={item[0]} value={item[0]}>{item[1]} {item[2]} ({item[0]})</option>)}</select></label>
                  <label className="grid gap-1.5 text-sm font-medium">Valuation date<input type="date" value={calc.hawlDate} onChange={event => setCalc({ ...calc, hawlDate: event.target.value })} className="h-11 rounded-lg bg-background px-3 ring-1 ring-border" /></label>
               </div>
               <fieldset className="grid gap-2"><legend className="mb-2 text-sm font-medium">Nisab standard</legend>{Object.entries(NISAB_OPTIONS).map(([key, option]) => <label key={key} className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm ${calc.nisabStandard === key ? "border-primary bg-muted" : "border-border"}`}><input type="radio" name="nisab" value={key} checked={calc.nisabStandard === key} onChange={() => setCalc({ ...calc, nisabStandard: key as NisabKey })} />{option.label}</label>)}</fieldset>
                <div className="grid gap-4 sm:grid-cols-2"><AmountInput label="Gold price per gram" value={calc.goldPrice} symbol={symbol} onChange={value => setAmount("goldPrice", value)} /><AmountInput label="Silver price per gram" value={calc.silverPrice} symbol={symbol} onChange={value => setAmount("silverPrice", value)} /></div>
-               <p className="text-xs text-muted-foreground" role="status">{metalPrices.isLoading ? "Loading current metal prices…" : metalPrices.data && "gold" in metalPrices.data ? `GoldAPI spot prices · ${new Date((metalPrices.data.timestamp ?? 0) * 1000).toLocaleString()} · ${calc.currency}/gram` : `Live prices unavailable${metalPrices.data && "error" in metalPrices.data ? ` (${metalPrices.data.error})` : ""}. Enter prices manually to continue.`}</p>
+               <p className="text-xs text-muted-foreground" role="status">{metalPrices.isLoading ? "Loading current metal prices…" : metalPrices.data && "gold" in metalPrices.data ? `Live spot prices (${metalPrices.data.source}) · ${new Date((metalPrices.data.timestamp ?? 0) * 1000).toLocaleString()} · ${calc.currency}/gram` : `Live prices unavailable${metalPrices.data && "error" in metalPrices.data ? ` (${metalPrices.data.error})` : ""}. Enter prices manually to continue.`}</p>
             </section>
           )}
 
