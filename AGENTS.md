@@ -23,3 +23,4 @@
 - Qada completion optimistically updates the shared cache, then reconciles after save.
 - Worship snapshots stay private per account; restore adds missing records only and reset clears backups.
 - Zakat al-Fitr prices live in the fitr_prices table; a weekly cron hits /api/public/hooks/refresh-fitr-prices, which refreshes from BLS once per Hijri year, 30 days before Ramadan — why: Ramadan moves ~11 days yearly, so the window is computed, not fixed.
+- Demo mode ("Explore Demo" on /auth) is an in-memory flag + fake store (src/lib/demo-mode.ts, demo-store.ts); pages import useServerFn from @/lib/use-app-server-fn so demo calls never reach the server — why: visitors can browse without accounts and can't touch real data. New server fns used in pages need a demo handler.
