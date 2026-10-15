@@ -71,3 +71,4 @@
 - [x] Add "high iman" and "low iman" to the Reflect tab mood dropdown (read as the intended pair for "low man")
 - [x] Verify the Zakat al-Fitr Reset button clears every answer (verified: location, household, income, weight and step all return to defaults — no code change needed)
 - [x] Rename the "Heart" section to "Duas" on the Review tab
+- [ ] Reset in the Zakat al-Fitr calculator clears every selection (blank, not defaults)
