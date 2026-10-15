@@ -62,3 +62,6 @@
 - [x] Yearly Ramadan refresh of Zakat al-Fitr prices from BLS
 - [x] Build Review step behind Zakat al-Fitr calculator summarizing every step
 - [x] Rename Saa Weight step to Weight
+- [x] Remove the "Choose a Zakat entry" dropdown from the giving log (Zakat payments apply to the earliest outstanding entry)
+- [x] Remove the permanent 0 from the giving log amount field so it starts blank
+- [ ] Match the Zakat al-Fitr calculator section's format to the Zakat calculator section above it
