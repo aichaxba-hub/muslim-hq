@@ -485,7 +485,6 @@ async function exportIslamicYear(year: string, s: any) {
   const b = (m: Record<string, number>) => breakdown(m) ?? "—";
   const rows: [string, string, string | number][] = [
     ["Salah", "Completion", `${s.completionPct}%`],
-    ["Salah", "Completed on time", `${s.onTimePct}%`],
     ["Salah", "Days logged", s.loggedDays],
     ["Salah", "Excused days", s.excusedDays],
     ["Salah", "Excuse reasons", b(s.excuseBreakdown)],
