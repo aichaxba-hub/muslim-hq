@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Coins, RotateCcw, Save } from "lucide-react";
 import { Button, Card } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { getMetalPrices } from "@/lib/metal-prices.functions";
 
 const STORAGE_KEY = "mhq-zakat-calculator";

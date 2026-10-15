@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { setDemoMode } from "@/lib/demo-mode";
+import { resetDemoStore } from "@/lib/demo-store";
 
 export const Route = createFileRoute("/auth")({
 head: () => ({ meta: [
@@ -18,6 +21,7 @@ head: () => ({ meta: [
 
 function AuthPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [sentTo, setSentTo] = useState<{ email: string; kind: "confirm" | "reset" } | null>(null);
   const [needsConfirm, setNeedsConfirm] = useState(false);
@@ -65,6 +69,13 @@ function AuthPage() {
   async function resendConfirmation(target: string) {
     const { error } = await supabase.auth.resend({ type: "signup", email: target, options: { emailRedirectTo: `${window.location.origin}/auth` } });
     if (error) toast.error(error.message); else toast.success("Confirmation email sent again.");
+  }
+
+  function startDemo() {
+    queryClient.clear();
+    resetDemoStore();
+    setDemoMode(true);
+    navigate({ to: "/dashboard" });
   }
 
   async function handleGoogle() {
@@ -143,6 +154,10 @@ function AuthPage() {
           <button onClick={handleGoogle} className="w-full py-3 rounded-full ring-1 ring-border text-sm font-medium hover:bg-muted transition">
             Continue with Google
           </button>
+          <button onClick={startDemo} className="mt-3 w-full py-3 rounded-full text-sm font-medium text-[color:var(--sage)] hover:bg-muted transition">
+            Explore Demo
+          </button>
+          <p className="mt-1 text-center text-xs text-muted-foreground">Look around with sample data — no account needed.</p>
         </div>
         )}
 

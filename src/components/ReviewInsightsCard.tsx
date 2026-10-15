@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { Sparkles } from "lucide-react";
 import { Card } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
