@@ -130,6 +130,7 @@ function QuranPage() {
               ? `${dailyGoal - rhythm.todayAyat} ayat to go today — your logged sessions count automatically.`
               : "Log or listen to a session and it counts toward today's goal automatically."}
         </p>
+      </Card>
 
       <Card className="mb-6">
         <button type="button" aria-expanded={showSessionLog} onClick={() => setShowSessionLog(value => !value)} className="flex w-full items-center justify-between gap-3 text-left">
