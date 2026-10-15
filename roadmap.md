@@ -51,3 +51,4 @@
 - [x] Remove Total pages and Juz progressed tiles from the Quran tab (already shown on Review)
 - [x] Remove "Ayat this month" and "Surahs covered this month" from the Quran rhythm card (already shown on Review)
 - [x] Add location, household and food-selection notes to the Zakat al-Fitr calculator steps
+- [x] Zakat calculator step labels wrap to a second row instead of clipping "6. Other assets"

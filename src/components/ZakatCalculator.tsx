@@ -253,7 +253,7 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div>
-          <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+          <div className="mb-6 flex flex-wrap gap-2 pb-1">
             {STEPS.map((label, index) => (
               <Button key={label} type="button" variant="ghost" className={`h-9 shrink-0 px-3 ${index === step ? "bg-primary text-primary-foreground" : ""}`} onClick={() => setStep(index)}>
                 {index < step ? <Check className="mr-1.5 inline size-3.5" /> : <span className="mr-1.5">{index + 1}</span>}{label}
