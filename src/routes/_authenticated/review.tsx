@@ -458,22 +458,6 @@ function ReviewPage() {
         </div>
       </Card>
 
-      <Card>
-        <h3 className="font-serif text-2xl mb-1">Answered duas</h3>
-        <p className="text-xs text-muted-foreground mb-4">Gratitude, counted — {answeredDuaCounts.total} answered {answeredDuaCounts.total === 1 ? "dua" : "duas"} in this period.</p>
-        {answeredDuaCounts.byCategory.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No answered duas recorded yet — the ones you mark as answered will appear here.</p>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {answeredDuaCounts.byCategory.map(([category, count]) => (
-              <div key={category} className="rounded-2xl ring-1 ring-border p-3">
-                <p className="text-sm font-medium truncate">{category}</p>
-                <p className="text-2xl font-serif mt-1">{count}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
     </AppShell>
   );
 }
