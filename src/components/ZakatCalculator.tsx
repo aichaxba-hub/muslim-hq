@@ -181,11 +181,12 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
     if (!restored || !metalPrices.data || !("gold" in metalPrices.data) || !("silver" in metalPrices.data)) return;
     // Spot feeds return many decimals; keep the filled-in values readable and still editable.
     if (!("gold" in metalPrices.data)) return;
+    const { gold, silver } = metalPrices.data;
     const round = (value: number, places: number) => Math.round(value * 10 ** places) / 10 ** places;
     setCalc(current => ({
       ...current,
-      goldPrice: metalPrices.data.gold != null ? round(metalPrices.data.gold, 2) : current.goldPrice,
-      silverPrice: "silver" in metalPrices.data && metalPrices.data.silver != null ? round(metalPrices.data.silver, 4) : current.silverPrice,
+      goldPrice: gold != null ? round(gold, 2) : current.goldPrice,
+      silverPrice: silver != null ? round(silver, 4) : current.silverPrice,
     }));
   }, [restored, metalPrices.data]);
 
