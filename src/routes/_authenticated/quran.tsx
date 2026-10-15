@@ -155,15 +155,6 @@ function QuranPage() {
         </div>
       </Card>
 
-
-      <QuranReader onSessionComplete={m => autoLog.mutate(m)} />
-
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Juz progressed</p><p className="text-3xl font-serif">{totalJuz.toFixed(1)}</p></Card>
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Minutes</p><p className="text-3xl font-serif">{totalMinutes}</p></Card>
-      </div>
-
       <Card className="mb-6">
         <button type="button" aria-expanded={showSessionLog} onClick={() => setShowSessionLog(value => !value)} className="flex w-full items-center justify-between gap-3 text-left">
           <div>
@@ -277,6 +268,15 @@ function QuranPage() {
         </>
         )}
       </Card>
+
+      <QuranReader onSessionComplete={m => autoLog.mutate(m)} />
+
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>
+        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Juz progressed</p><p className="text-3xl font-serif">{totalJuz.toFixed(1)}</p></Card>
+        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Minutes</p><p className="text-3xl font-serif">{totalMinutes}</p></Card>
+      </div>
+
     </AppShell>
   );
 }
