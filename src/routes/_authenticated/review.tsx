@@ -176,7 +176,6 @@ function ReviewPage() {
       quranPages: q.reduce((a: number, x: any) => a + (x.pages ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_pages ?? 0), 0),
       quranJuz: q.reduce((a: number, x: any) => a + (Number(x.juz) || 0), 0),
       quranSessions: q.length,
-      quranMinutes: q.reduce((a: number, x: any) => a + (x.minutes ?? 0), 0) + w.reduce((a: number, x: any) => a + (x.quran_minutes ?? 0), 0),
       surahsRead,
       studyAyat,
       recitedAyat,
