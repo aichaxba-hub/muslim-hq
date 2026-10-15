@@ -64,7 +64,30 @@ export function OnboardingDialog({ initial }: { initial: { location_label?: stri
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
       <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-card p-6 ring-1 ring-border shadow-xl">
-        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--sage)]">Welcome to Muslim HQ</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--sage)]">Welcome to Muslim HQ · Step {step} of 2</p>
+        {step === 1 ? (
+          <>
+            <h2 id="onboarding-title" className="font-serif text-3xl mt-1">What would you like help with?</h2>
+            <p className="text-sm text-muted-foreground mt-1">Choose as many as you like. We'll add them to your Goals.</p>
+            <div className="mt-5 grid gap-2">
+              {FOCUS_OPTIONS.map(o => {
+                const on = focus.includes(o.title);
+                return (
+                  <button key={o.title} type="button" role="checkbox" aria-checked={on}
+                    onClick={() => setFocus(cur => on ? cur.filter(t => t !== o.title) : [...cur, o.title])}
+                    className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm ring-1 transition ${on ? "ring-[color:var(--gold)] bg-[color:var(--gold)]/10" : "ring-border hover:bg-muted"}`}>
+                    <span className={`grid size-5 shrink-0 place-items-center rounded-md ring-1 ${on ? "bg-[color:var(--gold)] ring-[color:var(--gold)] text-primary-foreground" : "ring-border"}`}>{on && <Check className="size-3.5" />}</span>
+                    <span className="font-medium">{o.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-6 flex flex-wrap justify-between gap-2">
+              <Button variant="ghost" onClick={() => save.mutate(true)} disabled={save.isPending}>Skip for now</Button>
+              <Button onClick={() => setStep(2)}>Continue</Button>
+            </div>
+          </>
+        ) : (<>
         <h2 id="onboarding-title" className="font-serif text-3xl mt-1">Let's set up your prayer times</h2>
         <p className="text-sm text-muted-foreground mt-1">Three quick things so everything is accurate for you.</p>
 
@@ -89,9 +112,10 @@ export function OnboardingDialog({ initial }: { initial: { location_label?: stri
         </div>
 
         <div className="mt-6 flex flex-wrap justify-between gap-2">
-          <Button variant="ghost" onClick={() => save.mutate(true)} disabled={save.isPending}>Skip for now</Button>
+          <Button variant="ghost" onClick={() => setStep(1)} disabled={save.isPending}>Back</Button>
           <Button onClick={() => save.mutate(false)} disabled={save.isPending}>{save.isPending ? "Saving…" : "Save & begin"}</Button>
         </div>
+        </>)}
       </div>
     </div>
   );
