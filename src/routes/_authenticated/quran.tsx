@@ -54,7 +54,7 @@ function QuranPage() {
   const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["quran"] }); setShowYourSessions(true); } });
   const autoLog = useMutation({
     mutationFn: (m: QuranSessionMilestone) => createFn({ data: {
-      log_date: todayISO(), surah: m.surahName, minutes: m.minutes, auto_logged: true, completed_at: m.completedAt,
+      log_date: todayISO(), surah: m.surahName, auto_logged: true, completed_at: m.completedAt,
       verses_completed: m.fromAyah === m.toAyah ? `${m.surahNumber}:${m.fromAyah}` : `${m.surahNumber}:${m.fromAyah}–${m.toAyah}`,
       reflection: m.mode === "read" ? "Marked as read" : `Listened to ${m.versesCount} ayat`,
     } }),
@@ -69,7 +69,6 @@ function QuranPage() {
   useEffect(() => { if (data.length > 0) setShowSessionLog(true); }, [data.length === 0]);
 
   const totalPages = data.reduce((s: number, r: any) => s + (r.pages ?? 0), 0);
-  const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
   const totalJuz = data.reduce((s: number, r: any) => s + (Number(r.juz) || 0), 0);
 
   const profileFn = useServerFn(getProfile);
@@ -251,7 +250,6 @@ function QuranPage() {
                     {r.verses_completed && <span>Ayat {r.verses_completed}</span>}
                     <span>{r.pages ?? 0} pages</span>
                     {r.juz ? <span>{Number(r.juz).toFixed(2).replace(/\.00$/, "")} juz</span> : null}
-                    {r.minutes ? <span>{r.minutes} min</span> : null}
                     {r.tafsir && <span>Tafsir / study</span>}
                     {r.auto_logged && <span>Logged from the reader</span>}
                     {r.completed_at && <span>{new Date(r.completed_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span>}
@@ -271,10 +269,9 @@ function QuranPage() {
 
       <QuranReader onSessionComplete={m => autoLog.mutate(m)} />
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-4 mb-8">
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>
         <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Juz progressed</p><p className="text-3xl font-serif">{totalJuz.toFixed(1)}</p></Card>
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Minutes</p><p className="text-3xl font-serif">{totalMinutes}</p></Card>
       </div>
 
     </AppShell>
