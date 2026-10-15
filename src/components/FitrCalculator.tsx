@@ -93,6 +93,14 @@ function LocationField({ location, setLocation, fields }: { location: string; se
   );
 }
 
+function StepNote({ label, children }: { label: string; children: string }) {
+  return (
+    <p className="rounded-lg bg-muted/60 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground ring-1 ring-border">
+      <span className="font-medium text-foreground">{label}</span> {children}
+    </p>
+  );
+}
+
 export function FitrCalculator() {
   const [step, setStep] = useState(0);
   const [location, setLocation] = useState("");
