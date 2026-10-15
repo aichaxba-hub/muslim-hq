@@ -5,6 +5,18 @@ import type { Json } from "@/integrations/supabase/types";
 import { SEED_DUAS } from "./dua-seed";
 import { DUA_LIBRARY } from "./dua-library";
 
+// Write handlers copy only these caller-settable columns; user_id/id/timestamps are server-owned.
+function pick<T extends Record<string, unknown>>(data: T, keys: readonly string[]): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const k of keys) if (k in data && data[k] !== undefined) out[k] = data[k];
+  return out;
+}
+const PRAYER_COLS = ["fajr", "dhuhr", "asr", "maghrib", "isha"].flatMap((p) => [`${p}_status`, `${p}_congregation`, `${p}_masjid`]);
+const WORSHIP_COLS = ["log_date", ...PRAYER_COLS, "excused", "excuse_type", "sunnah", "nafl", "congregation", "jummah", "fasted", "fast_type", "quran_pages", "quran_juz", "quran_minutes", "tafsir", "dhikr_count", "intention", "remembered_allah", "notes", "duha", "tahajjud", "witr", "istikhara", "fajr_sunnah_before", "dhuhr_sunnah_before", "dhuhr_sunnah_after", "maghrib_sunnah_after", "isha_sunnah_after"];
+const REFLECTION_COLS = ["entry_date", "week_start", "mood", "closest_to_allah", "fell_short", "distraction", "sincere_dua", "one_change", "wins", "struggles", "gratitude", "next_intention"];
+const GOAL_COLS = ["title", "category", "why", "quarter", "target_date", "status", "linked_habits"];
+const PROFILE_COLS = ["display_name", "latitude", "longitude", "location_label", "theme", "onboarding_complete", "calc_method", "madhab", "zakat_anniversary", "quran_daily_goal", "ramadan_fasts_owed", "khatm_target", "khatm_start"];
+
 // Adds any library duas the user doesn't have yet (matched by title). Never removes or overwrites.
 export const syncDuaLibrary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -34,7 +46,7 @@ export const updateProfile = createServerFn({ method: "POST" })
   .inputValidator((d: { display_name?: string; latitude?: number; longitude?: number; location_label?: string; theme?: string; onboarding_complete?: boolean; calc_method?: string; madhab?: string; zakat_anniversary?: string | null; quran_daily_goal?: number | null; ramadan_fasts_owed?: number | null; khatm_target?: string | null; khatm_start?: string | null }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
-      .from("profiles").update(data).eq("id", context.userId).select().single();
+      .from("profiles").update(pick(data, PROFILE_COLS)).eq("id", context.userId).select().single();
     if (error) throw error;
     return row;
   });
@@ -128,7 +140,7 @@ export const upsertWorshipLog = createServerFn({ method: "POST" })
     const { data: existing, error: readError } = await context.supabase.from("worship_logs")
       .select("*").eq("user_id", context.userId).eq("log_date", data.log_date).maybeSingle();
     if (readError) throw readError;
-    const payload: Record<string, any> = { ...existing, ...data, user_id: context.userId };
+    const payload: Record<string, any> = { ...existing, ...pick(data, WORSHIP_COLS), user_id: context.userId };
     if (payload.excused && ["Menstruation", "Postpartum"].includes(String(payload.excuse_type ?? ""))) {
       for (const prayer of ["fajr", "dhuhr", "asr", "maghrib", "isha"]) payload[`${prayer}_status`] = "excused";
     }
@@ -180,7 +192,7 @@ export const createQada = createServerFn({ method: "POST" })
       }
     }
     const { data: row, error } = await context.supabase.from("qada_prayers")
-      .insert({ ...data, user_id: context.userId }).select().single();
+      .insert({ ...pick(data, ["prayer", "missed_date", "notes"]), user_id: context.userId }).select().single();
     if (error) throw error;
     return row;
   });
@@ -209,7 +221,7 @@ export const createQuranLog = createServerFn({ method: "POST" })
   .inputValidator((d: { log_date: string; surah?: string; juz?: number; pages?: number; minutes?: number; tafsir?: boolean; reflection?: string; verses_completed?: string; completed_at?: string; auto_logged?: boolean }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("quran_logs")
-      .insert({ ...data, user_id: context.userId }).select().single();
+      .insert({ ...pick(data, ["log_date", "surah", "juz", "pages", "minutes", "tafsir", "reflection", "verses_completed", "completed_at", "auto_logged"]), user_id: context.userId }).select().single();
     if (error) throw error;
     return row;
   });
@@ -294,7 +306,7 @@ export const upsertFasting = createServerFn({ method: "POST" })
   .inputValidator((d: { log_date: string; fast_type?: string; completed?: boolean; notes?: string }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("fasting_logs")
-      .upsert({ ...data, user_id: context.userId }, { onConflict: "user_id,log_date" }).select().single();
+      .upsert({ ...pick(data, ["log_date", "fast_type", "completed", "notes"]), user_id: context.userId }, { onConflict: "user_id,log_date" }).select().single();
     if (error) throw error;
     return row;
   });
@@ -312,7 +324,7 @@ export const createDhikr = createServerFn({ method: "POST" })
   .inputValidator((d: { log_date: string; category: string; count: number; notes?: string }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("dhikr_logs")
-      .insert({ ...data, user_id: context.userId }).select().single();
+      .insert({ ...pick(data, ["log_date", "category", "count", "notes"]), user_id: context.userId }).select().single();
     if (error) throw error;
     return row;
   });
@@ -329,7 +341,7 @@ export const upsertDua = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id?: string; title: string; arabic?: string; transliteration?: string; translation?: string; source?: string; category?: string; when_to_recite?: string; favorited?: boolean; personal_note?: string; is_custom?: boolean }) => d)
   .handler(async ({ data, context }) => {
-    const payload = { ...data, user_id: context.userId };
+    const payload = { ...pick(data, ["title", "arabic", "transliteration", "translation", "source", "category", "when_to_recite", "favorited", "personal_note", "is_custom"]), user_id: context.userId };
     if (data.id) {
       const { data: row, error } = await context.supabase.from("duas").update(payload).eq("id", data.id).eq("user_id", context.userId).select().single();
       if (error) throw error;
@@ -388,7 +400,7 @@ export const createReflection = createServerFn({ method: "POST" })
   .inputValidator((d: Record<string, unknown> & { entry_date: string }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("reflections")
-      .insert({ ...data, user_id: context.userId }).select().single();
+      .insert({ ...pick(data, REFLECTION_COLS), user_id: context.userId }).select().single();
     if (error) throw error;
     return row;
   });
@@ -405,7 +417,7 @@ export const upsertGoal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: Record<string, unknown> & { title: string; id?: string }) => d)
   .handler(async ({ data, context }) => {
-    const payload = { ...data, user_id: context.userId };
+    const payload = { ...pick(data, GOAL_COLS), user_id: context.userId };
     if (data.id) {
       const { data: row, error } = await context.supabase.from("goals").update(payload).eq("id", data.id).eq("user_id", context.userId).select().single();
       if (error) throw error;
@@ -429,7 +441,7 @@ export const createZakat = createServerFn({ method: "POST" })
   .inputValidator((d: { year: number; asset_type?: string; amount?: number; nisab?: number; zakat_due?: number; paid?: boolean; date_paid?: string; notes?: string }) => d)
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("zakat_entries")
-      .insert({ ...data, user_id: context.userId }).select().single();
+      .insert({ ...pick(data, ["year", "asset_type", "amount", "nisab", "zakat_due", "paid", "date_paid", "notes"]), user_id: context.userId }).select().single();
     if (error) throw error;
     return row;
   });

@@ -8,7 +8,7 @@ const EMPTY: ReviewInsights = { praise: [], insights: [], recommendations: [], e
 
 export const getReviewInsights = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ period: z.string().max(80), stats: z.record(z.string(), z.any()) }).parse(d))
+  .inputValidator((d) => z.object({ period: z.string().regex(/^(week of \d{4}-\d{2}-\d{2}|month \d{4}-\d{2}|year \d{4}|lifetime)$/), stats: z.record(z.string(), z.any()) }).parse(d))
   .handler(async ({ data }): Promise<{ insights: ReviewInsights; error?: string }> => {
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) return { insights: EMPTY, error: "Insights aren't configured yet." };
