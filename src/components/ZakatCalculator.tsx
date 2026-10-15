@@ -179,7 +179,13 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
 
   useEffect(() => {
     if (!restored || !metalPrices.data || !("gold" in metalPrices.data) || !("silver" in metalPrices.data)) return;
-    setCalc(current => ({ ...current, goldPrice: metalPrices.data.gold ?? current.goldPrice, silverPrice: metalPrices.data.silver ?? current.silverPrice }));
+    // Spot feeds return many decimals; keep the filled-in values readable and still editable.
+    const round = (value: number, places: number) => Math.round(value * 10 ** places) / 10 ** places;
+    setCalc(current => ({
+      ...current,
+      goldPrice: metalPrices.data.gold != null ? round(metalPrices.data.gold, 2) : current.goldPrice,
+      silverPrice: metalPrices.data.silver != null ? round(metalPrices.data.silver, 4) : current.silverPrice,
+    }));
   }, [restored, metalPrices.data]);
 
   const symbol = CURRENCIES.find(item => item[0] === calc.currency)?.[1] ?? calc.currency;
