@@ -48,4 +48,4 @@
 - [x] Smart reminders: pre-prayer, Quran goal left, Qada plan, event eve, dhikr streak, gentle restart
 - [x] Weekly view on the Review tab
 - [x] Remove minutes from the Quran tab
-- [ ] Remove Total pages and Juz progressed tiles from the Quran tab (already shown on Review)
+- [x] Remove Total pages and Juz progressed tiles from the Quran tab (already shown on Review)
