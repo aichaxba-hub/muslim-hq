@@ -122,13 +122,24 @@ function ZakatPage() {
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={s.ramadan} onChange={e => setS({ ...s, ramadan: e.target.checked })} /> Ramadan giving</label>
             <Button disabled={sCreate.isPending || !(Number(s.amount) > 0) || (s.kind === "zakat" && !zakatTarget)} onClick={() => sCreate.mutate(s)}>{s.kind === "zakat" ? "Log Zakat payment" : "Log sadaqah"}</Button>
           </div>
-          <div className="mt-5 space-y-2">
-            {(sadaqah.data ?? []).map((r: any) => (
-              <div key={r.id} className="flex justify-between p-3 rounded-xl ring-1 ring-border text-sm">
-                <span>{r.log_date} · {r.kind === "zakat" ? "Zakat" : "Sadaqah"}{r.cause ? ` · ${r.cause}` : ""}{r.ramadan ? " · Ramadan" : ""}</span>
-                 <span className="text-[color:var(--gold)]">${(+r.amount || 0).toLocaleString()}</span>
+          <div className="mt-5">
+            <button type="button" aria-expanded={showPayments} onClick={() => setShowPayments(!showPayments)} className="flex w-full items-center justify-between rounded-xl bg-muted/60 px-4 py-3 text-left ring-1 ring-border">
+              <span className="font-serif text-lg">Payments</span>
+              <span className="flex items-center gap-2">
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{(sadaqah.data ?? []).length} logged</span>
+                <ChevronDown className={`size-4 text-muted-foreground transition-transform ${showPayments ? "rotate-180" : ""}`} />
+              </span>
+            </button>
+            {showPayments && (
+              <div className="mt-3 space-y-2">
+                {(sadaqah.data ?? []).map((r: any) => (
+                  <div key={r.id} className="flex justify-between p-3 rounded-xl ring-1 ring-border text-sm">
+                    <span>{r.log_date} · {r.kind === "zakat" ? "Zakat" : "Sadaqah"}{r.cause ? ` · ${r.cause}` : ""}{r.ramadan ? " · Ramadan" : ""}</span>
+                    <span className="text-[color:var(--gold)]">${(+r.amount || 0).toLocaleString()}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </Card>
 
