@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { toast } from "sonner";
 import { getProfile, listDhikr, listQada, listQuranLogs, listWorshipLogs } from "@/lib/data.functions";
 import { computeTimes, PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { LocateFixed } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/AppShell";

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { getProfile, getWorshipLog, upsertWorshipLog } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL, DEFAULT_COORDS } from "@/lib/prayer-times";
 import { PrayerPlaceToggles } from "@/components/PrayerPlaceToggles";

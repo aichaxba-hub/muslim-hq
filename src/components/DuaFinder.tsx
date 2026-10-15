@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { Sparkles } from "lucide-react";
 import { Button, Card } from "@/components/AppShell";
 import { findDuas } from "@/lib/dua-finder.functions";

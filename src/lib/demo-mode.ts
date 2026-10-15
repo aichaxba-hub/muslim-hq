@@ -6,7 +6,7 @@ import { useSyncExternalStore } from "react";
 let active = false;
 const listeners = new Set<() => void>();
 
-export const DEMO_USER = { id: "00000000-0000-4000-8000-00000000demo".slice(0, 36), email: "demo@example.invalid" };
+export const DEMO_USER = { id: "00000000-0000-4000-8000-000000000000", email: "demo@example.invalid" };
 
 export function isDemoMode() {
   return active;

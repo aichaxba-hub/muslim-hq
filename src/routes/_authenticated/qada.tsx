@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { createQada, listQada, updateQada } from "@/lib/data.functions";
 import { useEffect, useState } from "react";
 import { PRAYER_LABEL, PRAYERS } from "@/lib/prayer-times";

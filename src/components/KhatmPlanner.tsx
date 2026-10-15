@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { toast } from "sonner";
 import { Card, Button } from "@/components/AppShell";
 import { createQuranLog, updateProfile } from "@/lib/data.functions";

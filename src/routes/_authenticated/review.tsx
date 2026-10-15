@@ -3,7 +3,7 @@ import { surahKey } from "@/lib/surah-key";
 import { AppShell, Card, PageHeader } from "@/components/AppShell";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { listAnsweredDuas, listDuas, listFasting, listGoals, listQuranLogs, listReflections, listSadaqah, listWorshipLogs, listDhikr, listZakat, listZakatPayments, listQada, listQuranStudyGoals, getProfile } from "@/lib/data.functions";
 import { PRAYERS, PRAYER_LABEL } from "@/lib/prayer-times";
 import { ChevronLeft, ChevronRight, Landmark, MoonStar, Users } from "lucide-react";

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card, PageHeader, Button } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/use-app-server-fn";
 import { createAnsweredDua, listAnsweredDuas, listDuas, syncDuaLibrary, toggleDuaFavorite, upsertDua } from "@/lib/data.functions";
 import { DUA_CATEGORIES } from "@/lib/dua-seed";
 import { CalendarCheck, ChevronDown, Heart, Plus, Search } from "lucide-react";
