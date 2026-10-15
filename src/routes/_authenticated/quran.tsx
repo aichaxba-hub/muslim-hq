@@ -68,8 +68,6 @@ function QuranPage() {
   const [showYourSessions, setShowYourSessions] = useState(false);
   useEffect(() => { if (data.length > 0) setShowSessionLog(true); }, [data.length === 0]);
 
-  const totalPages = data.reduce((s: number, r: any) => s + (r.pages ?? 0), 0);
-  const totalJuz = data.reduce((s: number, r: any) => s + (Number(r.juz) || 0), 0);
 
   const profileFn = useServerFn(getProfile);
   const saveProfileFn = useServerFn(updateProfile);
@@ -269,10 +267,6 @@ function QuranPage() {
 
       <QuranReader onSessionComplete={m => autoLog.mutate(m)} />
 
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Total pages</p><p className="text-3xl font-serif">{totalPages}</p></Card>
-        <Card><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Juz progressed</p><p className="text-3xl font-serif">{totalJuz.toFixed(1)}</p></Card>
-      </div>
 
     </AppShell>
   );
