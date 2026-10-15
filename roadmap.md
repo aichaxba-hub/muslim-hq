@@ -68,4 +68,5 @@
 
 - [x] Giving log entries live in a collapsible "Payments" section below the form (verified: expands to 3 rows, collapses)
 - [x] Remove the individual answered duas section at the bottom of the Review tab
-- [ ] Add "high iman" and "low iman" (read as the intended pair for "low man") to the Reflect tab mood dropdown
+- [x] Add "high iman" and "low iman" to the Reflect tab mood dropdown (read as the intended pair for "low man") to the Reflect tab mood dropdown
+- [x] Verify the Zakat al-Fitr Reset button clears every answer (verified: location, household, income, weight and step all return to defaults — no code change needed)
