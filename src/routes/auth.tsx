@@ -18,7 +18,9 @@ head: () => ({ meta: [
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [sentTo, setSentTo] = useState<{ email: string; kind: "confirm" | "reset" } | null>(null);
+  const [needsConfirm, setNeedsConfirm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -34,21 +36,35 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+        if (error) throw error;
+        setSentTo({ email, kind: "reset" });
+        return;
+      }
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin, data: { name } },
+          options: { emailRedirectTo: `${window.location.origin}/auth`, data: { name } },
         });
         if (error) throw error;
-        toast.success("Welcome. Check your email if confirmation is required.");
+        if (!data.session) { setSentTo({ email, kind: "confirm" }); return; }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          if (/not confirmed/i.test(error.message)) { setNeedsConfirm(true); throw new Error("Please confirm your email first — we can resend the link."); }
+          throw error;
+        }
       }
       navigate({ to: "/dashboard", replace: true });
     } catch (err: any) {
       toast.error(err.message ?? "Something went wrong");
     } finally { setLoading(false); }
+  }
+
+  async function resendConfirmation(target: string) {
+    const { error } = await supabase.auth.resend({ type: "signup", email: target, options: { emailRedirectTo: `${window.location.origin}/auth` } });
+    if (error) toast.error(error.message); else toast.success("Confirmation email sent again.");
   }
 
   async function handleGoogle() {
@@ -67,8 +83,24 @@ function AuthPage() {
           <p className="text-sm text-muted-foreground mt-2">Your deen, your pace.</p>
         </div>
 
+        {sentTo ? (
+          <div className="bg-card ring-1 ring-border rounded-3xl p-8 text-center">
+            <h2 className="font-serif text-2xl">Check your email</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {sentTo.kind === "confirm"
+                ? <>We sent a confirmation link to <strong className="text-foreground">{sentTo.email}</strong>. Tap it to activate your account, then you'll be signed in here.</>
+                : <>We sent a password reset link to <strong className="text-foreground">{sentTo.email}</strong>. It opens a page where you can choose a new password.</>}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">Can't find it? Check your spam folder.</p>
+            <div className="mt-6 flex flex-col gap-2">
+              {sentTo.kind === "confirm" && <button onClick={() => resendConfirmation(sentTo.email)} className="w-full py-3 rounded-full ring-1 ring-border text-sm font-medium hover:bg-muted transition">Resend confirmation email</button>}
+              <button onClick={() => { setSentTo(null); setMode("signin"); }} className="w-full py-3 rounded-full bg-primary text-primary-foreground text-sm font-medium">Back to sign in</button>
+            </div>
+          </div>
+        ) : (
         <div className="bg-card ring-1 ring-border rounded-3xl p-8">
-          <div className="flex gap-1 p-1 bg-muted rounded-full mb-6 text-sm">
+          {mode === "forgot" && <p className="mb-6 text-sm text-muted-foreground">Enter your email and we'll send you a link to choose a new password.</p>}
+          <div hidden={mode === "forgot"} className="flex gap-1 p-1 bg-muted rounded-full mb-6 text-sm">
             <button onClick={() => setMode("signin")} className={`flex-1 py-2 rounded-full transition ${mode === "signin" ? "bg-background shadow-sm" : ""}`}>Sign in</button>
             <button onClick={() => setMode("signup")} className={`flex-1 py-2 rounded-full transition ${mode === "signup" ? "bg-background shadow-sm" : ""}`}>Create account</button>
           </div>
@@ -84,13 +116,24 @@ function AuthPage() {
               <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Email</label>
               <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="mt-1 w-full px-4 py-2.5 rounded-xl bg-background ring-1 ring-border focus:outline-none focus:ring-[color:var(--gold)]" />
             </div>
-            <div>
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Password</label>
-              <input type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} className="mt-1 w-full px-4 py-2.5 rounded-xl bg-background ring-1 ring-border focus:outline-none focus:ring-[color:var(--gold)]" />
-            </div>
+            {mode !== "forgot" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Password</label>
+                  {mode === "signin" && <button type="button" onClick={() => setMode("forgot")} className="text-xs text-[color:var(--sage)] hover:underline">Forgot password?</button>}
+                </div>
+                <input type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} className="mt-1 w-full px-4 py-2.5 rounded-xl bg-background ring-1 ring-border focus:outline-none focus:ring-[color:var(--gold)]" />
+              </div>
+            )}
             <button disabled={loading} className="w-full py-3 rounded-full bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">
-              {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
+              {loading ? "Please wait..." : mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
             </button>
+            {mode === "signin" && needsConfirm && email && (
+              <button type="button" onClick={() => resendConfirmation(email)} className="w-full text-xs text-[color:var(--sage)] hover:underline">Resend confirmation email</button>
+            )}
+            {mode === "forgot" && (
+              <button type="button" onClick={() => setMode("signin")} className="w-full text-xs text-muted-foreground hover:underline">Back to sign in</button>
+            )}
           </form>
 
           <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
@@ -101,6 +144,7 @@ function AuthPage() {
             Continue with Google
           </button>
         </div>
+        )}
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           Built for consistency, not perfection.

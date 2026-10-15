@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { dhikrStreak } from "@/lib/dhikr-streak";
 import { AppShell, Card } from "@/components/AppShell";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -111,7 +112,7 @@ function Dashboard() {
   const ayah = AYAT_BANNERS[new Date().getDate() % AYAT_BANNERS.length];
 
   // Streaks
-  const streaks = useMemo(() => computeStreaks(history.data ?? []), [history.data]);
+  const streaks = useMemo(() => computeStreaks(history.data ?? [], dhikr.data ?? []), [history.data, dhikr.data]);
 
   const displayName = profile.data?.display_name ?? "friend";
 
@@ -277,14 +278,13 @@ function Dashboard() {
   );
 }
 
-function computeStreaks(logs: any[]) {
+function computeStreaks(logs: any[], dhikrSessions: any[] = []) {
   const sorted = [...logs].sort((a, b) => (a.log_date < b.log_date ? 1 : -1));
   const dayComplete = (l: any) => PRAYERS.every(p => {
     const s = l[`${p}_status`];
     return s === "on_time" || s === "late";
   });
   const dayQuran = (l: any) => (l.quran_pages ?? 0) > 0 || (l.quran_minutes ?? 0) > 0;
-  const dayDhikr = (l: any) => (l.dhikr_count ?? 0) > 0;
 
   const streakOf = (pred: (l: any) => boolean, skipExcused = false) => {
     let count = 0;
@@ -300,5 +300,6 @@ function computeStreaks(logs: any[]) {
     }
     return count;
   };
-  return { salah: streakOf(dayComplete, true), quran: streakOf(dayQuran), dhikr: streakOf(dayDhikr) };
+  return { salah: streakOf(dayComplete, true), quran: streakOf(dayQuran), dhikr: dhikrStreak(dhikrSessions) };
 }
+
