@@ -116,13 +116,13 @@ export function FitrCalculator() {
   const [step, setStep] = useState(0);
   const [location, setLocation] = useState("");
   const [household, setHousehold] = useState(1);
-  const [income, setIncome] = useState<"low" | "medium" | "high">("medium");
-  const [weight, setWeight] = useState<"conservative" | "standard">("conservative");
-  const weightKg = weight === "conservative" ? 3 : 2.2;
-  const chosen = income === "low" ? "Wheat flour" : income === "medium" ? "Black beans" : "Barley";
+  const [income, setIncome] = useState<"" | "low" | "medium" | "high">("");
+  const [weight, setWeight] = useState<"" | "conservative" | "standard">("");
+  const weightKg = weight === "conservative" ? 3 : weight === "standard" ? 2.2 : 0;
+  const chosen = income === "low" ? "Wheat flour" : income === "medium" ? "Black beans" : income === "high" ? "Barley" : "";
   const { data: livePrices } = useQuery({ queryKey: ["fitr-prices"], queryFn: async () => (await supabase.from("fitr_prices").select("food, price_per_kg, as_of")).data ?? [] });
-  const liveRow = livePrices?.find((r) => r.food === chosen);
-  const pricePerKg = liveRow ? Number(liveRow.price_per_kg) : (FITR_PRICES[chosen] ?? 0);
+  const liveRow = chosen ? livePrices?.find((r) => r.food === chosen) : undefined;
+  const pricePerKg = liveRow ? Number(liveRow.price_per_kg) : chosen ? ((FITR_PRICES as Record<string, number>)[chosen] ?? 0) : 0;
   const priceAsOf = livePrices?.[0]?.as_of ?? FITR_PRICE_AS_OF;
   const nextRefresh = refreshSchedule().refreshOn.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
   const total = pricePerKg * weightKg * household;
@@ -132,8 +132,8 @@ export function FitrCalculator() {
   function reset() {
     setLocation("");
     setHousehold(1);
-    setIncome("medium");
-    setWeight("conservative");
+    setIncome("");
+    setWeight("");
     setStep(0);
   }
 
@@ -210,11 +210,11 @@ export function FitrCalculator() {
           {step === 4 && (
             <section className="space-y-5" aria-labelledby="fitr-step-title">
               <div><h3 id="fitr-step-title" className="font-serif text-2xl">Review your Zakat al-Fitr</h3><p className="mt-1 text-sm text-muted-foreground">Check each answer before you finalize the amount.</p></div>
-              <dl className="grid gap-2.5 rounded-lg bg-muted p-4 text-sm">{[["Location", location || "Not entered"], ["People you are giving for", `${household} ${household === 1 ? "person" : "people"} (including yourself)`], ["Income level", income === "low" ? "Low Income (below $2,723/month)" : income === "medium" ? "Medium Income ($2,723 – $8,170/month)" : "High Income (above $8,170/month)"], ["Recommended staple", chosen], ["Saa weight", `${weightKg.toFixed(1)} kg per person (${weight === "conservative" ? "Conservative" : "Standard"})`], ["Price per kilogram", pricePerKg ? `$${pricePerKg.toFixed(2)} USD` : "—"], ["Total food weight", `${(weightKg * household).toFixed(1)} kg`]].map(([label, value]) => <div key={label} className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right font-medium">{value}</dd></div>)}</dl>
+              <dl className="grid gap-2.5 rounded-lg bg-muted p-4 text-sm">{[["Location", location || "Not entered"], ["People you are giving for", `${household} ${household === 1 ? "person" : "people"} (including yourself)`], ["Income level", income === "low" ? "Low Income (below $2,723/month)" : income === "medium" ? "Medium Income ($2,723 – $8,170/month)" : income === "high" ? "High Income (above $8,170/month)" : "Not chosen"], ["Recommended staple", chosen || "—"], ["Saa weight", weightKg ? `${weightKg.toFixed(1)} kg per person (${weight === "conservative" ? "Conservative" : "Standard"})` : "Not chosen"], ["Price per kilogram", pricePerKg ? `$${pricePerKg.toFixed(2)} USD` : "—"], ["Total food weight", weightKg ? `${(weightKg * household).toFixed(1)} kg` : "—"]].map(([label, value]) => <div key={label} className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right font-medium">{value}</dd></div>)}</dl>
               <div className="rounded-lg border border-primary bg-muted p-4">
                 <p className="text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">Your Zakat al-Fitr amount</p>
                 <p className="mt-1 font-serif text-4xl">{total > 0 ? money(total) : "—"}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{household} {household === 1 ? "person" : "people"} × {weightKg.toFixed(1)} kg × ${pricePerKg.toFixed(2)}/kg of {chosen.toLowerCase()}. Prices as of {priceAsOf}; next refresh {nextRefresh}, 30 days before Ramadan.</p>
+                {total > 0 && <p className="mt-1 text-sm text-muted-foreground">{household} {household === 1 ? "person" : "people"} × {weightKg.toFixed(1)} kg × ${pricePerKg.toFixed(2)}/kg of {chosen.toLowerCase()}. Prices as of {priceAsOf}; next refresh {nextRefresh}, 30 days before Ramadan.</p>}
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground">If anything looks off, use the steps above to adjust it — your amount updates instantly. Confirm the amount and giving method with a trusted local organization before paying.</p>
             </section>
@@ -228,9 +228,9 @@ export function FitrCalculator() {
 
         <aside className="self-start border-t border-border pt-6 lg:sticky lg:top-28 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0" aria-label="Running Zakat al-Fitr summary">
           <p className="text-xs font-medium uppercase tracking-widest text-[color:var(--sage)]">Running summary</p>
-          <div className="mt-4 space-y-2 text-sm">{[["Location", location || "—"], ["Household", `${household} ${household === 1 ? "person" : "people"}`], ["Food", chosen || "—"], ["Saa weight", `${weightKg.toFixed(1)} kg per person`], ["Price per kg", pricePerKg ? `$${pricePerKg.toFixed(2)}` : "—"]].map(([label, value]) => <div key={label} className="flex justify-between gap-3"><span className="text-muted-foreground">{label}</span><span>{value}</span></div>)}</div>
+          <div className="mt-4 space-y-2 text-sm">{[["Location", location || "—"], ["Household", `${household} ${household === 1 ? "person" : "people"}`], ["Food", chosen || "—"], ["Saa weight", weightKg ? `${weightKg.toFixed(1)} kg per person` : "—"], ["Price per kg", pricePerKg ? `$${pricePerKg.toFixed(2)}` : "—"]].map(([label, value]) => <div key={label} className="flex justify-between gap-3"><span className="text-muted-foreground">{label}</span><span>{value}</span></div>)}</div>
           <div className="my-4 border-t border-border" />
-          <div className="space-y-2 text-sm"><div className="flex justify-between gap-3"><span className="text-muted-foreground">Total food weight</span><strong>{(weightKg * household).toFixed(1)} kg</strong></div></div>
+          <div className="space-y-2 text-sm"><div className="flex justify-between gap-3"><span className="text-muted-foreground">Total food weight</span><strong>{weightKg ? `${(weightKg * household).toFixed(1)} kg` : "—"}</strong></div></div>
           <div className="mt-5 rounded-lg bg-muted p-4"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Estimated amount</p><p className="mt-1 font-serif text-3xl">{total > 0 ? money(total) : "—"}</p></div>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">Note: Prices are researched from government and market data sources and updated annually before Ramadan. {FITR_PRICE_SOURCE} Prices as of {priceAsOf}. All amounts in US dollars. Next refresh: {nextRefresh}, 30 days before Ramadan.</p>
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Food prices, saa weights and cash equivalents differ locally. Confirm the amount and giving method with a trusted local organization.</p>
