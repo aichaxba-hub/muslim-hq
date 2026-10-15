@@ -51,14 +51,14 @@ function QuranPage() {
     if (!response.ok) throw new Error("Could not load surahs");
     return ((await response.json()) as { chapters?: Chapter[] }).chapters ?? [];
   }, staleTime: 1000 * 60 * 60 * 24 });
-  const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["quran"] }) });
+  const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["quran"] }); setShowYourSessions(true); } });
   const autoLog = useMutation({
     mutationFn: (m: QuranSessionMilestone) => createFn({ data: {
       log_date: todayISO(), surah: m.surahName, minutes: m.minutes, auto_logged: true, completed_at: m.completedAt,
       verses_completed: m.fromAyah === m.toAyah ? `${m.surahNumber}:${m.fromAyah}` : `${m.surahNumber}:${m.fromAyah}–${m.toAyah}`,
       reflection: m.mode === "read" ? "Marked as read" : `Listened to ${m.versesCount} ayat`,
     } }),
-    onSuccess: (_r, m) => { qc.invalidateQueries({ queryKey: ["quran"] }); toast.success(`Logged ${m.surahName} ${m.fromAyah}–${m.toAyah}`); },
+    onSuccess: (_r, m) => { qc.invalidateQueries({ queryKey: ["quran"] }); setShowYourSessions(true); toast.success(`Logged ${m.surahName} ${m.fromAyah}–${m.toAyah}`); },
     onError: () => toast.error("Could not save this Quran session"),
   });
 
@@ -66,13 +66,7 @@ function QuranPage() {
   const [expandedSessionIds, setExpandedSessionIds] = useState<Set<string>>(new Set());
   const [showSessionLog, setShowSessionLog] = useState(false);
   const [showYourSessions, setShowYourSessions] = useState(false);
-  const [knownSessionCount, setKnownSessionCount] = useState(0);
   useEffect(() => { if (data.length > 0) setShowSessionLog(true); }, [data.length === 0]);
-  useEffect(() => {
-    // Keep the list tucked away on arrival, but reveal it as soon as a session is added.
-    if (data.length > knownSessionCount) setShowYourSessions(true);
-    setKnownSessionCount(data.length);
-  }, [data.length, knownSessionCount]);
 
   const totalPages = data.reduce((s: number, r: any) => s + (r.pages ?? 0), 0);
   const totalMinutes = data.reduce((s: number, r: any) => s + (r.minutes ?? 0), 0);
