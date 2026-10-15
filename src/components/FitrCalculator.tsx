@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/AppShell";
 import { autocompletePlaces } from "@/lib/places.functions";
+import { FITR_PRICES, FITR_PRICE_AS_OF, FITR_PRICE_SOURCE } from "@/lib/fitr-prices";
 
 
 type Suggestion = { placeId: string; text: string };
@@ -105,14 +106,14 @@ export function FitrCalculator() {
   const [location, setLocation] = useState("");
   const [household, setHousehold] = useState(1);
   const [income, setIncome] = useState<"low" | "medium" | "high">("medium");
-  const [prices] = useState<Record<string, number>>({});
   const [weight, setWeight] = useState<"conservative" | "standard">("conservative");
   const weightKg = weight === "conservative" ? 3 : 2.2;
   const chosen = income === "low" ? "Wheat flour" : income === "medium" ? "Black beans" : "Barley";
-  const total = (prices[chosen] ?? 0) * weightKg * household;
+  const pricePerKg = FITR_PRICES[chosen] ?? 0;
+  const total = pricePerKg * weightKg * household;
   const fields = "h-11 w-full rounded-lg bg-background px-3 ring-1 ring-border";
   return <section className="mb-8 border-t border-border pt-8" aria-label="Zakat al-Fitr calculator">
-    <div className="mb-5"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Ramadan giving</p><h2 className="font-serif text-3xl">Zakat al-Fitr calculator</h2><p className="mt-2 text-sm text-muted-foreground">Estimate one saa of staple food per person, using local food prices you enter.</p></div>
+    <div className="mb-5"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Ramadan giving</p><h2 className="font-serif text-3xl">Zakat al-Fitr calculator</h2><p className="mt-2 text-sm text-muted-foreground">Estimate one saa of staple food per person, using researched staple prices updated annually before Ramadan.</p></div>
     <div className="mb-5 rounded-xl bg-muted/60 px-4 py-3.5 ring-1 ring-border">
       <h3 className="font-serif text-lg text-foreground">What is a Sa'a?</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">A Sa'a (also spelled Sa' or Saa') is a traditional Arabian volume unit used to measure staple food items for Zakat al-Fitr.</p>
@@ -126,7 +127,7 @@ export function FitrCalculator() {
         {step === 3 && <><h3 className="font-serif text-2xl">Saa Weight</h3><div className="grid max-w-sm grid-cols-2 gap-2">{[["conservative", "3.0 kg", "Conservative"], ["standard", "2.2 kg", "Standard"]].map(([value, kg, label]) => <button key={value} type="button" role="radio" aria-checked={weight === value} onClick={() => setWeight(value as typeof weight)} className={`rounded-xl px-4 py-3 text-center ring-1 transition ${weight === value ? "bg-[color:var(--gold)] text-[color:var(--sage-deep)] ring-2 ring-[color:var(--gold)]" : "bg-background ring-border hover:bg-muted/60"}`}><span className="block text-base font-semibold">{kg}</span><span className="mt-0.5 block text-xs opacity-80">{label}</span></button>)}</div><p className="mt-3 text-sm text-muted-foreground">3.0 kg safely exceeds all scholarly estimates. 2.2 kg follows the majority position.</p></>}
         <div className="flex justify-between border-t border-border pt-4"><Button variant="ghost" disabled={step === 0} onClick={() => setStep(s => s - 1)}>Previous</Button><Button disabled={step === 3} onClick={() => setStep(s => s + 1)}>Next</Button></div>
       </div>
-      <aside className="border-t border-border pt-5 text-sm md:border-l md:border-t-0 md:pl-6 md:pt-0"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Running summary</p><dl className="mt-3 space-y-2">{[["Location", location || "—"], ["Household", `${household} ${household === 1 ? "person" : "people"}`], ["Food", chosen || "—"], ["Saa weight", `${weightKg.toFixed(1)} kg per person`], ["Price per kg", prices[chosen] ? Number(prices[chosen]).toFixed(2) : "—"]].map(([label,value]) => <div key={label} className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right">{value}</dd></div>)}</dl><div className="mt-5 border-t border-border pt-4"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Estimated amount</p><strong className="font-serif text-3xl">{total > 0 ? total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : "—"}</strong><p className="text-xs text-muted-foreground">Note: Prices are researched from government and market data sources and updated annually before Ramadan.</p></div><p className="mt-4 text-xs text-muted-foreground">Food prices, saa weights and cash equivalents differ locally. Confirm the amount and giving method with a trusted local organization.</p></aside>
+      <aside className="border-t border-border pt-5 text-sm md:border-l md:border-t-0 md:pl-6 md:pt-0"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Running summary</p><dl className="mt-3 space-y-2">{[["Location", location || "—"], ["Household", `${household} ${household === 1 ? "person" : "people"}`], ["Food", chosen || "—"], ["Saa weight", `${weightKg.toFixed(1)} kg per person`], ["Price per kg", pricePerKg ? `$${pricePerKg.toFixed(2)}` : "—"]].map(([label,value]) => <div key={label} className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right">{value}</dd></div>)}</dl><div className="mt-5 border-t border-border pt-4"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Estimated amount</p><strong className="font-serif text-3xl">{total > 0 ? total.toLocaleString(undefined,{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2}) : "—"}</strong><p className="text-xs text-muted-foreground">Note: Prices are researched from government and market data sources and updated annually before Ramadan.</p><p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">{FITR_PRICE_SOURCE} Prices as of {FITR_PRICE_AS_OF}. All amounts in US dollars.</p></div><p className="mt-4 text-xs text-muted-foreground">Food prices, saa weights and cash equivalents differ locally. Confirm the amount and giving method with a trusted local organization.</p></aside>
     </div>
   </section>;
 }
