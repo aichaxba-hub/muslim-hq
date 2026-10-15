@@ -18,9 +18,11 @@ export const Route = createFileRoute("/api/public/hooks/refresh-fitr-prices")({
     handlers: {
       POST: async ({ request }) => {
         const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-        const allowed = [process.env["SUPABASE_ANON_KEY"], process.env["SUPABASE_PUBLISHABLE_KEY"]].filter(Boolean);
-        if (!token || !allowed.includes(token)) return new Response("Unauthorized", { status: 401 });
+        if (!token) return new Response("Unauthorized", { status: 401 });
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        // Private token lives in a table only the server and the scheduler can read.
+        const { data: secret } = await supabaseAdmin.from("cron_tokens").select("token").eq("name", "fitr").maybeSingle();
+        if (!secret?.token || secret.token !== token) return new Response("Unauthorized", { status: 401 });
         const { data: rows } = await supabaseAdmin.from("fitr_prices").select("hijri_year");
         const stored = Math.min(...(rows ?? []).map((r) => r.hijri_year), Infinity);
         const sched = refreshSchedule();
