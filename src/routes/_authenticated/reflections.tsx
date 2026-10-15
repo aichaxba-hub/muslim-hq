@@ -19,7 +19,7 @@ head: () => ({ meta: [
   ] }),
   component: ReflectionsPage,
 });
-const MOODS = ["at peace", "struggling", "grateful", "anxious", "hopeful"];
+const MOODS = ["at peace", "struggling", "grateful", "anxious", "hopeful", "high iman", "low iman"];
 
 function ReflectionsPage() {
   const qc = useQueryClient();
