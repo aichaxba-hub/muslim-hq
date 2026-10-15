@@ -399,7 +399,6 @@ function ReviewPage() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Stat label="Prayer completion" value={`${stats.completionPct}%`} />
-          <Stat label="On-time rate" value={`${stats.onTimePct}%`} />
           <Stat label="Days logged" value={stats.loggedDays} />
           <Stat label="Excused days" value={stats.excusedDays} sub={breakdown(stats.excuseBreakdown)} />
           <Stat label="Jummah" value={`${stats.jummahCount} · ${stats.jummahRate}%`} />
