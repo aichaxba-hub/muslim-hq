@@ -6,7 +6,7 @@ import { SEED_DUAS } from "./dua-seed";
 import { DUA_LIBRARY } from "./dua-library";
 
 // Write handlers copy only these caller-settable columns; user_id/id/timestamps are server-owned.
-function pick<T extends Record<string, unknown>>(data: T, keys: readonly string[]): Record<string, any> {
+function pick<T extends Record<string, unknown>>(data: T, keys: readonly string[]): any {
   const out: Record<string, any> = {};
   for (const k of keys) if (k in data && data[k] !== undefined) out[k] = data[k];
   return out;
