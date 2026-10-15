@@ -222,8 +222,15 @@ function QuranPage() {
         </div>
 
         <div className="mt-5 border-t border-border pt-5">
-          <h4 className="mb-4 text-sm font-medium uppercase tracking-widest text-[color:var(--sage)]">Your sessions</h4>
-          <div className="grid gap-2">
+          <button type="button" aria-expanded={showYourSessions} onClick={() => setShowYourSessions(value => !value)} className="flex w-full items-center justify-between gap-3 text-left">
+            <h4 className="text-sm font-medium uppercase tracking-widest text-[color:var(--sage)]">Your sessions</h4>
+            <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+              {data.length > 0 && <span className="rounded-full bg-muted px-2.5 py-1">{data.length} session{data.length === 1 ? "" : "s"}</span>}
+              <ChevronDown className={`size-4 transition-transform ${showYourSessions ? "rotate-180" : ""}`} />
+            </span>
+          </button>
+          {showYourSessions && (
+          <div className="mt-4 grid gap-2">
             <p className="text-sm text-muted-foreground">Every logged session, collapsed. Tap one to see the details.</p>
             {data.length === 0 && <p className="py-4 text-sm text-muted-foreground">No sessions logged yet — your first one will appear here.</p>}
         {data.map((r: any) => {
@@ -264,6 +271,7 @@ function QuranPage() {
           );
         })}
           </div>
+          )}
         </div>
         </>
         )}
