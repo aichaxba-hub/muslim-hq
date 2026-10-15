@@ -41,11 +41,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const demo = useDemoMode();
 
   async function exitDemo() {
+    // Leave the app screens first so nothing refetches against the real backend.
+    await navigate({ to: "/auth", replace: true });
     await qc.cancelQueries();
-    qc.clear();
     setDemoMode(false);
     resetDemoStore();
-    navigate({ to: "/auth", replace: true });
+    qc.clear();
   }
 
   async function signOut() {
