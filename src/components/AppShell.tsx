@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Moon, Sun, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReminderCenter } from "@/components/ReminderCenter";
+import { setDemoMode, useDemoMode } from "@/lib/demo-mode";
+import { resetDemoStore } from "@/lib/demo-store";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
@@ -36,8 +38,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const demo = useDemoMode();
+
+  async function exitDemo() {
+    await qc.cancelQueries();
+    qc.clear();
+    setDemoMode(false);
+    resetDemoStore();
+    navigate({ to: "/auth", replace: true });
+  }
 
   async function signOut() {
+    if (demo) return exitDemo();
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
@@ -46,6 +58,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {demo && (
+        <div role="status" className="bg-[color:var(--gold)] text-white text-sm">
+          <div className="max-w-6xl mx-auto px-4 md:px-6 py-2 flex items-center justify-between gap-3">
+            <span className="font-medium">Demo mode — sample data only. Changes are temporary and nothing is saved.</span>
+            <button onClick={exitDemo} className="shrink-0 px-3 py-1 rounded-full bg-background/20 hover:bg-background/30 font-medium">Exit demo</button>
+          </div>
+        </div>
+      )}
       <header className="border-b border-border bg-background/80 backdrop-blur sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-4">
           <Link to="/dashboard" className="font-serif text-2xl tracking-tight">
