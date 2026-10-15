@@ -263,7 +263,7 @@ export function ZakatCalculator({ onSave, saving }: { onSave: (result: ZakatCalc
 
           {step === 0 && (
             <section className="space-y-5" aria-labelledby="zakat-step-title">
-               <div><h3 id="zakat-step-title" className="font-serif text-2xl">Choose your nisab</h3><p className="mt-1 text-sm text-muted-foreground">Nisab is the minimum zakatable wealth threshold. Metal prices refresh from GoldAPI when available and remain editable.</p></div>
+               <div><h3 id="zakat-step-title" className="font-serif text-2xl">Choose your nisab</h3><p className="mt-1 text-sm text-muted-foreground">Nisab is the minimum zakatable wealth threshold. Metal prices refresh from live market sources when available and remain editable.</p></div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1.5 text-sm font-medium">Currency<select value={calc.currency} onChange={event => setCalc({ ...calc, currency: event.target.value })} className="h-11 rounded-lg bg-background px-3 ring-1 ring-border">{CURRENCIES.map(item => <option key={item[0]} value={item[0]}>{item[1]} {item[2]} ({item[0]})</option>)}</select></label>
                  <label className="grid gap-1.5 text-sm font-medium">Valuation date<input type="date" value={calc.hawlDate} onChange={event => setCalc({ ...calc, hawlDate: event.target.value })} className="h-11 rounded-lg bg-background px-3 ring-1 ring-border" /></label>
