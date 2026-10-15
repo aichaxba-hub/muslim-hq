@@ -116,11 +116,14 @@ function ZakatPage() {
                 {zakatTarget ? `Goes toward your earliest outstanding Zakat entry: ${zakatTarget.year} · ${Number(zakatTarget.zakat_due ?? 0).toFixed(2)} due.` : "Save a Zakat entry first using the calculator above, then log its payment here."}
               </p>
             )}
-            <input type="date" value={s.log_date} onChange={e => setS({ ...s, log_date: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <input type="number" min="0" step="0.01" placeholder="Amount" value={s.amount} onChange={e => setS({ ...s, amount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <input placeholder={s.kind === "zakat" ? "Recipient (optional)" : "Cause"} value={s.cause} onChange={e => setS({ ...s, cause: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={s.ramadan} onChange={e => setS({ ...s, ramadan: e.target.checked })} /> Ramadan giving</label>
-            <Button disabled={sCreate.isPending || !(Number(s.amount) > 0) || (s.kind === "zakat" && !zakatTarget)} onClick={() => sCreate.mutate(s)}>{s.kind === "zakat" ? "Log Zakat payment" : "Log sadaqah"}</Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <input type="date" aria-label="Date" value={s.log_date} onChange={e => setS({ ...s, log_date: e.target.value })} className="h-11 rounded-xl bg-background px-3 ring-1 ring-border" />
+              <input type="number" min="0" step="0.01" placeholder="Amount" aria-label="Amount" value={s.amount} onChange={e => setS({ ...s, amount: e.target.value })} className="h-11 w-32 rounded-xl bg-background px-3 ring-1 ring-border" />
+              <input placeholder={s.kind === "zakat" ? "Recipient (optional)" : "Cause"} aria-label="Cause" value={s.cause} onChange={e => setS({ ...s, cause: e.target.value })} className="h-11 min-w-40 flex-1 rounded-xl bg-background px-3 ring-1 ring-border" />
+              <label className="flex items-center gap-2 whitespace-nowrap text-sm"><input type="checkbox" checked={s.ramadan} onChange={e => setS({ ...s, ramadan: e.target.checked })} /> Ramadan giving</label>
+              <Button disabled={sCreate.isPending || !(Number(s.amount) > 0) || (s.kind === "zakat" && !zakatTarget)} onClick={() => sCreate.mutate(s)}>{s.kind === "zakat" ? "Log Zakat payment" : "Log sadaqah"}</Button>
+            </div>
+
           </div>
           <div className="mt-5">
             <button type="button" aria-expanded={showPayments} onClick={() => setShowPayments(!showPayments)} className="flex w-full items-center justify-between rounded-xl bg-muted/60 px-4 py-3 text-left ring-1 ring-border">

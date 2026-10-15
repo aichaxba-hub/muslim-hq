@@ -76,3 +76,4 @@
 - [x] Change the Review tab section title back from "Duas" to "Heart"
 - [x] Remove the "Zakat entries & payments" heading from the Giving tab
 - [x] Expand the Giving log card to full width (it sat alone in a two-column grid)
+- [x] Put the date, amount and cause fields side by side in one row with the log button in the Giving log
