@@ -23,11 +23,6 @@ function countAyat(verses: string | null | undefined): number {
   return Math.max(1, to - from + 1);
 }
 
-function surahNumberOf(verses: string | null | undefined): number | null {
-  if (!verses) return null;
-  const match = /^(\d+):/.exec(verses.trim());
-  return match ? Number(match[1]) : null;
-}
 
 export const Route = createFileRoute("/_authenticated/quran")({
   head: () => ({ meta: [
@@ -99,22 +94,11 @@ function QuranPage() {
 
   const rhythm = useMemo(() => {
     const today = todayISO();
-    const monthPrefix = today.slice(0, 7);
     let todayAyat = 0;
-    let monthAyat = 0;
-    const monthSurahs = new Set<number>();
-    const monthSurahNames = new Set<string>();
     for (const row of data as any[]) {
-      const ayat = countAyat(row.verses_completed);
-      if (row.log_date === today) todayAyat += ayat;
-      if (typeof row.log_date === "string" && row.log_date.startsWith(monthPrefix)) {
-        monthAyat += ayat;
-        const number = surahNumberOf(row.verses_completed);
-        if (number) monthSurahs.add(number);
-        else if (row.surah) monthSurahNames.add(String(row.surah).replace(/^\d+\.\s*/, ""));
-      }
+      if (row.log_date === today) todayAyat += countAyat(row.verses_completed);
     }
-    return { todayAyat, monthAyat, monthSurahs: monthSurahs.size + monthSurahNames.size };
+    return { todayAyat };
   }, [data]);
   const rhythmPercent = Math.min(100, Math.round((rhythm.todayAyat / dailyGoal) * 100));
 
@@ -146,10 +130,6 @@ function QuranPage() {
               ? `${dailyGoal - rhythm.todayAyat} ayat to go today — your logged sessions count automatically.`
               : "Log or listen to a session and it counts toward today's goal automatically."}
         </p>
-        <div className="mt-5 grid grid-cols-2 gap-4">
-          <div className="rounded-lg border border-border p-4"><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Ayat this month</p><p className="font-serif text-3xl">{rhythm.monthAyat}</p></div>
-          <div className="rounded-lg border border-border p-4"><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Surahs covered this month</p><p className="font-serif text-3xl">{rhythm.monthSurahs}</p></div>
-        </div>
       </Card>
 
       <Card className="mb-6">
