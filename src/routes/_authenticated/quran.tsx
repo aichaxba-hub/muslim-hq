@@ -51,20 +51,21 @@ function QuranPage() {
     if (!response.ok) throw new Error("Could not load surahs");
     return ((await response.json()) as { chapters?: Chapter[] }).chapters ?? [];
   }, staleTime: 1000 * 60 * 60 * 24 });
-  const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => qc.invalidateQueries({ queryKey: ["quran"] }) });
+  const create = useMutation({ mutationFn: (p: any) => createFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["quran"] }); setShowYourSessions(true); } });
   const autoLog = useMutation({
     mutationFn: (m: QuranSessionMilestone) => createFn({ data: {
       log_date: todayISO(), surah: m.surahName, minutes: m.minutes, auto_logged: true, completed_at: m.completedAt,
       verses_completed: m.fromAyah === m.toAyah ? `${m.surahNumber}:${m.fromAyah}` : `${m.surahNumber}:${m.fromAyah}–${m.toAyah}`,
       reflection: m.mode === "read" ? "Marked as read" : `Listened to ${m.versesCount} ayat`,
     } }),
-    onSuccess: (_r, m) => { qc.invalidateQueries({ queryKey: ["quran"] }); toast.success(`Logged ${m.surahName} ${m.fromAyah}–${m.toAyah}`); },
+    onSuccess: (_r, m) => { qc.invalidateQueries({ queryKey: ["quran"] }); setShowYourSessions(true); toast.success(`Logged ${m.surahName} ${m.fromAyah}–${m.toAyah}`); },
     onError: () => toast.error("Could not save this Quran session"),
   });
 
   const [form, setForm] = useState({ log_date: todayISO(), surah_number: 1, whole: true, from_ayah: "1", to_ayah: "", pages: "", juz: "", tafsir: false, reflection: "" });
   const [expandedSessionIds, setExpandedSessionIds] = useState<Set<string>>(new Set());
   const [showSessionLog, setShowSessionLog] = useState(false);
+  const [showYourSessions, setShowYourSessions] = useState(false);
   useEffect(() => { if (data.length > 0) setShowSessionLog(true); }, [data.length === 0]);
 
   const totalPages = data.reduce((s: number, r: any) => s + (r.pages ?? 0), 0);
@@ -222,8 +223,15 @@ function QuranPage() {
         </div>
 
         <div className="mt-5 border-t border-border pt-5">
-          <h4 className="mb-4 text-sm font-medium uppercase tracking-widest text-[color:var(--sage)]">Your sessions</h4>
-          <div className="grid gap-2">
+          <button type="button" aria-expanded={showYourSessions} onClick={() => setShowYourSessions(value => !value)} className="flex w-full items-center justify-between gap-3 text-left">
+            <h4 className="text-sm font-medium uppercase tracking-widest text-[color:var(--sage)]">Your sessions</h4>
+            <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+              {data.length > 0 && <span className="rounded-full bg-muted px-2.5 py-1">{data.length} session{data.length === 1 ? "" : "s"}</span>}
+              <ChevronDown className={`size-4 transition-transform ${showYourSessions ? "rotate-180" : ""}`} />
+            </span>
+          </button>
+          {showYourSessions && (
+          <div className="mt-4 grid gap-2">
             <p className="text-sm text-muted-foreground">Every logged session, collapsed. Tap one to see the details.</p>
             {data.length === 0 && <p className="py-4 text-sm text-muted-foreground">No sessions logged yet — your first one will appear here.</p>}
         {data.map((r: any) => {
@@ -264,6 +272,7 @@ function QuranPage() {
           );
         })}
           </div>
+          )}
         </div>
         </>
         )}
