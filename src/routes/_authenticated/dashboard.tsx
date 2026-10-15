@@ -111,7 +111,7 @@ function Dashboard() {
   const ayah = AYAT_BANNERS[new Date().getDate() % AYAT_BANNERS.length];
 
   // Streaks
-  const streaks = useMemo(() => computeStreaks(history.data ?? []), [history.data]);
+  const streaks = useMemo(() => computeStreaks(history.data ?? [], dhikr.data ?? []), [history.data, dhikr.data]);
 
   const displayName = profile.data?.display_name ?? "friend";
 
@@ -277,14 +277,13 @@ function Dashboard() {
   );
 }
 
-function computeStreaks(logs: any[]) {
+function computeStreaks(logs: any[], dhikrSessions: any[] = []) {
   const sorted = [...logs].sort((a, b) => (a.log_date < b.log_date ? 1 : -1));
   const dayComplete = (l: any) => PRAYERS.every(p => {
     const s = l[`${p}_status`];
     return s === "on_time" || s === "late";
   });
   const dayQuran = (l: any) => (l.quran_pages ?? 0) > 0 || (l.quran_minutes ?? 0) > 0;
-  const dayDhikr = (l: any) => (l.dhikr_count ?? 0) > 0;
 
   const streakOf = (pred: (l: any) => boolean, skipExcused = false) => {
     let count = 0;
@@ -300,5 +299,18 @@ function computeStreaks(logs: any[]) {
     }
     return count;
   };
-  return { salah: streakOf(dayComplete, true), quran: streakOf(dayQuran), dhikr: streakOf(dayDhikr) };
+  return { salah: streakOf(dayComplete, true), quran: streakOf(dayQuran), dhikr: dhikrStreak(dhikrSessions) };
+}
+
+/** Consecutive days with a logged dhikr session (same source as Review). Today may still be pending. */
+export function dhikrStreak(sessions: { log_date: string; count?: number | null }[], now = new Date()) {
+  const days = new Set(sessions.filter(s => (s.count ?? 0) > 0).map(s => s.log_date));
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  let count = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    if (days.has(d.toISOString().slice(0, 10))) count++;
+    else if (i > 0) break;
+  }
+  return count;
 }
