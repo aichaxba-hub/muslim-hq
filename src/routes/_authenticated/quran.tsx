@@ -23,11 +23,6 @@ function countAyat(verses: string | null | undefined): number {
   return Math.max(1, to - from + 1);
 }
 
-function surahNumberOf(verses: string | null | undefined): number | null {
-  if (!verses) return null;
-  const match = /^(\d+):/.exec(verses.trim());
-  return match ? Number(match[1]) : null;
-}
 
 export const Route = createFileRoute("/_authenticated/quran")({
   head: () => ({ meta: [
