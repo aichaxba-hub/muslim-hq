@@ -198,7 +198,7 @@ function QuranPage() {
                 <label className="grid gap-1.5 text-xs text-muted-foreground">To ayah<input aria-label="To ayah" type="number" min={1} max={max} placeholder={String(max)} value={form.to_ayah} onChange={e => setForm({ ...form, to_ayah: e.target.value })} className={inputCls} /></label>
               </>}
               <label className="grid gap-1.5 text-xs text-muted-foreground">Pages (optional)<input aria-label="Pages read" type="number" min={0} value={form.pages} onChange={e => setForm({ ...form, pages: e.target.value })} className={inputCls} /></label>
-              <label className="grid gap-1.5 text-xs text-muted-foreground">Juz (optional)<input aria-label="Juz progressed" type="number" min={0} step={0.25} value={form.juz} onChange={e => setForm({ ...form, juz: e.target.value })} className={inputCls} /></label>
+              <label className="grid gap-1.5 text-xs text-muted-foreground">Juz (optional)<input aria-label="Juz" type="number" min={0} step={0.25} value={form.juz} onChange={e => setForm({ ...form, juz: e.target.value })} className={inputCls} /></label>
             </div>
             <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.tafsir} onChange={e => setForm({ ...form, tafsir: e.target.checked })} /> Included tafsir / study</label>
             <textarea placeholder="Reflection (optional)" rows={2} value={form.reflection} onChange={e => setForm({ ...form, reflection: e.target.value })} className="mt-3 w-full rounded-lg bg-background px-3 py-2 ring-1 ring-border" />
