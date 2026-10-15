@@ -447,7 +447,7 @@ function ReviewPage() {
         <Stat label="Sessions" value={stats.dhikrSessions} sub={breakdown(stats.dhikrByPhrase)} />
       </Section>
 
-      <Section title="Duas" note="Duas, reflections and intentions.">
+      <Section title="Heart" note="Duas, reflections and intentions.">
         <Stat label="Duas saved" value={stats.duasSaved} sub={`${stats.duasFavorited} favourited`} />
         <Stat label="Answered duas" value={answeredDuaCounts.total} />
         <Stat label="Top dua category" value={topDuaCategory?.[0] ?? "—"} sub={topDuaCategory ? `${topDuaCategory[1]} saved` : undefined} small />
