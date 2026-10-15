@@ -116,6 +116,10 @@ export function FitrCalculator() {
   const fields = "h-11 w-full rounded-lg bg-background px-3 ring-1 ring-border";
   return <section className="mb-8 border-t border-border pt-8" aria-label="Zakat al-Fitr calculator">
     <div className="mb-5"><p className="text-xs uppercase tracking-widest text-[color:var(--sage)]">Ramadan giving</p><h2 className="font-serif text-3xl">Zakat al-Fitr calculator</h2><p className="mt-2 text-sm text-muted-foreground">Estimate one saa of staple food per person, using local food prices you enter.</p></div>
+    <div className="mb-5 rounded-xl bg-muted/60 px-4 py-3.5 ring-1 ring-border">
+      <h3 className="font-serif text-lg text-foreground">What is a Sa'a?</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">A Sa'a (also spelled Sa' or Saa') is a traditional Arabian volume unit used to measure staple food items for Zakat al-Fitr.</p>
+    </div>
     <div className="mb-5 flex flex-wrap gap-2">{["Location", "Household", "Selection method", "Review"].map((label, index) => <Button key={label} variant="ghost" className={step === index ? "bg-muted" : ""} onClick={() => setStep(index)} aria-current={step === index ? "step" : undefined}>{index + 1}. {label}</Button>)}</div>
     <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_17rem]">
       <div className="space-y-4">
