@@ -8,6 +8,13 @@
       "when": 1792029975792,
       "tag": "0000_fitr_prices",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792029994524,
+      "tag": "0001_fitr_prices_seed_year",
+      "breakpoints": true
     }
   ]
 }

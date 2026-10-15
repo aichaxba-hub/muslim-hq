@@ -1,0 +1,1 @@
+UPDATE public.fitr_prices SET hijri_year = 1447;
