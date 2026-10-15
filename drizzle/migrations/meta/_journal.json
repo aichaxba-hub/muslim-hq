@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792029975792,
+      "tag": "0000_fitr_prices",
+      "breakpoints": true
+    }
+  ]
+}

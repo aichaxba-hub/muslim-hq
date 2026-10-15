@@ -161,6 +161,33 @@ export type Database = {
         }
         Relationships: []
       }
+      fitr_prices: {
+        Row: {
+          as_of: string
+          food: string
+          hijri_year: number
+          price_per_kg: number
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          as_of: string
+          food: string
+          hijri_year: number
+          price_per_kg: number
+          source: string
+          updated_at?: string
+        }
+        Update: {
+          as_of?: string
+          food?: string
+          hijri_year?: number
+          price_per_kg?: number
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           category: string | null
