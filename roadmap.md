@@ -75,3 +75,4 @@
 - [x] Move the "Jamaah & Masjid by prayer" and "The Nafl" cards into the Salah section on the Review tab (verified DOM order: Salah → Jamaah & Masjid → The Nafl → Qada)
 - [x] Change the Review tab section title back from "Duas" to "Heart"
 - [x] Remove the "Zakat entries & payments" heading from the Giving tab
+- [x] Expand the Giving log card to full width (it sat alone in a two-column grid)

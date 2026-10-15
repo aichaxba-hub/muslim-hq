@@ -96,8 +96,8 @@ function ZakatPage() {
 
       <FitrCalculator />
 
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <Card>
+      <Card className="mb-8">
+
           <h3 className="font-serif text-2xl mb-4">Giving log</h3>
           <div className="grid grid-cols-3 gap-2 mb-4">
             <div><p className="text-[10px] uppercase tracking-widest text-[color:var(--sage)]">Sadaqah</p><p className="text-2xl font-serif">${givingTotals.sadaqah.toLocaleString()}</p></div>
@@ -141,9 +141,8 @@ function ZakatPage() {
               </div>
             )}
           </div>
-        </Card>
+      </Card>
 
-      </div>
 
       <div className="grid gap-2 mb-8">
          {(zakat.data ?? []).map((z: any) => {
