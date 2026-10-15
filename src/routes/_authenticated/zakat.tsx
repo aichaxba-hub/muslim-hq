@@ -48,9 +48,10 @@ function ZakatPage() {
   const anniversarySave = useMutation({ mutationFn: (value: string) => profileUpdateFn({ data: { zakat_anniversary: value } }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Zakat anniversary saved"); }, onError: () => toast.error("Could not save anniversary") });
   const paymentCreate = useMutation({ mutationFn: (p: { zakat_entry_id: string; amount: number; paid_on: string; note?: string }) => paymentCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); qc.invalidateQueries({ queryKey: ["zakat-payments"] }); setPaymentEntry(null); setPaymentAmount(""); setPaymentNote(""); toast.success("Payment recorded"); }, onError: (error) => toast.error(error instanceof Error ? error.message : "Could not record payment") });
   const zCreate = useMutation({ mutationFn: (p: any) => zCreateFn({ data: p }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["zakat"] }); toast.success("Zakat entry saved"); }, onError: () => toast.error("Could not save the Zakat entry") });
-  const emptySadaqah = { log_date: todayISO(), amount: 0, cause: "", notes: "", ramadan: false, kind: "sadaqah" as "sadaqah" | "zakat", zakat_entry_id: "" };
+  const emptySadaqah = { log_date: todayISO(), amount: "", cause: "", notes: "", ramadan: false, kind: "sadaqah" as "sadaqah" | "zakat" };
+  const zakatTarget = (zakat.data ?? []).filter((z: any) => !z.paid).slice().sort((a: any, b: any) => a.year - b.year)[0];
   const sCreate = useMutation({
-    mutationFn: (p: typeof emptySadaqah) => sCreateFn({ data: { ...p, zakat_entry_id: p.kind === "zakat" ? p.zakat_entry_id : undefined } }),
+    mutationFn: (p: typeof emptySadaqah) => sCreateFn({ data: { ...p, amount: Number(p.amount) || 0, zakat_entry_id: p.kind === "zakat" ? zakatTarget?.id : undefined } }),
     onSuccess: (_row, p) => {
       qc.invalidateQueries({ queryKey: ["sadaqah"] });
       if (p.kind === "zakat") { qc.invalidateQueries({ queryKey: ["zakat"] }); qc.invalidateQueries({ queryKey: ["zakat-payments"] }); }
@@ -109,16 +110,15 @@ function ZakatPage() {
               ))}
             </div>
             {s.kind === "zakat" && (
-              <select aria-label="Zakat entry" value={s.zakat_entry_id} onChange={e => setS({ ...s, zakat_entry_id: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border">
-                <option value="">Choose a Zakat entry…</option>
-                {(zakat.data ?? []).filter((z: any) => !z.paid).map((z: any) => <option key={z.id} value={z.id}>{z.year} · {z.asset_type} · {Number(z.zakat_due ?? 0).toFixed(2)} due</option>)}
-              </select>
+              <p className="rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground ring-1 ring-border">
+                {zakatTarget ? `Goes toward your earliest outstanding Zakat entry: ${zakatTarget.year} · ${Number(zakatTarget.zakat_due ?? 0).toFixed(2)} due.` : "Save a Zakat entry first using the calculator above, then log its payment here."}
+              </p>
             )}
             <input type="date" value={s.log_date} onChange={e => setS({ ...s, log_date: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
-            <input type="number" placeholder="Amount" value={s.amount} onChange={e => setS({ ...s, amount: +e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
+            <input type="number" min="0" step="0.01" placeholder="Amount" value={s.amount} onChange={e => setS({ ...s, amount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
             <input placeholder={s.kind === "zakat" ? "Recipient (optional)" : "Cause"} value={s.cause} onChange={e => setS({ ...s, cause: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-background ring-1 ring-border" />
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={s.ramadan} onChange={e => setS({ ...s, ramadan: e.target.checked })} /> Ramadan giving</label>
-            <Button disabled={sCreate.isPending || s.amount <= 0 || (s.kind === "zakat" && !s.zakat_entry_id)} onClick={() => sCreate.mutate(s)}>{s.kind === "zakat" ? "Log Zakat payment" : "Log sadaqah"}</Button>
+            <Button disabled={sCreate.isPending || !(Number(s.amount) > 0) || (s.kind === "zakat" && !zakatTarget)} onClick={() => sCreate.mutate(s)}>{s.kind === "zakat" ? "Log Zakat payment" : "Log sadaqah"}</Button>
           </div>
           <div className="mt-5 space-y-2">
             {(sadaqah.data ?? []).map((r: any) => (
