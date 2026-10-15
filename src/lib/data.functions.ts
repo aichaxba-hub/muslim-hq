@@ -200,7 +200,7 @@ export const updateQada = createServerFn({ method: "POST" })
 export const listQuranLogs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.from("quran_logs").select("*").eq("user_id", context.userId).order("log_date", { ascending: false }).limit(100);
+    const { data } = await context.supabase.from("quran_logs").select("*").eq("user_id", context.userId).order("log_date", { ascending: false }).limit(5000);
     return data ?? [];
   });
 
@@ -285,7 +285,7 @@ export const deleteQuranStudyGoal = createServerFn({ method: "POST" })
 export const listFasting = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.from("fasting_logs").select("*").eq("user_id", context.userId).order("log_date", { ascending: false }).limit(200);
+    const { data } = await context.supabase.from("fasting_logs").select("*").eq("user_id", context.userId).order("log_date", { ascending: false }).limit(5000);
     return data ?? [];
   });
 
@@ -303,7 +303,7 @@ export const upsertFasting = createServerFn({ method: "POST" })
 export const listDhikr = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.from("dhikr_logs").select("*").eq("user_id", context.userId).order("log_date", { ascending: false }).limit(200);
+    const { data } = await context.supabase.from("dhikr_logs").select("*").eq("user_id", context.userId).order("log_date", { ascending: false }).limit(5000);
     return data ?? [];
   });
 
