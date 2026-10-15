@@ -83,7 +83,7 @@ const update = (t: string, id: string, patch: Row) => {
 };
 const blocked = (label: string) => () => { throw new DemoBlockedError(label); };
 
-const handlers = new Map<unknown, (data: any) => unknown>([
+const handlers: Map<unknown, (data: any) => unknown> = new Map<unknown, (data: any) => unknown>([
   [D.syncDuaLibrary, () => ({ added: 0 })],
   [D.getProfile, () => S().profile[0]],
   [D.updateProfile, (d) => Object.assign(S().profile[0], d)],
@@ -147,7 +147,7 @@ const handlers = new Map<unknown, (data: any) => unknown>([
   [D.listSadaqah, () => list("sadaqah_logs", "log_date")],
   [D.createSadaqah, ({ zakat_entry_id, ...rest }) => {
     let zakat_payment_id: string | null = null;
-    if (rest.kind === "zakat" && zakat_entry_id) zakat_payment_id = (handlers.get(D.recordZakatPayment)!({ zakat_entry_id, amount: rest.amount, paid_on: rest.log_date, note: rest.cause ?? null }) as Row).id;
+    if (rest.kind === "zakat" && zakat_entry_id) zakat_payment_id = ((handlers.get(D.recordZakatPayment) as (d: any) => unknown)({ zakat_entry_id, amount: rest.amount, paid_on: rest.log_date, note: rest.cause ?? null }) as Row).id;
     return insert("sadaqah_logs", { ...rest, kind: rest.kind ?? "sadaqah", zakat_payment_id });
   }],
   [D.listWorshipBackups, () => []],
