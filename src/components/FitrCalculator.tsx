@@ -1,7 +1,97 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/AppShell";
+import { autocompletePlaces } from "@/lib/places.functions";
 
 const foods = ["Wheat flour", "Rice", "Maize flour", "Barley", "Black beans"];
+
+type Suggestion = { placeId: string; text: string };
+
+function LocationField({ location, setLocation, fields }: { location: string; setLocation: (value: string) => void; fields: string }) {
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const sessionToken = useRef(crypto.randomUUID());
+  const requestId = useRef(0);
+  const skipNextSearch = useRef(false);
+
+  useEffect(() => {
+    const query = location.trim();
+    if (skipNextSearch.current) {
+      skipNextSearch.current = false;
+      return;
+    }
+    if (query.length < 2) {
+      setSuggestions([]);
+      setOpen(false);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const id = ++requestId.current;
+    const timer = setTimeout(async () => {
+      try {
+        const { suggestions: results } = await autocompletePlaces({ data: { input: query, sessionToken: sessionToken.current } });
+        if (id !== requestId.current) return;
+        setSuggestions(results);
+        setOpen(results.length > 0);
+      } catch {
+        if (id !== requestId.current) return;
+        setSuggestions([]);
+        setOpen(false);
+      } finally {
+        if (id === requestId.current) setSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [location]);
+
+  const pick = (suggestion: Suggestion) => {
+    skipNextSearch.current = true;
+    setLocation(suggestion.text);
+    setSuggestions([]);
+    setOpen(false);
+    sessionToken.current = crypto.randomUUID();
+  };
+
+  return (
+    <div className="relative grid gap-2 text-sm">
+      <label htmlFor="fitr-location">City, country, region or zip code</label>
+      <input
+        id="fitr-location"
+        className={fields}
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Start typing your city or region"
+        autoComplete="off"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls="fitr-location-suggestions"
+        aria-autocomplete="list"
+      />
+      {searching && <p className="text-xs text-muted-foreground">Searching places…</p>}
+      {open && (
+        <ul id="fitr-location-suggestions" role="listbox" className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-lg bg-popover ring-1 ring-border shadow-lg">
+          {suggestions.map((suggestion) => (
+            <li key={suggestion.placeId}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={location === suggestion.text}
+                className="block w-full px-3 py-2.5 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pick(suggestion)}
+              >
+                {suggestion.text}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export function FitrCalculator() {
   const [step, setStep] = useState(0);
@@ -21,7 +111,7 @@ export function FitrCalculator() {
     <div className="mb-5 flex flex-wrap gap-2">{["Location", "Household", "Selection method", "Review"].map((label, index) => <Button key={label} variant="ghost" className={step === index ? "bg-muted" : ""} onClick={() => setStep(index)} aria-current={step === index ? "step" : undefined}>{index + 1}. {label}</Button>)}</div>
     <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_17rem]">
       <div className="space-y-4">
-        {step === 0 && <><h3 className="font-serif text-2xl">Your location</h3><label className="grid gap-2 text-sm">City or region<input className={fields} value={location} onChange={e => setLocation(e.target.value)} placeholder="Your city or region" /></label><p className="text-xs text-muted-foreground">Use retail prices from shops in your area; prices are not fetched automatically.</p></>}
+        {step === 0 && <><h3 className="font-serif text-2xl">Your location</h3><LocationField location={location} setLocation={setLocation} fields={fields} /><p className="text-xs text-muted-foreground">Suggestions appear as you type — pick yours, or keep typing freely. Use retail prices from shops in your area; prices are not fetched automatically.</p></>}
         {step === 1 && <><h3 className="font-serif text-2xl">Your household</h3><label className="grid gap-2 text-sm">People you are giving for<input className={fields} type="number" min="1" step="1" value={household} onChange={e => setHousehold(Math.max(1, Math.floor(Number(e.target.value) || 1)))} /></label><label className="grid gap-2 text-sm">Kilograms per person (one saa estimate)<input className={fields} type="number" min="0.1" step="0.1" value={weight} onChange={e => setWeight(Math.max(0.1, Number(e.target.value) || 0.1))} /></label></>}
         {step === 2 && <><h3 className="font-serif text-2xl">Choose a food</h3><div className="flex gap-2"><Button variant={method === "food" ? "primary" : "ghost"} onClick={() => setMethod("food")}>Choose food</Button><Button variant={method === "income" ? "primary" : "ghost"} onClick={() => setMethod("income")}>Income-based</Button></div>{method === "food" ? <label className="grid gap-2 text-sm">Staple food<select className={fields} value={selectedFood} onChange={e => setSelectedFood(e.target.value)}>{foods.map(food => <option key={food}>{food}</option>)}</select></label> : <label className="grid gap-2 text-sm">Income level<select className={fields} value={income} onChange={e => setIncome(e.target.value as typeof income)}><option value="low">Lower</option><option value="medium">Middle</option><option value="high">Higher</option></select></label>}<p className="text-xs text-muted-foreground">Income-based picks the lowest, second-highest or highest priced food among the prices you provide.</p></>}
         {step === 3 && <><h3 className="font-serif text-2xl">Local food prices</h3><p className="text-sm text-muted-foreground">Enter the retail price per kilogram in your local currency. Only entered prices are used.</p><div className="grid gap-3 sm:grid-cols-2">{foods.map(food => <label key={food} className="grid gap-1.5 text-sm">{food} / kg<input className={fields} type="number" min="0" step="0.01" placeholder="Price per kg" value={prices[food] || ""} onChange={e => setPrices(current => ({ ...current, [food]: Math.max(0, Number(e.target.value) || 0) }))} /></label>)}</div></>}
