@@ -99,22 +99,11 @@ function QuranPage() {
 
   const rhythm = useMemo(() => {
     const today = todayISO();
-    const monthPrefix = today.slice(0, 7);
     let todayAyat = 0;
-    let monthAyat = 0;
-    const monthSurahs = new Set<number>();
-    const monthSurahNames = new Set<string>();
     for (const row of data as any[]) {
-      const ayat = countAyat(row.verses_completed);
-      if (row.log_date === today) todayAyat += ayat;
-      if (typeof row.log_date === "string" && row.log_date.startsWith(monthPrefix)) {
-        monthAyat += ayat;
-        const number = surahNumberOf(row.verses_completed);
-        if (number) monthSurahs.add(number);
-        else if (row.surah) monthSurahNames.add(String(row.surah).replace(/^\d+\.\s*/, ""));
-      }
+      if (row.log_date === today) todayAyat += countAyat(row.verses_completed);
     }
-    return { todayAyat, monthAyat, monthSurahs: monthSurahs.size + monthSurahNames.size };
+    return { todayAyat };
   }, [data]);
   const rhythmPercent = Math.min(100, Math.round((rhythm.todayAyat / dailyGoal) * 100));
 
