@@ -53,3 +53,5 @@
 - [x] Add location, household and food-selection notes to the Zakat al-Fitr calculator steps
 - [x] Zakat calculator step labels wrap to a second row instead of clipping "6. Other assets"
 - [x] Add "What is a Sa'a?" explainer under the Zakat al-Fitr calculator header
+- [x] Remove the "Kilograms per person" field from the Zakat al-Fitr household step (fixed one saa ≈ 3 kg used internally)
+- [x] Label the Fitr household count "People you are giving for (including yourself)"
